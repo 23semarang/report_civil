@@ -19,7 +19,7 @@
 
 <div class="container py-3" style="max-width: 600px;">
 
-  <!-- FORM AUTENTIKASI (LOGIN / REGISTER / LUPA PASSWORD) -->
+  <!-- FORM AUTENTIKASI (LOGIN / REGISTER / LUPA PASSWORD OTP) -->
   <div id="authContainer">
     
     <!-- 1. LOGIN FORM -->
@@ -55,6 +55,11 @@
           <input type="text" id="regUser" class="form-control" placeholder="Contoh: vandi_civil" required>
         </div>
         <div class="mb-3">
+          <label>Email Aktif</label>
+          <input type="email" id="regEmail" class="form-control" placeholder="Contoh: vandi@gmail.com" required>
+          <small class="text-muted" style="font-size:0.75rem;">Digunakan untuk menerima kode OTP jika lupa password.</small>
+        </div>
+        <div class="mb-3">
           <label>Password</label>
           <input type="password" id="regPass" class="form-control" required>
         </div>
@@ -65,22 +70,39 @@
       </div>
     </div>
 
-    <!-- 3. FORGOT PASSWORD FORM -->
+    <!-- 3. FORGOT PASSWORD CARD (STEP 1: REQUEST OTP) -->
     <div id="forgotCard" class="card p-4 shadow-sm d-none">
-      <h3 class="text-center mb-3">Reset Password</h3>
-      <form id="forgotForm">
+      <h3 class="text-center mb-3">Lupa Password</h3>
+      <form id="requestOTPForm">
         <div class="mb-3">
-          <label>Username Anda</label>
-          <input type="text" id="forgotUser" class="form-control" required>
+          <label>Username atau Email Anda</label>
+          <input type="text" id="otpTarget" class="form-control" placeholder="Masukkan username/email" required>
         </div>
-        <div class="mb-3">
-          <label>Password Baru</label>
-          <input type="password" id="forgotNewPass" class="form-control" required>
-        </div>
-        <button type="submit" id="btnForgot" class="btn btn-warning w-100">Ubah Password</button>
+        <button type="submit" id="btnRequestOTP" class="btn btn-primary w-100">Kirim Kode OTP Ke Email</button>
       </form>
       <div class="text-center mt-3 small">
         Kembali ke <a href="#" onclick="showAuthCard('loginCard')">Halaman Login</a>
+      </div>
+    </div>
+
+    <!-- 4. VERIFY OTP CARD (STEP 2: INPUT OTP & NEW PASS) -->
+    <div id="verifyOTPCard" class="card p-4 shadow-sm d-none">
+      <h3 class="text-center mb-1">Verifikasi OTP</h3>
+      <p class="text-muted text-center small mb-3" id="otpNotice">Kode OTP telah dikirim ke email Anda.</p>
+      
+      <form id="verifyOTPForm">
+        <div class="mb-3">
+          <label>Kode OTP (6 Digit)</label>
+          <input type="text" id="otpInputCode" class="form-control text-center fw-bold fs-4" maxlength="6" placeholder="------" required>
+        </div>
+        <div class="mb-3">
+          <label>Password Baru</label>
+          <input type="password" id="otpNewPass" class="form-control" required>
+        </div>
+        <button type="submit" id="btnVerifyReset" class="btn btn-success w-100">Simpan Password Baru</button>
+      </form>
+      <div class="text-center mt-3 small">
+        Tidak menerima kode? <a href="#" onclick="showAuthCard('forgotCard')">Kirim Ulang OTP</a>
       </div>
     </div>
 
@@ -224,6 +246,7 @@
   let activeUpdateData = null;
   let allReports = [];
   let currentFilter = "ALL";
+  let targetResetUsername = ""; // Menyimpan username temporary saat reset password
 
   const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
   const updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
@@ -235,6 +258,7 @@
     document.getElementById("loginCard").classList.add("d-none");
     document.getElementById("registerCard").classList.add("d-none");
     document.getElementById("forgotCard").classList.add("d-none");
+    document.getElementById("verifyOTPCard").classList.add("d-none");
     document.getElementById(cardId).classList.remove("d-none");
   }
 
@@ -261,7 +285,7 @@
     }
   });
 
-  // --- HANDLER BUAT AKUN (REGISTER) ---
+  // --- HANDLER BUAT AKUN (REGISTER + EMAIL) ---
   document.getElementById("registerForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = document.getElementById("btnRegister");
@@ -271,6 +295,7 @@
       action: "register",
       fullname: document.getElementById("regFullname").value,
       username: document.getElementById("regUser").value,
+      email: document.getElementById("regEmail").value,
       password: document.getElementById("regPass").value
     });
 
@@ -283,23 +308,48 @@
     }
   });
 
-  // --- HANDLER RESET PASSWORD ---
-  document.getElementById("forgotForm").addEventListener("submit", async (e) => {
+  // --- HANDLER STEP 1: REQUEST OTP ---
+  document.getElementById("requestOTPForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const btn = document.getElementById("btnForgot");
-    btn.disabled = true; btn.innerText = "Memproses...";
+    const btn = document.getElementById("btnRequestOTP");
+    btn.disabled = true; btn.innerText = "Mengirim Kode OTP...";
 
     const res = await fetchAPI({
-      action: "resetPassword",
-      username: document.getElementById("forgotUser").value,
-      newPassword: document.getElementById("forgotNewPass").value
+      action: "requestOTP",
+      usernameOrEmail: document.getElementById("otpTarget").value
     });
 
-    btn.disabled = false; btn.innerText = "Ubah Password";
+    btn.disabled = false; btn.innerText = "Kirim Kode OTP Ke Email";
+
+    if (res.status === "success") {
+      targetResetUsername = res.username;
+      document.getElementById("otpNotice").innerText = res.message;
+      showAuthCard("verifyOTPCard");
+    } else {
+      alert(res.message);
+    }
+  });
+
+  // --- HANDLER STEP 2: VERIFIKASI OTP & SIMPAN PASSWORD BARU ---
+  document.getElementById("verifyOTPForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("btnVerifyReset");
+    btn.disabled = true; btn.innerText = "Memverifikasi...";
+
+    const res = await fetchAPI({
+      action: "verifyOTPAndReset",
+      username: targetResetUsername,
+      otp: document.getElementById("otpInputCode").value,
+      newPassword: document.getElementById("otpNewPass").value
+    });
+
+    btn.disabled = false; btn.innerText = "Simpan Password Baru";
     alert(res.message);
 
     if (res.status === "success") {
-      document.getElementById("forgotForm").reset();
+      document.getElementById("requestOTPForm").reset();
+      document.getElementById("verifyOTPForm").reset();
+      targetResetUsername = "";
       showAuthCard("loginCard");
     }
   });
@@ -325,6 +375,7 @@
     } else {
       document.getElementById("createTab").classList.add("d-none");
       document.getElementById("listTab").classList.remove("d-none");
+      document.getElementById("tabList").classList.active = true;
       document.getElementById("tabList").classList.add("active");
       document.getElementById("tabCreate").classList.remove("active");
       loadReports();

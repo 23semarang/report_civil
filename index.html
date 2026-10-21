@@ -12,6 +12,7 @@
     .status-PROGRESS { border-left-color: #ffc107; }
     .status-RESOLVED { border-left-color: #198754; }
     .img-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; }
+    .filter-btn-group .btn { font-size: 0.85rem; }
   </style>
 </head>
 <body>
@@ -79,7 +80,7 @@
         </div>
         <div class="mb-2">
           <label>Detail Lokasi/Tenant</label>
-          <input type="text" id="location_detail" class="form-control" placeholder="Contoh: Depan MO / Baskin Robbins" required>
+          <input type="text" id="location_detail" class="form-control" placeholder="Contoh: Depan MO / Atrium" required>
         </div>
         <div class="mb-2">
           <label>Detail Kerusakan</label>
@@ -99,8 +100,18 @@
       </form>
     </div>
 
-    <!-- REPORT LIST -->
+    <!-- REPORT LIST & FILTER -->
     <div id="listTab">
+      <!-- TOMBOL FILTER STATUS -->
+      <div class="card p-2 mb-3 shadow-sm">
+        <div class="btn-group w-100 filter-btn-group" role="group">
+          <button type="button" class="btn btn-primary active" id="btnFilterAll" onclick="setFilter('ALL')">Semua</button>
+          <button type="button" class="btn btn-outline-danger" id="btnFilterReported" onclick="setFilter('REPORTED')">Reported</button>
+          <button type="button" class="btn btn-outline-warning text-dark" id="btnFilterProgress" onclick="setFilter('PROGRESS')">Progress</button>
+          <button type="button" class="btn btn-outline-success" id="btnFilterResolved" onclick="setFilter('RESOLVED')">Resolved</button>
+        </div>
+      </div>
+
       <div id="reportsContainer">Memuat data...</div>
     </div>
   </div>
@@ -161,6 +172,8 @@
   let selectedFile = null;
   let updateFile = null;
   let activeUpdateData = null;
+  let allReports = []; // Cache seluruh data laporan
+  let currentFilter = "ALL"; // Status filter aktif
 
   const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
   const updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
@@ -211,6 +224,33 @@
     }
   }
 
+  // --- FILTER LAPORAN ---
+  function setFilter(status) {
+    currentFilter = status;
+    
+    // Update Tampilan Tombol Filter
+    document.querySelectorAll('.filter-btn-group .btn').forEach(btn => {
+      btn.classList.remove('active', 'btn-primary', 'btn-danger', 'btn-warning', 'btn-success');
+      btn.classList.add('btn-outline-secondary');
+    });
+
+    if (status === 'ALL') {
+      const b = document.getElementById('btnFilterAll');
+      b.className = 'btn btn-primary active';
+    } else if (status === 'REPORTED') {
+      const b = document.getElementById('btnFilterReported');
+      b.className = 'btn btn-danger active';
+    } else if (status === 'PROGRESS') {
+      const b = document.getElementById('btnFilterProgress');
+      b.className = 'btn btn-warning text-dark active';
+    } else if (status === 'RESOLVED') {
+      const b = document.getElementById('btnFilterResolved');
+      b.className = 'btn btn-success active';
+    }
+
+    renderReports();
+  }
+
   // --- PILIHAN FILE KAMERA / GALERI ---
   function triggerFileInput(type) {
     if (type === 'camera') document.getElementById("photoCamera").click();
@@ -235,7 +275,7 @@
   document.getElementById("updateCamera").addEventListener("change", (e) => { updateFile = e.target.files[0]; document.getElementById("updatePhotoStatus").innerText = "Foto terpilih: " + updateFile.name; });
   document.getElementById("updateGallery").addEventListener("change", (e) => { updateFile = e.target.files[0]; document.getElementById("updatePhotoStatus").innerText = "Foto terpilih: " + updateFile.name; });
 
-  // --- FUNGSI WATERMARK PADA FOTO (DIPERINGKAS & DYNAMIC SIZE) ---
+  // --- FUNGSI WATERMARK PADA FOTO (CANVAS DENGAN LEBAR DINAMIS & TEKS RINGKAS) ---
   function applyWatermark(file, username, status, locationDetail) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -249,10 +289,8 @@
           canvas.height = img.height;
           const ctx = canvas.getContext("2d");
 
-          // Render Gambar Asli
           ctx.drawImage(img, 0, 0);
 
-          // Teks Status Diringkas
           let statusText = "REPORTED";
           let badgeBgColor = "#dc3545"; // Merah
           let badgeTextColor = "#FFFFFF";
@@ -267,7 +305,6 @@
             badgeTextColor = "#FFFFFF";
           }
 
-          // Format Waktu & Data
           const dateStr = new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
           const lines = [
             `User: ${username}`,
@@ -275,14 +312,12 @@
             `Waktu: ${dateStr}`
           ];
 
-          // Ukuran Font Proporsional Gambar
           const fontSize = Math.max(14, Math.round(img.width * 0.022));
           const padding = fontSize * 0.8;
           const lineHeight = fontSize * 1.35;
 
           ctx.font = `bold ${fontSize}px sans-serif`;
 
-          // Hitung Lebar Teks Terpanjang Secara Dinamis Agar Kotak Tidak Offside
           let maxTextWidth = ctx.measureText(`STATUS: ${statusText}`).width;
           lines.forEach(line => {
             const w = ctx.measureText(line).width;
@@ -295,11 +330,11 @@
           const startX = padding;
           const startY = img.height - boxHeight - padding;
 
-          // 1. Gambar Dark Overlay Box
+          // 1. Dark Overlay Box
           ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
           ctx.fillRect(startX, startY, boxWidth, boxHeight);
 
-          // 2. Gambar Badge Status
+          // 2. Badge Status
           const badgeHeight = lineHeight + (padding * 0.4);
           ctx.fillStyle = badgeBgColor;
           ctx.fillRect(startX + (padding / 2), startY + (padding / 2), boxWidth - padding, badgeHeight);
@@ -307,7 +342,7 @@
           ctx.fillStyle = badgeTextColor;
           ctx.fillText(`STATUS: ${statusText}`, startX + padding, startY + (padding / 2) + fontSize);
 
-          // 3. Gambar Teks Rincian (User, Lokasi, Waktu)
+          // 3. Teks Detail
           ctx.fillStyle = "#FFFFFF";
           lines.forEach((line, index) => {
             const textY = startY + badgeHeight + padding + ((index + 1) * lineHeight) - 4;
@@ -357,69 +392,85 @@
     }
   });
 
-  // --- RENDER DAFTAR LAPORAN ---
+  // --- AMBIL DATA LAPORAN DARI DATABASE ---
   async function loadReports() {
     const container = document.getElementById("reportsContainer");
     container.innerHTML = "Memuat data...";
     const res = await fetchAPI({ action: "getReports" });
     
     if (res.status === "success") {
-      container.innerHTML = "";
-      if (res.data.length === 0) {
-        container.innerHTML = "<div class='text-center text-muted py-4'>Belum ada laporan.</div>";
-        return;
-      }
-      res.data.forEach(item => {
-        const photoReportThumbnail = getGoogleThumbnailUrl(item.photo_report);
-        const photoProgressThumbnail = getGoogleThumbnailUrl(item.photo_progress);
-        const photoResolvedThumbnail = getGoogleThumbnailUrl(item.photo_resolved);
+      allReports = res.data || [];
+      renderReports();
+    } else {
+      container.innerHTML = "<div class='text-center text-danger py-4'>Gagal memuat data.</div>";
+    }
+  }
 
-        container.innerHTML += `
-          <div class="card card-report status-${item.status} p-3 shadow-sm">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="badge bg-secondary">${item.floor} - ${item.zone} (${item.area_type})</span>
-              <span class="badge bg-${getStatusColor(item.status)}">${item.status}</span>
-            </div>
-            <p class="mt-2 mb-1"><strong>${item.location_detail}</strong></p>
-            <p class="text-muted small mb-1">${item.issue}</p>
-            ${item.progress_note ? `<p class="small text-primary mb-2"><strong>Progress Note:</strong> ${item.progress_note}</p>` : ''}
-            
-            <div class="row g-2 mb-2">
-              ${photoReportThumbnail ? `
-                <div class="col">
-                  <small class="d-block text-muted">Report:</small>
-                  <img src="${photoReportThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_report}')">
-                </div>` : ''}
-              ${photoProgressThumbnail ? `
-                <div class="col">
-                  <small class="d-block text-muted">Progress:</small>
-                  <img src="${photoProgressThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_progress}')">
-                </div>` : ''}
-              ${photoResolvedThumbnail ? `
-                <div class="col">
-                  <small class="d-block text-muted">Resolved:</small>
-                  <img src="${photoResolvedThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_resolved}')">
-                </div>` : ''}
-            </div>
+  // --- RENDER DENGAN FILTER ---
+  function renderReports() {
+    const container = document.getElementById("reportsContainer");
+    container.innerHTML = "";
 
-            <div class="d-flex gap-2 mt-2">
-              ${item.status === 'REPORTED' ? `<button onclick="openUpdateModal('${item.id}', 'PROGRESS', '${item.location_detail}')" class="btn btn-sm btn-warning">Kerjakan (Progress)</button>` : ''}
-              ${item.status === 'PROGRESS' ? `<button onclick="openUpdateModal('${item.id}', 'RESOLVED', '${item.location_detail}')" class="btn btn-sm btn-success">Selesai (Resolved)</button>` : ''}
-              <button onclick="toggleComments('${item.id}')" class="btn btn-sm btn-outline-primary">Komentar</button>
-            </div>
+    const filtered = allReports.filter(item => {
+      if (currentFilter === "ALL") return true;
+      return item.status === currentFilter;
+    });
 
-            <div id="comments-${item.id}" class="mt-3 d-none border-top pt-2">
-              <h6>Komentar:</h6>
-              <div id="commentList-${item.id}" class="small text-muted mb-2">Memuat...</div>
-              <div class="input-group input-group-sm">
-                <input type="text" id="inputComment-${item.id}" class="form-control" placeholder="Tulis komentar...">
-                <button onclick="sendComment('${item.id}')" class="btn btn-primary">Kirim</button>
-              </div>
+    if (filtered.length === 0) {
+      container.innerHTML = `<div class='text-center text-muted py-4'>Tidak ada laporan dengan status <strong>${currentFilter}</strong>.</div>`;
+      return;
+    }
+
+    filtered.forEach(item => {
+      const photoReportThumbnail = getGoogleThumbnailUrl(item.photo_report);
+      const photoProgressThumbnail = getGoogleThumbnailUrl(item.photo_progress);
+      const photoResolvedThumbnail = getGoogleThumbnailUrl(item.photo_resolved);
+
+      container.innerHTML += `
+        <div class="card card-report status-${item.status} p-3 shadow-sm">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="badge bg-secondary">${item.floor} - ${item.zone} (${item.area_type})</span>
+            <span class="badge bg-${getStatusColor(item.status)}">${item.status}</span>
+          </div>
+          <p class="mt-2 mb-1"><strong>${item.location_detail}</strong></p>
+          <p class="text-muted small mb-1">${item.issue}</p>
+          ${item.progress_note ? `<p class="small text-primary mb-2"><strong>Progress Note:</strong> ${item.progress_note}</p>` : ''}
+          
+          <div class="row g-2 mb-2">
+            ${photoReportThumbnail ? `
+              <div class="col">
+                <small class="d-block text-muted">Report:</small>
+                <img src="${photoReportThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_report}')">
+              </div>` : ''}
+            ${photoProgressThumbnail ? `
+              <div class="col">
+                <small class="d-block text-muted">Progress:</small>
+                <img src="${photoProgressThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_progress}')">
+              </div>` : ''}
+            ${photoResolvedThumbnail ? `
+              <div class="col">
+                <small class="d-block text-muted">Resolved:</small>
+                <img src="${photoResolvedThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_resolved}')">
+              </div>` : ''}
+          </div>
+
+          <div class="d-flex gap-2 mt-2">
+            ${item.status === 'REPORTED' ? `<button onclick="openUpdateModal('${item.id}', 'PROGRESS', '${item.location_detail}')" class="btn btn-sm btn-warning">Kerjakan (Progress)</button>` : ''}
+            ${item.status === 'PROGRESS' ? `<button onclick="openUpdateModal('${item.id}', 'RESOLVED', '${item.location_detail}')" class="btn btn-sm btn-success">Selesai (Resolved)</button>` : ''}
+            <button onclick="toggleComments('${item.id}')" class="btn btn-sm btn-outline-primary">Komentar</button>
+          </div>
+
+          <div id="comments-${item.id}" class="mt-3 d-none border-top pt-2">
+            <h6>Komentar:</h6>
+            <div id="commentList-${item.id}" class="small text-muted mb-2">Memuat...</div>
+            <div class="input-group input-group-sm">
+              <input type="text" id="inputComment-${item.id}" class="form-control" placeholder="Tulis komentar...">
+              <button onclick="sendComment('${item.id}')" class="btn btn-primary">Kirim</button>
             </div>
           </div>
-        `;
-      });
-    }
+        </div>
+      `;
+    });
   }
 
   // --- OPEN MODAL UPDATE PROGRESS ---

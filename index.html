@@ -14,21 +14,40 @@
     .img-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; }
     .filter-btn-group .btn { font-size: 0.85rem; }
 
-    /* CSS STYLE DENAH INTERAKTIF */
-    .map-container {
+    /* STYLING DENAH WITH ZOOM SUPPORT */
+    .map-outer-wrapper {
       position: relative;
-      width: 100%;
       border: 2px dashed #0d6efd;
       border-radius: 8px;
       overflow: hidden;
-      cursor: crosshair;
       background-color: #e9ecef;
-      text-align: center;
+      touch-action: none;
+    }
+    .map-controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      z-index: 10;
+      display: flex;
+      gap: 4px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 4px;
+      border-radius: 6px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .map-container {
+      position: relative;
+      width: 100%;
+      cursor: crosshair;
+      transform-origin: 0 0;
+      transition: transform 0.1s linear;
     }
     .map-image {
       width: 100%;
       height: auto;
       display: block;
+      user-select: none;
+      -webkit-user-drag: none;
     }
     .map-pin {
       position: absolute;
@@ -42,7 +61,6 @@
       transform: rotate(-45deg);
       box-shadow: 0 2px 5px rgba(0,0,0,0.4);
       pointer-events: none;
-      transition: all 0.2s ease;
     }
     .map-pin::after {
       content: '';
@@ -167,13 +185,21 @@
           </select>
         </div>
 
-        <!-- DENAH LAYOUT INTERAKTIF -->
+        <!-- DENAH LAYOUT INTERAKTIF WITH ZOOM -->
         <div class="mb-3">
           <label class="fw-bold text-primary">Marking Titik Lokasi Pada Denah:</label>
-          <small class="d-block text-muted mb-1">Klik/Sentuh pada gambar denah di bawah untuk menandai lokasi kerusakan.</small>
-          <div class="map-container" id="mapContainer" onclick="setMapMarking(event)">
-            <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
-            <div id="mapPin" class="map-pin d-none"></div>
+          <small class="d-block text-muted mb-1">Gunakan tombol zoom atau dua jari untuk memperbesar layout denah.</small>
+          
+          <div class="map-outer-wrapper">
+            <div class="map-controls">
+              <button type="button" class="btn btn-sm btn-light border" onclick="zoomMap(1.2)">🔍+</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="zoomMap(0.8)">🔍-</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="resetZoomMap()">↺ Reset</button>
+            </div>
+            <div class="map-container" id="mapContainer" onclick="setMapMarking(event)">
+              <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
+              <div id="mapPin" class="map-pin d-none"></div>
+            </div>
           </div>
           <small id="mapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
         </div>
@@ -232,7 +258,7 @@
 
 </div>
 
-<!-- Modal Denah Full Laporan -->
+<!-- MODAL DENAH VIEW WITH ZOOM -->
 <div class="modal fade" id="mapModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -241,9 +267,16 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-2">
-        <div class="map-container" style="cursor: default;">
-          <img src="" id="viewMapImage" class="map-image" alt="Denah Full">
-          <div id="viewMapPin" class="map-pin"></div>
+        <div class="map-outer-wrapper">
+          <div class="map-controls">
+            <button type="button" class="btn btn-sm btn-light border" onclick="zoomViewMap(1.2)">🔍+</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="zoomViewMap(0.8)">🔍-</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="resetZoomViewMap()">↺ Reset</button>
+          </div>
+          <div class="map-container" id="viewMapContainer" style="cursor: default;">
+            <img src="" id="viewMapImage" class="map-image" alt="Denah Full">
+            <div id="viewMapPin" class="map-pin"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -299,7 +332,6 @@
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxYfqKB2SSDxPXGdwI5mqwivozqUi28DiLw2yS8Q5pHbwAdvEPL2xUbsq7mdE1RQ5wN/exec";
 
-  // GAMBAR DENAH DISESUAIKAN DENGAN NAMA FILE DI REPOSITORY GITHUB
   const FLOOR_MAPS = {
     "LG": "LG.jpg",
     "L1": "L1.jpg",
@@ -318,6 +350,10 @@
   let markedX = null;
   let markedY = null;
 
+  // ZOOM STATE VARIABLES
+  let mapScale = 1;
+  let viewMapScale = 1;
+
   const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
   const updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
   const mapModal = new bootstrap.Modal(document.getElementById('mapModal'));
@@ -333,12 +369,34 @@
     document.getElementById(cardId).classList.remove("d-none");
   }
 
+  // LOGIKA ZOOM DENAH
+  function zoomMap(factor) {
+    mapScale = Math.min(Math.max(1, mapScale * factor), 4);
+    document.getElementById("mapContainer").style.transform = `scale(${mapScale})`;
+  }
+
+  function resetZoomMap() {
+    mapScale = 1;
+    document.getElementById("mapContainer").style.transform = `scale(1)`;
+  }
+
+  function zoomViewMap(factor) {
+    viewMapScale = Math.min(Math.max(1, viewMapScale * factor), 4);
+    document.getElementById("viewMapContainer").style.transform = `scale(${viewMapScale})`;
+  }
+
+  function resetZoomViewMap() {
+    viewMapScale = 1;
+    document.getElementById("viewMapContainer").style.transform = `scale(1)`;
+  }
+
   // MARKING DENAH
   function updateFloorMap() {
     const floor = document.getElementById("floor").value;
     const mapImg = document.getElementById("mapImage");
     mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
     
+    resetZoomMap();
     markedX = null; markedY = null;
     document.getElementById("mapPin").classList.add("d-none");
     document.getElementById("mapStatus").className = "text-danger small mt-1 d-block";
@@ -348,6 +406,8 @@
   function setMapMarking(e) {
     const container = document.getElementById("mapContainer");
     const rect = container.getBoundingClientRect();
+    
+    // Perhitungan presisi koordinat saat zoom aktif
     const x = ((e.clientX - rect.left) / rect.width) * 100;
     const y = ((e.clientY - rect.top) / rect.height) * 100;
 
@@ -369,6 +429,7 @@
     viewPin.style.left = x + "%";
     viewPin.style.top = y + "%";
     document.getElementById("mapModalTitle").innerText = `Denah Kerusakan (${floor})`;
+    resetZoomViewMap();
     mapModal.show();
   }
 

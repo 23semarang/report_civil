@@ -67,6 +67,7 @@
       border: 2px solid #ffffff;
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
+      transform-origin: bottom center;
       box-shadow: 0 2px 5px rgba(0,0,0,0.4);
       pointer-events: none;
       z-index: 10;
@@ -377,6 +378,23 @@
     cursor: 'grab'
   });
 
+  // MENJAGA UKURAN PIN TETAP FIXED KETIKA DI-ZOOM
+  mapContainer.addEventListener('panzoomchange', (e) => {
+    const scale = e.detail.scale;
+    const pin = document.getElementById('mapPin');
+    if (pin) {
+      pin.style.transform = `scale(${1 / scale}) rotate(-45deg)`;
+    }
+  });
+
+  viewMapContainer.addEventListener('panzoomchange', (e) => {
+    const scale = e.detail.scale;
+    const viewPin = document.getElementById('viewMapPin');
+    if (viewPin) {
+      viewPin.style.transform = `scale(${1 / scale}) rotate(-45deg)`;
+    }
+  });
+
   // Enable Mouse Wheel Zooming
   document.getElementById('mapWrapper').addEventListener('wheel', pzCreate.zoomWithWheel);
   document.getElementById('viewMapWrapper').addEventListener('wheel', pzView.zoomWithWheel);
@@ -425,7 +443,6 @@
     const diffX = Math.abs(e.clientX - startX);
     const diffY = Math.abs(e.clientY - startY);
 
-    // Jika pergeseran kurang dari 8 piksel, anggap sebagai KLIK
     if (diffX < 8 && diffY < 8) {
       const mapImg = document.getElementById("mapImage");
       const rect = mapImg.getBoundingClientRect();

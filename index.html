@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Civil Maintenance Mall System (Photo Fix v2.0)</title>
+  <title>Civil Maintenance Mall System</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body { background-color: #f4f6f9; }
@@ -11,9 +11,7 @@
     .status-REPORTED { border-left-color: #dc3545; }
     .status-PROGRESS { border-left-color: #ffc107; }
     .status-RESOLVED { border-left-color: #198754; }
-    .img-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 5px; cursor: pointer; }
-    /* Memastikan teks '<img>Report' yang salah render tidak muncul */
-    .img-preview[alt*="<img>"] { display: none; } 
+    .img-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; }
   </style>
 </head>
 <body>
@@ -45,8 +43,8 @@
 
     <!-- TAB NAVIGATION -->
     <ul class="nav nav-pills nav-justified mb-3">
-      <li class="nav-item"><a class="nav-link active" onclick="switchTab('list')" href="#">Daftar Laporan</a></li>
-      <li class="nav-item"><a class="nav-link" onclick="switchTab('create')" href="#">+ Buat Laporan</a></li>
+      <li class="nav-item"><a class="nav-link active" id="tabList" onclick="switchTab('list')" href="#">Daftar Laporan</a></li>
+      <li class="nav-item"><a class="nav-link" id="tabCreate" onclick="switchTab('create')" href="#">+ Buat Laporan</a></li>
     </ul>
 
     <!-- CREATE REPORT FORM -->
@@ -81,7 +79,7 @@
         </div>
         <div class="mb-2">
           <label>Detail Lokasi/Tenant</label>
-          <input type="text" id="location_detail" class="form-control" placeholder="Contoh: Depan Toilet / Baskin Robbins" required>
+          <input type="text" id="location_detail" class="form-control" placeholder="Contoh: Depan MO / Baskin Robbins" required>
         </div>
         <div class="mb-2">
           <label>Detail Kerusakan</label>
@@ -91,19 +89,19 @@
           <label>Foto Temuan</label>
           <input type="file" id="photo" class="form-control" accept="image/*" required>
         </div>
-        <button type="submit" class="btn btn-success w-100">Kirim Laporan</button>
+        <button type="submit" id="btnSubmitReport" class="btn btn-success w-100">Kirim Laporan</button>
       </form>
     </div>
 
     <!-- REPORT LIST -->
     <div id="listTab">
-      <div id="reportsContainer">Memuat data... (Fix 2.0)</div>
+      <div id="reportsContainer">Memuat data...</div>
     </div>
   </div>
 
 </div>
 
-<!-- Modal untuk View Foto Full -->
+<!-- Modal Full Image -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -119,8 +117,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  // PENTING: GANTI URL DENGAN WEB APP URL DARI GOOGLE APPS SCRIPT ANDA
-  // Contoh: const API_URL = "https://script.google.com/macros/s/AKfycb...exec";
   const API_URL = "https://script.google.com/macros/s/AKfycbxYfqKB2SSDxPXGdwI5mqwivozqUi28DiLw2yS8Q5pHbwAdvEPL2xUbsq7mdE1RQ5wN/exec";
   
   let currentUser = JSON.parse(localStorage.getItem("user_civil")) || null;
@@ -161,38 +157,33 @@
     if (tab === 'create') {
       document.getElementById("createTab").classList.remove("d-none");
       document.getElementById("listTab").classList.add("d-none");
+      document.getElementById("tabCreate").classList.add("active");
+      document.getElementById("tabList").classList.remove("active");
     } else {
       document.getElementById("createTab").classList.add("d-none");
       document.getElementById("listTab").classList.remove("d-none");
+      document.getElementById("tabList").classList.add("active");
+      document.getElementById("tabCreate").classList.remove("active");
       loadReports();
     }
   }
 
-  // === FUNGSI UTILITAS BARU UNTUK FOTO GOOGLE DRIVE ===
-  // Mengonversi URL berbagi menjadi URL thumbnail yang dapat dilihat
+  // Fungsi pengubah URL Google Drive ke Thumbnail Image
   function getGoogleThumbnailUrl(driveUrl) {
     if (!driveUrl) return "";
     let fileId = "";
-    // Format 1: https://drive.google.com/open?id=ID
     if (driveUrl.includes('open?id=')) {
       fileId = driveUrl.split('open?id=')[1].split('&')[0];
-    }
-    // Format 2: https://drive.google.com/file/d/ID/...
-    else if (driveUrl.includes('/file/d/')) {
+    } else if (driveUrl.includes('/file/d/')) {
       fileId = driveUrl.split('/file/d/')[1].split('/')[0];
     }
-    // Jika format tidak dikenali, biarkan saja (untuk URL non-Drive)
     if (fileId) {
-      // Gunakan URL thumbnail dengan resolusi tinggi (contoh: w600)
       return `https://drive.google.com/thumbnail?id=${fileId}&w=600&sz=w600`;
     }
     return driveUrl;
   }
 
   function viewFullImage(driveUrl) {
-    // Untuk melihat full image, kita bisa gunakan link thumbnail dengan size besar,
-    // atau jika perizinan folder OK, link view standar 'https://lh3.googleusercontent.com/u/0/d/'
-    // Kita gunakan thumbnail besar agar lebih pasti
     if (!driveUrl) return;
     let fileId = "";
     if (driveUrl.includes('open?id=')) {
@@ -200,18 +191,20 @@
     } else if (driveUrl.includes('/file/d/')) {
       fileId = driveUrl.split('/file/d/')[1].split('/')[0];
     }
-    
     if (fileId) {
       fullImageEl.src = `https://drive.google.com/thumbnail?id=${fileId}&w=1600&sz=w1600`;
     } else {
-      fullImageEl.src = driveUrl; // Gunakan URL asli jika bukan Drive
+      fullImageEl.src = driveUrl;
     }
     imageModal.show();
   }
-  // === AKHIR FUNGSI UTILITAS FOTO ===
 
   document.getElementById("reportForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const btn = document.getElementById("btnSubmitReport");
+    btn.disabled = true;
+    btn.innerText = "Mengirim...";
+
     const photoFile = document.getElementById("photo").files[0];
     const base64 = await toBase64(photoFile);
 
@@ -228,6 +221,9 @@
 
     const res = await fetchAPI(payload);
     alert(res.message);
+    btn.disabled = false;
+    btn.innerText = "Kirim Laporan";
+
     if (res.status === "success") {
       document.getElementById("reportForm").reset();
       switchTab('list');
@@ -236,31 +232,45 @@
 
   async function loadReports() {
     const container = document.getElementById("reportsContainer");
-    container.innerHTML = "Memuat data... (Fix 2.0)";
+    container.innerHTML = "Memuat data...";
     const res = await fetchAPI({ action: "getReports" });
     
     if (res.status === "success") {
       container.innerHTML = "";
+      if (res.data.length === 0) {
+        container.innerHTML = "<div class='text-center text-muted py-4'>Belum ada laporan.</div>";
+        return;
+      }
       res.data.forEach(item => {
-        // --- KONVERSI URL DRIVE KE THUMBNAIL YANG DAPAT DILIHAT ---
         const photoReportThumbnail = getGoogleThumbnailUrl(item.photo_report);
         const photoProgressThumbnail = getGoogleThumbnailUrl(item.photo_progress);
         const photoResolvedThumbnail = getGoogleThumbnailUrl(item.photo_resolved);
 
-        // Render tag <img> dengan URL Thumbnail
         container.innerHTML += `
           <div class="card card-report status-${item.status} p-3 shadow-sm">
-            <div class="d-flex justify-content-between">
+            <div class="d-flex justify-content-between align-items-center">
               <span class="badge bg-secondary">${item.floor} - ${item.zone} (${item.area_type})</span>
               <span class="badge bg-${getStatusColor(item.status)}">${item.status}</span>
             </div>
             <p class="mt-2 mb-1"><strong>${item.location_detail}</strong></p>
             <p class="text-muted small mb-2">${item.issue}</p>
             
-            <div class="row g-1 mb-2">
-              ${photoReportThumbnail ? `<div class="col"><img src="${photoReportThumbnail}" class="img-preview" title="Report" alt="Report" onclick="viewFullImage('${item.photo_report}')"></div>` : ''}
-              ${photoProgressThumbnail ? `<div class="col"><img src="${photoProgressThumbnail}" class="img-preview" title="Progress" alt="Progress" onclick="viewFullImage('${item.photo_progress}')"></div>` : ''}
-              ${photoResolvedThumbnail ? `<div class="col"><img src="${photoResolvedThumbnail}" class="img-preview" title="Resolved" alt="Resolved" onclick="viewFullImage('${item.photo_resolved}')"></div>` : ''}
+            <div class="row g-2 mb-2">
+              ${photoReportThumbnail ? `
+                <div class="col">
+                  <small class="d-block text-muted">Report:</small>
+                  <img src="${photoReportThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_report}')">
+                </div>` : ''}
+              ${photoProgressThumbnail ? `
+                <div class="col">
+                  <small class="d-block text-muted">Progress:</small>
+                  <img src="${photoProgressThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_progress}')">
+                </div>` : ''}
+              ${photoResolvedThumbnail ? `
+                <div class="col">
+                  <small class="d-block text-muted">Resolved:</small>
+                  <img src="${photoResolvedThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_resolved}')">
+                </div>` : ''}
             </div>
 
             <div class="d-flex gap-2 mt-2">
@@ -304,9 +314,43 @@
       const res = await fetchAPI({ action: "getComments", report_id: id });
       const list = document.getElementById(`commentList-${id}`);
       list.innerHTML = "";
-      if (res.data.length === 0) list.innerHTML = "Belum ada komentar.";
-      res.data.forEach(c => {
-        list.innerHTML += `<div><strong>${c.username}:</strong> ${c.comment}</div>`;
-      });
+      if (!res.data || res.data.length === 0) {
+        list.innerHTML = "Belum ada komentar.";
+      } else {
+        res.data.forEach(c => {
+          list.innerHTML += `<div><strong>${c.username}:</strong> ${c.comment}</div>`;
+        });
+      }
     }
   }
+
+  async function sendComment(id) {
+    const comment = document.getElementById(`inputComment-${id}`).value;
+    if (!comment) return;
+    await fetchAPI({ action: "addComment", report_id: id, username: currentUser.username, comment: comment });
+    document.getElementById(`inputComment-${id}`).value = "";
+    toggleComments(id);
+  }
+
+  function getStatusColor(status) {
+    if (status === 'REPORTED') return 'danger';
+    if (status === 'PROGRESS') return 'warning';
+    if (status === 'RESOLVED') return 'success';
+    return 'secondary';
+  }
+
+  function fetchAPI(body) {
+    return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(r => r.json());
+  }
+
+  function toBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  }
+</script>
+</body>
+</html>

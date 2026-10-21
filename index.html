@@ -57,20 +57,20 @@
       user-select: none;
       -webkit-user-drag: none;
     }
+    
+    /* PIN FIXED ANCHORING */
     .map-pin {
       position: absolute;
       width: 24px;
       height: 24px;
-      margin-left: -12px;
-      margin-top: -24px;
       background-color: #dc3545;
       border: 2px solid #ffffff;
       border-radius: 50% 50% 50% 0;
-      transform: rotate(-45deg);
-      transform-origin: bottom center;
       box-shadow: 0 2px 5px rgba(0,0,0,0.4);
       pointer-events: none;
       z-index: 10;
+      /* Titik rotasi dari sudut kiri bawah agar ujung lancip mengunci titik koordinat */
+      transform-origin: 0 100%;
     }
     .map-pin::after {
       content: '';
@@ -182,7 +182,7 @@
 
     <!-- CREATE REPORT FORM -->
     <div id="createTab" class="card p-3 shadow-sm d-none">
-      <h5>Lapor Kerusakan Civil</h5>
+      ##### Lapor Kerusakan Civil
       <form id="reportForm">
         <div class="mb-2">
           <label>Lantai</label>
@@ -378,21 +378,19 @@
     cursor: 'grab'
   });
 
-  // MENJAGA UKURAN PIN TETAP FIXED KETIKA DI-ZOOM
+  // FUNGSI KOMPENSASI PRESISE UNTUK MEMIKAT DUA KONDISI: UKURAN FIXED & KOORDINAT AKURAT
+  function applyPinTransform(pinEl, scale) {
+    if (!pinEl) return;
+    const invScale = 1 / scale;
+    pinEl.style.transform = `scale(${invScale}) rotate(-45deg)`;
+  }
+
   mapContainer.addEventListener('panzoomchange', (e) => {
-    const scale = e.detail.scale;
-    const pin = document.getElementById('mapPin');
-    if (pin) {
-      pin.style.transform = `scale(${1 / scale}) rotate(-45deg)`;
-    }
+    applyPinTransform(document.getElementById('mapPin'), e.detail.scale);
   });
 
   viewMapContainer.addEventListener('panzoomchange', (e) => {
-    const scale = e.detail.scale;
-    const viewPin = document.getElementById('viewMapPin');
-    if (viewPin) {
-      viewPin.style.transform = `scale(${1 / scale}) rotate(-45deg)`;
-    }
+    applyPinTransform(document.getElementById('viewMapPin'), e.detail.scale);
   });
 
   // Enable Mouse Wheel Zooming
@@ -462,6 +460,8 @@
         pin.style.top = markedY + "%";
         pin.classList.remove("d-none");
 
+        applyPinTransform(pin, pzCreate.getScale());
+
         document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
         document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";
       }
@@ -478,6 +478,8 @@
     const viewPin = document.getElementById("viewMapPin");
     viewPin.style.left = x + "%";
     viewPin.style.top = y + "%";
+    applyPinTransform(viewPin, 1);
+
     document.getElementById("mapModalTitle").innerText = `Denah Kerusakan (${floor})`;
     mapModal.show();
   }

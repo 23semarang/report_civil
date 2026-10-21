@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Civil Maintenance Mall System</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Pustaka Panzoom -->
+  <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
   <style>
     body { background-color: #f4f6f9; }
     .card-report { margin-bottom: 15px; border-left: 5px solid #0d6efd; }
@@ -14,20 +16,22 @@
     .img-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; }
     .filter-btn-group .btn { font-size: 0.85rem; }
 
-    /* STYLING DENAH WITH ZOOM SUPPORT */
+    /* STYLING DENAH PANZOOM & PAN/DRAG */
     .map-outer-wrapper {
       position: relative;
       border: 2px dashed #0d6efd;
       border-radius: 8px;
       overflow: hidden;
       background-color: #e9ecef;
+      height: 380px;
       touch-action: none;
+      user-select: none;
     }
     .map-controls {
       position: absolute;
       top: 10px;
       right: 10px;
-      z-index: 10;
+      z-index: 20;
       display: flex;
       gap: 4px;
       background: rgba(255, 255, 255, 0.9);
@@ -38,14 +42,18 @@
     .map-container {
       position: relative;
       width: 100%;
-      cursor: crosshair;
-      transform-origin: 0 0;
-      transition: transform 0.1s linear;
+      height: 100%;
+      cursor: grab;
+      touch-action: none;
+    }
+    .map-container:active {
+      cursor: grabbing;
     }
     .map-image {
       width: 100%;
       height: auto;
       display: block;
+      pointer-events: none;
       user-select: none;
       -webkit-user-drag: none;
     }
@@ -61,6 +69,7 @@
       transform: rotate(-45deg);
       box-shadow: 0 2px 5px rgba(0,0,0,0.4);
       pointer-events: none;
+      z-index: 10;
     }
     .map-pin::after {
       content: '';
@@ -185,18 +194,18 @@
           </select>
         </div>
 
-        <!-- DENAH LAYOUT INTERAKTIF WITH ZOOM -->
+        <!-- DENAH LAYOUT INTERAKTIF WITH ZOOM & PAN -->
         <div class="mb-3">
           <label class="fw-bold text-primary">Marking Titik Lokasi Pada Denah:</label>
-          <small class="d-block text-muted mb-1">Gunakan tombol zoom atau dua jari untuk memperbesar layout denah.</small>
+          <small class="d-block text-muted mb-1">Klik & tahan lalu geser denah. Klik 1x tanpa geser untuk menandai titik.</small>
           
-          <div class="map-outer-wrapper">
+          <div class="map-outer-wrapper" id="mapWrapper">
             <div class="map-controls">
-              <button type="button" class="btn btn-sm btn-light border" onclick="zoomMap(1.2)">🔍+</button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="zoomMap(0.8)">🔍-</button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="resetZoomMap()">↺ Reset</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate.zoomIn()">🔍+</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate.zoomOut()">🔍-</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate.reset()">↺ Reset</button>
             </div>
-            <div class="map-container" id="mapContainer" onclick="setMapMarking(event)">
+            <div class="map-container" id="mapContainer">
               <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
               <div id="mapPin" class="map-pin d-none"></div>
             </div>
@@ -258,7 +267,7 @@
 
 </div>
 
-<!-- MODAL DENAH VIEW WITH ZOOM -->
+<!-- MODAL DENAH VIEW WITH ZOOM & PAN -->
 <div class="modal fade" id="mapModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -267,11 +276,11 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-2">
-        <div class="map-outer-wrapper">
+        <div class="map-outer-wrapper" id="viewMapWrapper">
           <div class="map-controls">
-            <button type="button" class="btn btn-sm btn-light border" onclick="zoomViewMap(1.2)">🔍+</button>
-            <button type="button" class="btn btn-sm btn-light border" onclick="zoomViewMap(0.8)">🔍-</button>
-            <button type="button" class="btn btn-sm btn-light border" onclick="resetZoomViewMap()">↺ Reset</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzView.zoomIn()">🔍+</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzView.zoomOut()">🔍-</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzView.reset()">↺ Reset</button>
           </div>
           <div class="map-container" id="viewMapContainer" style="cursor: default;">
             <img src="" id="viewMapImage" class="map-image" alt="Denah Full">
@@ -350,9 +359,27 @@
   let markedX = null;
   let markedY = null;
 
-  // ZOOM STATE VARIABLES
-  let mapScale = 1;
-  let viewMapScale = 1;
+  // INISIALISASI PANZOOM
+  const mapContainer = document.getElementById('mapContainer');
+  const viewMapContainer = document.getElementById('viewMapContainer');
+
+  const pzCreate = Panzoom(mapContainer, {
+    maxScale: 6,
+    minScale: 1,
+    contain: 'outside',
+    cursor: 'grab'
+  });
+
+  const pzView = Panzoom(viewMapContainer, {
+    maxScale: 6,
+    minScale: 1,
+    contain: 'outside',
+    cursor: 'grab'
+  });
+
+  // Enable Mouse Wheel Zooming
+  document.getElementById('mapWrapper').addEventListener('wheel', pzCreate.zoomWithWheel);
+  document.getElementById('viewMapWrapper').addEventListener('wheel', pzView.zoomWithWheel);
 
   const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
   const updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
@@ -369,67 +396,58 @@
     document.getElementById(cardId).classList.remove("d-none");
   }
 
-  // LOGIKA ZOOM DENAH
-  function zoomMap(factor) {
-    mapScale = Math.min(Math.max(1, mapScale * factor), 4);
-    document.getElementById("mapContainer").style.transform = `scale(${mapScale})`;
-  }
-
-  function resetZoomMap() {
-    mapScale = 1;
-    document.getElementById("mapContainer").style.transform = `scale(1)`;
-  }
-
-  function zoomViewMap(factor) {
-    viewMapScale = Math.min(Math.max(1, viewMapScale * factor), 4);
-    document.getElementById("viewMapContainer").style.transform = `scale(${viewMapScale})`;
-  }
-
-  function resetZoomViewMap() {
-    viewMapScale = 1;
-    document.getElementById("viewMapContainer").style.transform = `scale(1)`;
-  }
-
-  // MARKING DENAH
+  // UPDATE GAMBAR DENAH & RESET PANZOOM
   function updateFloorMap() {
     const floor = document.getElementById("floor").value;
     const mapImg = document.getElementById("mapImage");
-    mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
     
-    resetZoomMap();
+    mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+    mapImg.onload = () => {
+      pzCreate.reset();
+    };
+
     markedX = null; markedY = null;
     document.getElementById("mapPin").classList.add("d-none");
     document.getElementById("mapStatus").className = "text-danger small mt-1 d-block";
     document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
 
-  function setMapMarking(e) {
-    const container = document.getElementById("mapContainer");
-    const rect = container.getBoundingClientRect();
-    
-    // Perhitungan presisi koordinat saat zoom aktif
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
+  // PROSES TANGKAP TANDA TITIK LOKASI DENGAN KLIK DAN TAHAN DRAG MEMBEDAKAN KLIK KHUSUS
+  mapContainer.addEventListener('panzoomclick', (e) => {
+    const mapImg = document.getElementById("mapImage");
+    const rect = mapImg.getBoundingClientRect();
 
-    markedX = x.toFixed(2);
-    markedY = y.toFixed(2);
+    const clickX = e.detail.clientX - rect.left;
+    const clickY = e.detail.clientY - rect.top;
 
-    const pin = document.getElementById("mapPin");
-    pin.style.left = markedX + "%";
-    pin.style.top = markedY + "%";
-    pin.classList.remove("d-none");
+    const xPercent = (clickX / rect.width) * 100;
+    const yPercent = (clickY / rect.height) * 100;
 
-    document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
-    document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";
-  }
+    if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
+      markedX = xPercent.toFixed(2);
+      markedY = yPercent.toFixed(2);
+
+      const pin = document.getElementById("mapPin");
+      pin.style.left = markedX + "%";
+      pin.style.top = markedY + "%";
+      pin.classList.remove("d-none");
+
+      document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
+      document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";
+    }
+  });
 
   function openMapModal(floor, x, y) {
-    document.getElementById("viewMapImage").src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+    const viewImg = document.getElementById("viewMapImage");
+    viewImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+    viewImg.onload = () => {
+      pzView.reset();
+    };
+
     const viewPin = document.getElementById("viewMapPin");
     viewPin.style.left = x + "%";
     viewPin.style.top = y + "%";
     document.getElementById("mapModalTitle").innerText = `Denah Kerusakan (${floor})`;
-    resetZoomViewMap();
     mapModal.show();
   }
 

@@ -197,7 +197,7 @@
         <!-- DENAH LAYOUT INTERAKTIF WITH ZOOM & PAN -->
         <div class="mb-3">
           <label class="fw-bold text-primary">Marking Titik Lokasi Pada Denah:</label>
-          <small class="d-block text-muted mb-1">Klik & tahan lalu geser denah. Klik 1x tanpa geser untuk menandai titik.</small>
+          <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kerusakan untuk menandai titik.</small>
           
           <div class="map-outer-wrapper" id="mapWrapper">
             <div class="map-controls">
@@ -412,28 +412,42 @@
     document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
 
-  // PROSES TANGKAP TANDA TITIK LOKASI DENGAN KLIK DAN TAHAN DRAG MEMBEDAKAN KLIK KHUSUS
-  mapContainer.addEventListener('panzoomclick', (e) => {
-    const mapImg = document.getElementById("mapImage");
-    const rect = mapImg.getBoundingClientRect();
+  // LOGIKA MEMBEDAKAN KLIK MURNI vs GESER (PAN/DRAG)
+  let startX = 0;
+  let startY = 0;
 
-    const clickX = e.detail.clientX - rect.left;
-    const clickY = e.detail.clientY - rect.top;
+  mapContainer.addEventListener('pointerdown', (e) => {
+    startX = e.clientX;
+    startY = e.clientY;
+  });
 
-    const xPercent = (clickX / rect.width) * 100;
-    const yPercent = (clickY / rect.height) * 100;
+  mapContainer.addEventListener('pointerup', (e) => {
+    const diffX = Math.abs(e.clientX - startX);
+    const diffY = Math.abs(e.clientY - startY);
 
-    if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
-      markedX = xPercent.toFixed(2);
-      markedY = yPercent.toFixed(2);
+    // Jika pergeseran kurang dari 8 piksel, anggap sebagai KLIK
+    if (diffX < 8 && diffY < 8) {
+      const mapImg = document.getElementById("mapImage");
+      const rect = mapImg.getBoundingClientRect();
 
-      const pin = document.getElementById("mapPin");
-      pin.style.left = markedX + "%";
-      pin.style.top = markedY + "%";
-      pin.classList.remove("d-none");
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
 
-      document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
-      document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";
+      const xPercent = (clickX / rect.width) * 100;
+      const yPercent = (clickY / rect.height) * 100;
+
+      if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
+        markedX = xPercent.toFixed(2);
+        markedY = yPercent.toFixed(2);
+
+        const pin = document.getElementById("mapPin");
+        pin.style.left = markedX + "%";
+        pin.style.top = markedY + "%";
+        pin.classList.remove("d-none");
+
+        document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
+        document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";
+      }
     }
   });
 

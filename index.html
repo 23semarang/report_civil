@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Civil Maintenance Mall System</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f4f6f9; }
+    .card-report { margin-bottom: 15px; border-left: 5px solid #0d6efd; }
+    .status-REPORTED { border-left-color: #dc3545; }
+    .status-PROGRESS { border-left-color: #ffc107; }
+    .status-RESOLVED { border-left-color: #198754; }
+    .img-preview { width: 100%; max-height: 200px; object-fit: cover; border-radius: 5px; }
+  </style>
+</head>
+<body>
+
+<div class="container py-3" style="max-width: 600px;">
+
+  <!-- LOGIN SECTION -->
+  <div id="loginSection" class="card p-4 shadow-sm">
+    <h3 class="text-center mb-3">Login System Civil</h3>
+    <form id="loginForm">
+      <div class="mb-3">
+        <label>Username</label>
+        <input type="text" id="loginUser" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label>Password</label>
+        <input type="password" id="loginPass" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Login</button>
+    </form>
+  </div>
+
+  <!-- MAIN APP SECTION -->
+  <div id="appSection" class="d-none">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <span id="userGreeting" class="fw-bold"></span>
+      <button onclick="logout()" class="btn btn-sm btn-outline-danger">Logout</button>
+    </div>
+
+    <!-- TAB NAVIGATION -->
+    <ul class="nav nav-pills nav-justified mb-3">
+      <li class="nav-item"><a class="nav-link active" onclick="switchTab('list')" href="#">Daftar Laporan</a></li>
+      <li class="nav-item"><a class="nav-link" onclick="switchTab('create')" href="#">+ Buat Laporan</a></li>
+    </ul>
+
+    <!-- CREATE REPORT FORM -->
+    <div id="createTab" class="card p-3 shadow-sm d-none">
+      <h5>Lapor Kerusakan Civil</h5>
+      <form id="reportForm">
+        <div class="mb-2">
+          <label>Lantai</label>
+          <select id="floor" class="form-select" required>
+            <option value="LG">LG</option>
+            <option value="L1">L1</option>
+            <option value="L2">L2</option>
+            <option value="L3">L3</option>
+            <option value="Rooftop">Rooftop</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label>Zone</label>
+          <select id="zone" class="form-select" required>
+            <option value="Zone A">Zone A</option>
+            <option value="Zone B">Zone B</option>
+            <option value="Zone C">Zone C</option>
+            <option value="Zone D">Zone D</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label>Tipe Area</label>
+          <select id="area_type" class="form-select" required>
+            <option value="Public Area">Public Area</option>
+            <option value="Service Area">Service Area</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label>Detail Lokasi/Tenant</label>
+          <input type="text" id="location_detail" class="form-control" placeholder="Contoh: Depan Toilet / Baskin Robbins" required>
+        </div>
+        <div class="mb-2">
+          <label>Detail Kerusakan</label>
+          <textarea id="issue" class="form-control" rows="2" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label>Foto Temuan</label>
+          <input type="file" id="photo" class="form-control" accept="image/*" required>
+        </div>
+        <button type="submit" class="btn btn-success w-100">Kirim Laporan</button>
+      </form>
+    </div>
+
+    <!-- REPORT LIST -->
+    <div id="listTab">
+      <div id="reportsContainer">Memuat data...</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // GANTI URL DENGAN WEB APP URL DARI GOOGLE APPS SCRIPT
+  const API_URL = "https://script.google.com/macros/s/AKfycbxYfqKB2SSDxPXGdwI5mqwivozqUi28DiLw2yS8Q5pHbwAdvEPL2xUbsq7mdE1RQ5wN/exec";
+  let currentUser = JSON.parse(localStorage.getItem("user_civil")) || null;
+
+  if (currentUser) showApp();
+
+  document.getElementById("loginForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const res = await fetchAPI({
+      action: "login",
+      username: document.getElementById("loginUser").value,
+      password: document.getElementById("loginPass").value
+    });
+    if (res.status === "success") {
+      currentUser = res.user;
+      localStorage.setItem("user_civil", JSON.stringify(currentUser));
+      showApp();
+    } else {
+      alert(res.message);
+    }
+  });
+
+  function showApp() {
+    document.getElementById("loginSection").classList.add("d-none");
+    document.getElementById("appSection").classList.remove("d-none");
+    document.getElementById("userGreeting").innerText = "Halo, " + currentUser.name;
+    loadReports();
+  }
+
+  function logout() {
+    localStorage.removeItem("user_civil");
+    location.reload();
+  }
+
+  function switchTab(tab) {
+    if (tab === 'create') {
+      document.getElementById("createTab").classList.remove("d-none");
+      document.getElementById("listTab").classList.add("d-none");
+    } else {
+      document.getElementById("createTab").classList.add("d-none");
+      document.getElementById("listTab").classList.remove("d-none");
+      loadReports();
+    }
+  }
+
+  document.getElementById("reportForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const photoFile = document.getElementById("photo").files[0];
+    const base64 = await toBase64(photoFile);
+
+    const payload = {
+      action: "createReport",
+      username: currentUser.username,
+      floor: document.getElementById("floor").value,
+      zone: document.getElementById("zone").value,
+      area_type: document.getElementById("area_type").value,
+      location_detail: document.getElementById("location_detail").value,
+      issue: document.getElementById("issue").value,
+      photo: base64
+    };
+
+    const res = await fetchAPI(payload);
+    alert(res.message);
+    if (res.status === "success") {
+      document.getElementById("reportForm").reset();
+      switchTab('list');
+    }
+  });
+
+  async function loadReports() {
+    const container = document.getElementById("reportsContainer");
+    container.innerHTML = "Memuat data...";
+    const res = await fetchAPI({ action: "getReports" });
+    
+    if (res.status === "success") {
+      container.innerHTML = "";
+      res.data.forEach(item => {
+        container.innerHTML += `
+          <div class="card card-report status-${item.status} p-3 shadow-sm">
+            <div class="d-flex justify-content-between">
+              <span class="badge bg-secondary">${item.floor} - ${item.zone} (${item.area_type})</span>
+              <span class="badge bg-${getStatusColor(item.status)}">${item.status}</span>
+            </div>
+            <p class="mt-2 mb-1"><strong>${item.location_detail}</strong></p>
+            <p class="text-muted small mb-2">${item.issue}</p>
+            
+            <div class="row g-1 mb-2">
+              ${item.photo_report ? `<div class="col"><img src="${item.photo_report}" class="img-preview" title="Report"></div>` : ''}
+              ${item.photo_progress ? `<div class="col"><img src="${item.photo_progress}" class="img-preview" title="Progress"></div>` : ''}
+              ${item.photo_resolved ? `<div class="col"><img src="${item.photo_resolved}" class="img-preview" title="Resolved"></div>` : ''}
+            </div>
+
+            <div class="d-flex gap-2 mt-2">
+              ${item.status === 'REPORTED' ? `<button onclick="updateStatus('${item.id}', 'PROGRESS')" class="btn btn-sm btn-warning">Kerjakan (Progress)</button>` : ''}
+              ${item.status === 'PROGRESS' ? `<button onclick="updateStatus('${item.id}', 'RESOLVED')" class="btn btn-sm btn-success">Selesai (Resolved)</button>` : ''}
+              <button onclick="toggleComments('${item.id}')" class="btn btn-sm btn-outline-primary">Komentar</button>
+            </div>
+
+            <div id="comments-${item.id}" class="mt-3 d-none border-top pt-2">
+              <h6>Komentar:</h6>
+              <div id="commentList-${item.id}" class="small text-muted mb-2">Memuat...</div>
+              <div class="input-group input-group-sm">
+                <input type="text" id="inputComment-${item.id}" class="form-control" placeholder="Tulis komentar...">
+                <button onclick="sendComment('${item.id}')" class="btn btn-primary">Kirim</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+  }
+
+  async function updateStatus(id, newStatus) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async () => {
+      const file = input.files[0];
+      const base64 = await toBase64(file);
+      const res = await fetchAPI({ action: "updateProgress", report_id: id, new_status: newStatus, photo: base64 });
+      alert(res.message);
+      loadReports();
+    };
+    input.click();
+  }
+
+  async function toggleComments(id) {
+    const el = document.getElementById(`comments-${id}`);
+    el.classList.toggle("d-none");
+    if (!el.classList.contains("d-none")) {
+      const res = await fetchAPI({ action: "getComments", report_id: id });
+      const list = document.getElementById(`commentList-${id}`);
+      list.innerHTML = "";
+      if (res.data.length === 0) list.innerHTML = "Belum ada komentar.";
+      res.data.forEach(c => {
+        list.innerHTML += `<div><strong>${c.username}:</strong> ${c.comment}</div>`;
+      });
+    }
+  }
+
+  async function sendComment(id) {
+    const comment = document.getElementById(`inputComment-${id}`).value;
+    if (!comment) return;
+    await fetchAPI({ action: "addComment", report_id: id, username: currentUser.username, comment: comment });
+    document.getElementById(`inputComment-${id}`).value = "";
+    toggleComments(id); // refresh
+  }
+
+  function getStatusColor(status) {
+    if (status === 'REPORTED') return 'danger';
+    if (status === 'PROGRESS') return 'warning';
+    if (status === 'RESOLVED') return 'success';
+  }
+
+  function fetchAPI(body) {
+    return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(r => r.json());
+  }
+
+  function toBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = error => reject(error);
+    });
+  }
+</script>
+</body>
+</html>

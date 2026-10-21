@@ -86,8 +86,14 @@
           <textarea id="issue" class="form-control" rows="2" required></textarea>
         </div>
         <div class="mb-3">
-          <label>Foto Temuan</label>
-          <input type="file" id="photo" class="form-control" accept="image/*" required>
+          <label>Sumber Foto</label>
+          <div class="d-flex gap-2 mb-2">
+            <button type="button" class="btn btn-outline-primary btn-sm w-50" onclick="triggerFileInput('camera')">📷 Buka Kamera</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm w-50" onclick="triggerFileInput('gallery')">🖼️ Pilih Galeri</button>
+          </div>
+          <input type="file" id="photoCamera" class="d-none" accept="image/*" capture="environment">
+          <input type="file" id="photoGallery" class="d-none" accept="image/*">
+          <small id="photoStatus" class="text-muted d-block"></small>
         </div>
         <button type="submit" id="btnSubmitReport" class="btn btn-success w-100">Kirim Laporan</button>
       </form>
@@ -99,6 +105,38 @@
     </div>
   </div>
 
+</div>
+
+<!-- Modal Update Progress -->
+<div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="updateModalTitle">Update Progress Pekerjaan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label>Deskripsi Progress / Tindakan</label>
+          <textarea id="progressNote" class="form-control" rows="3" placeholder="Jelaskan tindakan perbaikan yang dilakukan..." required></textarea>
+        </div>
+        <div class="mb-3">
+          <label>Bukti Foto Baru</label>
+          <div class="d-flex gap-2 mb-2">
+            <button type="button" class="btn btn-outline-primary btn-sm w-50" onclick="triggerUpdateInput('camera')">📷 Kamera</button>
+            <button type="button" class="btn btn-outline-secondary btn-sm w-50" onclick="triggerUpdateInput('gallery')">🖼️ Galeri</button>
+          </div>
+          <input type="file" id="updateCamera" class="d-none" accept="image/*" capture="environment">
+          <input type="file" id="updateGallery" class="d-none" accept="image/*">
+          <small id="updatePhotoStatus" class="text-muted d-block"></small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" id="btnSaveUpdate" onclick="submitUpdateProgress()" class="btn btn-primary">Simpan Progress</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Modal Full Image -->
@@ -120,7 +158,12 @@
   const API_URL = "https://script.google.com/macros/s/AKfycbxYfqKB2SSDxPXGdwI5mqwivozqUi28DiLw2yS8Q5pHbwAdvEPL2xUbsq7mdE1RQ5wN/exec";
   
   let currentUser = JSON.parse(localStorage.getItem("user_civil")) || null;
+  let selectedFile = null;
+  let updateFile = null;
+  let activeUpdateData = null;
+
   const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+  const updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
   const fullImageEl = document.getElementById('fullImage');
 
   if (currentUser) showApp();
@@ -168,7 +211,233 @@
     }
   }
 
-  // Fungsi pengubah URL Google Drive ke Thumbnail Image
+  // --- PILIHAN FILE KAMERA / GALERI ---
+  function triggerFileInput(type) {
+    if (type === 'camera') document.getElementById("photoCamera").click();
+    else document.getElementById("photoGallery").click();
+  }
+
+  document.getElementById("photoCamera").addEventListener("change", (e) => handleFileSelect(e.target.files[0]));
+  document.getElementById("photoGallery").addEventListener("change", (e) => handleFileSelect(e.target.files[0]));
+
+  function handleFileSelect(file) {
+    if (file) {
+      selectedFile = file;
+      document.getElementById("photoStatus").innerText = "Foto terpilih: " + file.name;
+    }
+  }
+
+  function triggerUpdateInput(type) {
+    if (type === 'camera') document.getElementById("updateCamera").click();
+    else document.getElementById("updateGallery").click();
+  }
+
+  document.getElementById("updateCamera").addEventListener("change", (e) => { updateFile = e.target.files[0]; document.getElementById("updatePhotoStatus").innerText = "Foto terpilih: " + updateFile.name; });
+  document.getElementById("updateGallery").addEventListener("change", (e) => { updateFile = e.target.files[0]; document.getElementById("updatePhotoStatus").innerText = "Foto terpilih: " + updateFile.name; });
+
+  // --- FUNGSI WATERMARK PADA FOTO (CANVAS) ---
+  function applyWatermark(file, username, status, locationDetail) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+
+          // Draw Image
+          ctx.drawImage(img, 0, 0);
+
+          // Format Watermark Data
+          const dateStr = new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
+          let statusText = "BELUM ADA PROGRESS (REPORTED)";
+          let badgeColor = "#dc3545"; // Merah
+
+          if (status === "PROGRESS") {
+            statusText = "DALAM PROGRESS";
+            badgeColor = "#ffc107"; // Kuning
+          } else if (status === "RESOLVED") {
+            statusText = "SELESAI (RESOLVED)";
+            badgeColor = "#198754"; // Hijau
+          }
+
+          // Watermark Dimensions
+          const padding = img.width * 0.02;
+          const fontSize = Math.max(16, Math.round(img.width * 0.025));
+          ctx.font = `bold ${fontSize}px sans-serif`;
+
+          const lines = [
+            `User: ${username}`,
+            `Lokasi: ${locationDetail}`,
+            `Waktu: ${dateStr}`
+          ];
+
+          const lineHeight = fontSize * 1.3;
+          const boxHeight = (lines.length + 1) * lineHeight + (padding * 2);
+          const boxWidth = Math.min(img.width * 0.7, 500);
+
+          // Draw Background Box (Pojok Kiri Bawah)
+          ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+          ctx.fillRect(padding, img.height - boxHeight - padding, boxWidth, boxHeight);
+
+          // Draw Status Badge
+          ctx.fillStyle = badgeColor;
+          ctx.fillRect(padding + 10, img.height - boxHeight - padding + 10, boxWidth - 20, lineHeight + 5);
+          ctx.fillStyle = status === "PROGRESS" ? "#000" : "#FFF";
+          ctx.fillText(`STATUS: ${statusText}`, padding + 20, img.height - boxHeight - padding + 10 + fontSize);
+
+          // Draw Text Details
+          ctx.fillStyle = "#FFFFFF";
+          lines.forEach((line, index) => {
+            ctx.fillText(line, padding + 15, img.height - boxHeight - padding + (index + 2) * lineHeight + 10);
+          });
+
+          resolve(canvas.toDataURL("image/jpeg", 0.85));
+        };
+      };
+      reader.onerror = error => reject(error);
+    });
+  }
+
+  // --- SUBMIT REPORT BARU ---
+  document.getElementById("reportForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!selectedFile) { alert("Pilih atau ambil foto laporan!"); return; }
+
+    const btn = document.getElementById("btnSubmitReport");
+    btn.disabled = true;
+    btn.innerText = "Proses Watermark & Mengirim...";
+
+    const locationDetail = document.getElementById("location_detail").value;
+    const watermarkedBase64 = await applyWatermark(selectedFile, currentUser.username, "REPORTED", locationDetail);
+
+    const payload = {
+      action: "createReport",
+      username: currentUser.username,
+      floor: document.getElementById("floor").value,
+      zone: document.getElementById("zone").value,
+      area_type: document.getElementById("area_type").value,
+      location_detail: locationDetail,
+      issue: document.getElementById("issue").value,
+      photo: watermarkedBase64
+    };
+
+    const res = await fetchAPI(payload);
+    alert(res.message);
+    btn.disabled = false;
+    btn.innerText = "Kirim Laporan";
+
+    if (res.status === "success") {
+      document.getElementById("reportForm").reset();
+      selectedFile = null;
+      document.getElementById("photoStatus").innerText = "";
+      switchTab('list');
+    }
+  });
+
+  // --- RENDER DAFTAR LAPORAN ---
+  async function loadReports() {
+    const container = document.getElementById("reportsContainer");
+    container.innerHTML = "Memuat data...";
+    const res = await fetchAPI({ action: "getReports" });
+    
+    if (res.status === "success") {
+      container.innerHTML = "";
+      if (res.data.length === 0) {
+        container.innerHTML = "<div class='text-center text-muted py-4'>Belum ada laporan.</div>";
+        return;
+      }
+      res.data.forEach(item => {
+        const photoReportThumbnail = getGoogleThumbnailUrl(item.photo_report);
+        const photoProgressThumbnail = getGoogleThumbnailUrl(item.photo_progress);
+        const photoResolvedThumbnail = getGoogleThumbnailUrl(item.photo_resolved);
+
+        container.innerHTML += `
+          <div class="card card-report status-${item.status} p-3 shadow-sm">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="badge bg-secondary">${item.floor} - ${item.zone} (${item.area_type})</span>
+              <span class="badge bg-${getStatusColor(item.status)}">${item.status}</span>
+            </div>
+            <p class="mt-2 mb-1"><strong>${item.location_detail}</strong></p>
+            <p class="text-muted small mb-1">${item.issue}</p>
+            ${item.progress_note ? `<p class="small text-primary mb-2"><strong>Progress Note:</strong> ${item.progress_note}</p>` : ''}
+            
+            <div class="row g-2 mb-2">
+              ${photoReportThumbnail ? `
+                <div class="col">
+                  <small class="d-block text-muted">Report:</small>
+                  <img src="${photoReportThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_report}')">
+                </div>` : ''}
+              ${photoProgressThumbnail ? `
+                <div class="col">
+                  <small class="d-block text-muted">Progress:</small>
+                  <img src="${photoProgressThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_progress}')">
+                </div>` : ''}
+              ${photoResolvedThumbnail ? `
+                <div class="col">
+                  <small class="d-block text-muted">Resolved:</small>
+                  <img src="${photoResolvedThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_resolved}')">
+                </div>` : ''}
+            </div>
+
+            <div class="d-flex gap-2 mt-2">
+              ${item.status === 'REPORTED' ? `<button onclick="openUpdateModal('${item.id}', 'PROGRESS', '${item.location_detail}')" class="btn btn-sm btn-warning">Kerjakan (Progress)</button>` : ''}
+              ${item.status === 'PROGRESS' ? `<button onclick="openUpdateModal('${item.id}', 'RESOLVED', '${item.location_detail}')" class="btn btn-sm btn-success">Selesai (Resolved)</button>` : ''}
+              <button onclick="toggleComments('${item.id}')" class="btn btn-sm btn-outline-primary">Komentar</button>
+            </div>
+
+            <div id="comments-${item.id}" class="mt-3 d-none border-top pt-2">
+              <h6>Komentar:</h6>
+              <div id="commentList-${item.id}" class="small text-muted mb-2">Memuat...</div>
+              <div class="input-group input-group-sm">
+                <input type="text" id="inputComment-${item.id}" class="form-control" placeholder="Tulis komentar...">
+                <button onclick="sendComment('${item.id}')" class="btn btn-primary">Kirim</button>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+    }
+  }
+
+  // --- OPEN MODAL UPDATE PROGRESS ---
+  function openUpdateModal(id, targetStatus, locationDetail) {
+    activeUpdateData = { id, targetStatus, locationDetail };
+    updateFile = null;
+    document.getElementById("progressNote").value = "";
+    document.getElementById("updatePhotoStatus").innerText = "";
+    document.getElementById("updateModalTitle").innerText = targetStatus === "PROGRESS" ? "Update Ke Status PROGRESS" : "Update Ke Status RESOLVED";
+    updateModal.show();
+  }
+
+  async function submitUpdateProgress() {
+    const note = document.getElementById("progressNote").value;
+    if (!note) { alert("Isi deskripsi progress perbaikan!"); return; }
+    if (!updateFile) { alert("Ambil/pilih foto bukti perbaikan!"); return; }
+
+    const btn = document.getElementById("btnSaveUpdate");
+    btn.disabled = true;
+
+    const watermarkedBase64 = await applyWatermark(updateFile, currentUser.username, activeUpdateData.targetStatus, activeUpdateData.locationDetail);
+
+    const res = await fetchAPI({
+      action: "updateProgress",
+      report_id: activeUpdateData.id,
+      new_status: activeUpdateData.targetStatus,
+      progress_note: note,
+      photo: watermarkedBase64
+    });
+
+    alert(res.message);
+    btn.disabled = false;
+    updateModal.hide();
+    loadReports();
+  }
+
   function getGoogleThumbnailUrl(driveUrl) {
     if (!driveUrl) return "";
     let fileId = "";
@@ -197,114 +466,6 @@
       fullImageEl.src = driveUrl;
     }
     imageModal.show();
-  }
-
-  document.getElementById("reportForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById("btnSubmitReport");
-    btn.disabled = true;
-    btn.innerText = "Mengirim...";
-
-    const photoFile = document.getElementById("photo").files[0];
-    const base64 = await toBase64(photoFile);
-
-    const payload = {
-      action: "createReport",
-      username: currentUser.username,
-      floor: document.getElementById("floor").value,
-      zone: document.getElementById("zone").value,
-      area_type: document.getElementById("area_type").value,
-      location_detail: document.getElementById("location_detail").value,
-      issue: document.getElementById("issue").value,
-      photo: base64
-    };
-
-    const res = await fetchAPI(payload);
-    alert(res.message);
-    btn.disabled = false;
-    btn.innerText = "Kirim Laporan";
-
-    if (res.status === "success") {
-      document.getElementById("reportForm").reset();
-      switchTab('list');
-    }
-  });
-
-  async function loadReports() {
-    const container = document.getElementById("reportsContainer");
-    container.innerHTML = "Memuat data...";
-    const res = await fetchAPI({ action: "getReports" });
-    
-    if (res.status === "success") {
-      container.innerHTML = "";
-      if (res.data.length === 0) {
-        container.innerHTML = "<div class='text-center text-muted py-4'>Belum ada laporan.</div>";
-        return;
-      }
-      res.data.forEach(item => {
-        const photoReportThumbnail = getGoogleThumbnailUrl(item.photo_report);
-        const photoProgressThumbnail = getGoogleThumbnailUrl(item.photo_progress);
-        const photoResolvedThumbnail = getGoogleThumbnailUrl(item.photo_resolved);
-
-        container.innerHTML += `
-          <div class="card card-report status-${item.status} p-3 shadow-sm">
-            <div class="d-flex justify-content-between align-items-center">
-              <span class="badge bg-secondary">${item.floor} - ${item.zone} (${item.area_type})</span>
-              <span class="badge bg-${getStatusColor(item.status)}">${item.status}</span>
-            </div>
-            <p class="mt-2 mb-1"><strong>${item.location_detail}</strong></p>
-            <p class="text-muted small mb-2">${item.issue}</p>
-            
-            <div class="row g-2 mb-2">
-              ${photoReportThumbnail ? `
-                <div class="col">
-                  <small class="d-block text-muted">Report:</small>
-                  <img src="${photoReportThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_report}')">
-                </div>` : ''}
-              ${photoProgressThumbnail ? `
-                <div class="col">
-                  <small class="d-block text-muted">Progress:</small>
-                  <img src="${photoProgressThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_progress}')">
-                </div>` : ''}
-              ${photoResolvedThumbnail ? `
-                <div class="col">
-                  <small class="d-block text-muted">Resolved:</small>
-                  <img src="${photoResolvedThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_resolved}')">
-                </div>` : ''}
-            </div>
-
-            <div class="d-flex gap-2 mt-2">
-              ${item.status === 'REPORTED' ? `<button onclick="updateStatus('${item.id}', 'PROGRESS')" class="btn btn-sm btn-warning">Kerjakan (Progress)</button>` : ''}
-              ${item.status === 'PROGRESS' ? `<button onclick="updateStatus('${item.id}', 'RESOLVED')" class="btn btn-sm btn-success">Selesai (Resolved)</button>` : ''}
-              <button onclick="toggleComments('${item.id}')" class="btn btn-sm btn-outline-primary">Komentar</button>
-            </div>
-
-            <div id="comments-${item.id}" class="mt-3 d-none border-top pt-2">
-              <h6>Komentar:</h6>
-              <div id="commentList-${item.id}" class="small text-muted mb-2">Memuat...</div>
-              <div class="input-group input-group-sm">
-                <input type="text" id="inputComment-${item.id}" class="form-control" placeholder="Tulis komentar...">
-                <button onclick="sendComment('${item.id}')" class="btn btn-primary">Kirim</button>
-              </div>
-            </div>
-          </div>
-        `;
-      });
-    }
-  }
-
-  async function updateStatus(id, newStatus) {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async () => {
-      const file = input.files[0];
-      const base64 = await toBase64(file);
-      const res = await fetchAPI({ action: "updateProgress", report_id: id, new_status: newStatus, photo: base64 });
-      alert(res.message);
-      loadReports();
-    };
-    input.click();
   }
 
   async function toggleComments(id) {
@@ -341,15 +502,6 @@
 
   function fetchAPI(body) {
     return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(r => r.json());
-  }
-
-  function toBase64(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = error => reject(error);
-    });
   }
 </script>
 </body>

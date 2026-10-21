@@ -19,20 +19,71 @@
 
 <div class="container py-3" style="max-width: 600px;">
 
-  <!-- LOGIN SECTION -->
-  <div id="loginSection" class="card p-4 shadow-sm">
-    <h3 class="text-center mb-3">Login System Civil</h3>
-    <form id="loginForm">
-      <div class="mb-3">
-        <label>Username</label>
-        <input type="text" id="loginUser" class="form-control" required>
+  <!-- FORM AUTENTIKASI (LOGIN / REGISTER / LUPA PASSWORD) -->
+  <div id="authContainer">
+    
+    <!-- 1. LOGIN FORM -->
+    <div id="loginCard" class="card p-4 shadow-sm">
+      <h3 class="text-center mb-3">Login System Civil</h3>
+      <form id="loginForm">
+        <div class="mb-3">
+          <label>Username</label>
+          <input type="text" id="loginUser" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label>Password</label>
+          <input type="password" id="loginPass" class="form-control" required>
+        </div>
+        <button type="submit" id="btnLogin" class="btn btn-primary w-100">Login</button>
+      </form>
+      <div class="d-flex justify-content-between mt-3 small">
+        <a href="#" onclick="showAuthCard('registerCard')">Buat Akun Baru</a>
+        <a href="#" onclick="showAuthCard('forgotCard')">Lupa Password?</a>
       </div>
-      <div class="mb-3">
-        <label>Password</label>
-        <input type="password" id="loginPass" class="form-control" required>
+    </div>
+
+    <!-- 2. REGISTER FORM -->
+    <div id="registerCard" class="card p-4 shadow-sm d-none">
+      <h3 class="text-center mb-3">Buat Akun Baru</h3>
+      <form id="registerForm">
+        <div class="mb-3">
+          <label>Nama Lengkap</label>
+          <input type="text" id="regFullname" class="form-control" placeholder="Contoh: Vandi Tech" required>
+        </div>
+        <div class="mb-3">
+          <label>Username</label>
+          <input type="text" id="regUser" class="form-control" placeholder="Contoh: vandi_civil" required>
+        </div>
+        <div class="mb-3">
+          <label>Password</label>
+          <input type="password" id="regPass" class="form-control" required>
+        </div>
+        <button type="submit" id="btnRegister" class="btn btn-success w-100">Daftar Akun</button>
+      </form>
+      <div class="text-center mt-3 small">
+        Sudah punya akun? <a href="#" onclick="showAuthCard('loginCard')">Login di sini</a>
       </div>
-      <button type="submit" class="btn btn-primary w-100">Login</button>
-    </form>
+    </div>
+
+    <!-- 3. FORGOT PASSWORD FORM -->
+    <div id="forgotCard" class="card p-4 shadow-sm d-none">
+      <h3 class="text-center mb-3">Reset Password</h3>
+      <form id="forgotForm">
+        <div class="mb-3">
+          <label>Username Anda</label>
+          <input type="text" id="forgotUser" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label>Password Baru</label>
+          <input type="password" id="forgotNewPass" class="form-control" required>
+        </div>
+        <button type="submit" id="btnForgot" class="btn btn-warning w-100">Ubah Password</button>
+      </form>
+      <div class="text-center mt-3 small">
+        Kembali ke <a href="#" onclick="showAuthCard('loginCard')">Halaman Login</a>
+      </div>
+    </div>
+
   </div>
 
   <!-- MAIN APP SECTION -->
@@ -102,7 +153,6 @@
 
     <!-- REPORT LIST & FILTER -->
     <div id="listTab">
-      <!-- TOMBOL FILTER STATUS -->
       <div class="card p-2 mb-3 shadow-sm">
         <div class="btn-group w-100 filter-btn-group" role="group">
           <button type="button" class="btn btn-primary active" id="btnFilterAll" onclick="setFilter('ALL')">Semua</button>
@@ -172,8 +222,8 @@
   let selectedFile = null;
   let updateFile = null;
   let activeUpdateData = null;
-  let allReports = []; // Cache seluruh data laporan
-  let currentFilter = "ALL"; // Status filter aktif
+  let allReports = [];
+  let currentFilter = "ALL";
 
   const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
   const updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
@@ -181,13 +231,27 @@
 
   if (currentUser) showApp();
 
+  function showAuthCard(cardId) {
+    document.getElementById("loginCard").classList.add("d-none");
+    document.getElementById("registerCard").classList.add("d-none");
+    document.getElementById("forgotCard").classList.add("d-none");
+    document.getElementById(cardId).classList.remove("d-none");
+  }
+
+  // --- HANDLER LOGIN ---
   document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const btn = document.getElementById("btnLogin");
+    btn.disabled = true; btn.innerText = "Memproses...";
+
     const res = await fetchAPI({
       action: "login",
       username: document.getElementById("loginUser").value,
       password: document.getElementById("loginPass").value
     });
+    
+    btn.disabled = false; btn.innerText = "Login";
+
     if (res.status === "success") {
       currentUser = res.user;
       localStorage.setItem("user_civil", JSON.stringify(currentUser));
@@ -197,8 +261,51 @@
     }
   });
 
+  // --- HANDLER BUAT AKUN (REGISTER) ---
+  document.getElementById("registerForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("btnRegister");
+    btn.disabled = true; btn.innerText = "Mendaftarkan...";
+
+    const res = await fetchAPI({
+      action: "register",
+      fullname: document.getElementById("regFullname").value,
+      username: document.getElementById("regUser").value,
+      password: document.getElementById("regPass").value
+    });
+
+    btn.disabled = false; btn.innerText = "Daftar Akun";
+    alert(res.message);
+
+    if (res.status === "success") {
+      document.getElementById("registerForm").reset();
+      showAuthCard("loginCard");
+    }
+  });
+
+  // --- HANDLER RESET PASSWORD ---
+  document.getElementById("forgotForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById("btnForgot");
+    btn.disabled = true; btn.innerText = "Memproses...";
+
+    const res = await fetchAPI({
+      action: "resetPassword",
+      username: document.getElementById("forgotUser").value,
+      newPassword: document.getElementById("forgotNewPass").value
+    });
+
+    btn.disabled = false; btn.innerText = "Ubah Password";
+    alert(res.message);
+
+    if (res.status === "success") {
+      document.getElementById("forgotForm").reset();
+      showAuthCard("loginCard");
+    }
+  });
+
   function showApp() {
-    document.getElementById("loginSection").classList.add("d-none");
+    document.getElementById("authContainer").classList.add("d-none");
     document.getElementById("appSection").classList.remove("d-none");
     document.getElementById("userGreeting").innerText = "Halo, " + currentUser.name;
     loadReports();
@@ -224,34 +331,21 @@
     }
   }
 
-  // --- FILTER LAPORAN ---
   function setFilter(status) {
     currentFilter = status;
-    
-    // Update Tampilan Tombol Filter
     document.querySelectorAll('.filter-btn-group .btn').forEach(btn => {
       btn.classList.remove('active', 'btn-primary', 'btn-danger', 'btn-warning', 'btn-success');
       btn.classList.add('btn-outline-secondary');
     });
 
-    if (status === 'ALL') {
-      const b = document.getElementById('btnFilterAll');
-      b.className = 'btn btn-primary active';
-    } else if (status === 'REPORTED') {
-      const b = document.getElementById('btnFilterReported');
-      b.className = 'btn btn-danger active';
-    } else if (status === 'PROGRESS') {
-      const b = document.getElementById('btnFilterProgress');
-      b.className = 'btn btn-warning text-dark active';
-    } else if (status === 'RESOLVED') {
-      const b = document.getElementById('btnFilterResolved');
-      b.className = 'btn btn-success active';
-    }
+    if (status === 'ALL') document.getElementById('btnFilterAll').className = 'btn btn-primary active';
+    else if (status === 'REPORTED') document.getElementById('btnFilterReported').className = 'btn btn-danger active';
+    else if (status === 'PROGRESS') document.getElementById('btnFilterProgress').className = 'btn btn-warning text-dark active';
+    else if (status === 'RESOLVED') document.getElementById('btnFilterResolved').className = 'btn btn-success active';
 
     renderReports();
   }
 
-  // --- PILIHAN FILE KAMERA / GALERI ---
   function triggerFileInput(type) {
     if (type === 'camera') document.getElementById("photoCamera").click();
     else document.getElementById("photoGallery").click();
@@ -275,7 +369,6 @@
   document.getElementById("updateCamera").addEventListener("change", (e) => { updateFile = e.target.files[0]; document.getElementById("updatePhotoStatus").innerText = "Foto terpilih: " + updateFile.name; });
   document.getElementById("updateGallery").addEventListener("change", (e) => { updateFile = e.target.files[0]; document.getElementById("updatePhotoStatus").innerText = "Foto terpilih: " + updateFile.name; });
 
-  // --- FUNGSI WATERMARK PADA FOTO (CANVAS DENGAN LEBAR DINAMIS & TEKS RINGKAS) ---
   function applyWatermark(file, username, status, locationDetail) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -292,16 +385,16 @@
           ctx.drawImage(img, 0, 0);
 
           let statusText = "REPORTED";
-          let badgeBgColor = "#dc3545"; // Merah
+          let badgeBgColor = "#dc3545";
           let badgeTextColor = "#FFFFFF";
 
           if (status === "PROGRESS") {
             statusText = "PROGRESS";
-            badgeBgColor = "#ffc107"; // Kuning
+            badgeBgColor = "#ffc107";
             badgeTextColor = "#000000";
           } else if (status === "RESOLVED") {
             statusText = "RESOLVED";
-            badgeBgColor = "#198754"; // Hijau
+            badgeBgColor = "#198754";
             badgeTextColor = "#FFFFFF";
           }
 
@@ -330,11 +423,9 @@
           const startX = padding;
           const startY = img.height - boxHeight - padding;
 
-          // 1. Dark Overlay Box
           ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
           ctx.fillRect(startX, startY, boxWidth, boxHeight);
 
-          // 2. Badge Status
           const badgeHeight = lineHeight + (padding * 0.4);
           ctx.fillStyle = badgeBgColor;
           ctx.fillRect(startX + (padding / 2), startY + (padding / 2), boxWidth - padding, badgeHeight);
@@ -342,7 +433,6 @@
           ctx.fillStyle = badgeTextColor;
           ctx.fillText(`STATUS: ${statusText}`, startX + padding, startY + (padding / 2) + fontSize);
 
-          // 3. Teks Detail
           ctx.fillStyle = "#FFFFFF";
           lines.forEach((line, index) => {
             const textY = startY + badgeHeight + padding + ((index + 1) * lineHeight) - 4;
@@ -356,14 +446,12 @@
     });
   }
 
-  // --- SUBMIT REPORT BARU ---
   document.getElementById("reportForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!selectedFile) { alert("Pilih atau ambil foto laporan!"); return; }
 
     const btn = document.getElementById("btnSubmitReport");
-    btn.disabled = true;
-    btn.innerText = "Proses Watermark & Mengirim...";
+    btn.disabled = true; btn.innerText = "Proses Watermark & Mengirim...";
 
     const locationDetail = document.getElementById("location_detail").value;
     const watermarkedBase64 = await applyWatermark(selectedFile, currentUser.username, "REPORTED", locationDetail);
@@ -381,8 +469,7 @@
 
     const res = await fetchAPI(payload);
     alert(res.message);
-    btn.disabled = false;
-    btn.innerText = "Kirim Laporan";
+    btn.disabled = false; btn.innerText = "Kirim Laporan";
 
     if (res.status === "success") {
       document.getElementById("reportForm").reset();
@@ -392,7 +479,6 @@
     }
   });
 
-  // --- AMBIL DATA LAPORAN DARI DATABASE ---
   async function loadReports() {
     const container = document.getElementById("reportsContainer");
     container.innerHTML = "Memuat data...";
@@ -406,7 +492,6 @@
     }
   }
 
-  // --- RENDER DENGAN FILTER ---
   function renderReports() {
     const container = document.getElementById("reportsContainer");
     container.innerHTML = "";
@@ -473,7 +558,6 @@
     });
   }
 
-  // --- OPEN MODAL UPDATE PROGRESS ---
   function openUpdateModal(id, targetStatus, locationDetail) {
     activeUpdateData = { id, targetStatus, locationDetail };
     updateFile = null;

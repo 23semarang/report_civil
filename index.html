@@ -13,16 +13,55 @@
     .status-RESOLVED { border-left-color: #198754; }
     .img-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; }
     .filter-btn-group .btn { font-size: 0.85rem; }
+
+    /* CSS STYLE DENAH INTERAKTIF */
+    .map-container {
+      position: relative;
+      width: 100%;
+      border: 2px dashed #0d6efd;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: crosshair;
+      background-color: #e9ecef;
+      text-align: center;
+    }
+    .map-image {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .map-pin {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      margin-left: -12px;
+      margin-top: -24px;
+      background-color: #dc3545;
+      border: 2px solid #ffffff;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+      pointer-events: none;
+      transition: all 0.2s ease;
+    }
+    .map-pin::after {
+      content: '';
+      width: 8px;
+      height: 8px;
+      margin: 6px 0 0 6px;
+      background: #ffffff;
+      position: absolute;
+      border-radius: 50%;
+    }
   </style>
 </head>
 <body>
 
 <div class="container py-3" style="max-width: 600px;">
 
-  <!-- FORM AUTENTIKASI (LOGIN / REGISTER / LUPA PASSWORD OTP) -->
+  <!-- FORM AUTENTIKASI -->
   <div id="authContainer">
-    
-    <!-- 1. LOGIN FORM -->
+    <!-- LOGIN CARD -->
     <div id="loginCard" class="card p-4 shadow-sm">
       <h3 class="text-center mb-3">Login System Civil</h3>
       <form id="loginForm">
@@ -42,7 +81,7 @@
       </div>
     </div>
 
-    <!-- 2. REGISTER FORM -->
+    <!-- REGISTER CARD -->
     <div id="registerCard" class="card p-4 shadow-sm d-none">
       <h3 class="text-center mb-3">Buat Akun Baru</h3>
       <form id="registerForm">
@@ -57,7 +96,6 @@
         <div class="mb-3">
           <label>Email Aktif</label>
           <input type="email" id="regEmail" class="form-control" placeholder="Contoh: vandi@gmail.com" required>
-          <small class="text-muted" style="font-size:0.75rem;">Digunakan untuk menerima kode OTP jika lupa password.</small>
         </div>
         <div class="mb-3">
           <label>Password</label>
@@ -70,7 +108,7 @@
       </div>
     </div>
 
-    <!-- 3. FORGOT PASSWORD CARD (STEP 1: REQUEST OTP) -->
+    <!-- FORGOT OTP CARDS -->
     <div id="forgotCard" class="card p-4 shadow-sm d-none">
       <h3 class="text-center mb-3">Lupa Password</h3>
       <form id="requestOTPForm">
@@ -85,11 +123,9 @@
       </div>
     </div>
 
-    <!-- 4. VERIFY OTP CARD (STEP 2: INPUT OTP & NEW PASS) -->
     <div id="verifyOTPCard" class="card p-4 shadow-sm d-none">
       <h3 class="text-center mb-1">Verifikasi OTP</h3>
       <p class="text-muted text-center small mb-3" id="otpNotice">Kode OTP telah dikirim ke email Anda.</p>
-      
       <form id="verifyOTPForm">
         <div class="mb-3">
           <label>Kode OTP (6 Digit)</label>
@@ -101,11 +137,7 @@
         </div>
         <button type="submit" id="btnVerifyReset" class="btn btn-success w-100">Simpan Password Baru</button>
       </form>
-      <div class="text-center mt-3 small">
-        Tidak menerima kode? <a href="#" onclick="showAuthCard('forgotCard')">Kirim Ulang OTP</a>
-      </div>
     </div>
-
   </div>
 
   <!-- MAIN APP SECTION -->
@@ -115,7 +147,6 @@
       <button onclick="logout()" class="btn btn-sm btn-outline-danger">Logout</button>
     </div>
 
-    <!-- TAB NAVIGATION -->
     <ul class="nav nav-pills nav-justified mb-3">
       <li class="nav-item"><a class="nav-link active" id="tabList" onclick="switchTab('list')" href="#">Daftar Laporan</a></li>
       <li class="nav-item"><a class="nav-link" id="tabCreate" onclick="switchTab('create')" href="#">+ Buat Laporan</a></li>
@@ -127,7 +158,7 @@
       <form id="reportForm">
         <div class="mb-2">
           <label>Lantai</label>
-          <select id="floor" class="form-select" required>
+          <select id="floor" class="form-select" onchange="updateFloorMap()" required>
             <option value="LG">LG</option>
             <option value="L1">L1</option>
             <option value="L2">L2</option>
@@ -135,6 +166,18 @@
             <option value="Rooftop">Rooftop</option>
           </select>
         </div>
+
+        <!-- DENAH LAYOUT INTERAKTIF -->
+        <div class="mb-3">
+          <label class="fw-bold text-primary">Marking Titik Lokasi Pada Denah:</label>
+          <small class="d-block text-muted mb-1">Klik/Sentuh pada gambar denah di bawah untuk menandai lokasi kerusakan.</small>
+          <div class="map-container" id="mapContainer" onclick="setMapMarking(event)">
+            <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
+            <div id="mapPin" class="map-pin d-none"></div>
+          </div>
+          <small id="mapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
+        </div>
+
         <div class="mb-2">
           <label>Zone</label>
           <select id="zone" class="form-select" required>
@@ -160,7 +203,7 @@
           <textarea id="issue" class="form-control" rows="2" required></textarea>
         </div>
         <div class="mb-3">
-          <label>Sumber Foto</label>
+          <label>Sumber Foto Bukti</label>
           <div class="d-flex gap-2 mb-2">
             <button type="button" class="btn btn-outline-primary btn-sm w-50" onclick="triggerFileInput('camera')">📷 Buka Kamera</button>
             <button type="button" class="btn btn-outline-secondary btn-sm w-50" onclick="triggerFileInput('gallery')">🖼️ Pilih Galeri</button>
@@ -183,14 +226,31 @@
           <button type="button" class="btn btn-outline-success" id="btnFilterResolved" onclick="setFilter('RESOLVED')">Resolved</button>
         </div>
       </div>
-
       <div id="reportsContainer">Memuat data...</div>
     </div>
   </div>
 
 </div>
 
-<!-- Modal Update Progress -->
+<!-- Modal Denah Full Laporan -->
+<div class="modal fade" id="mapModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="mapModalTitle">Lokasi Kerusakan Pada Denah</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-2">
+        <div class="map-container" style="cursor: default;">
+          <img src="" id="viewMapImage" class="map-image" alt="Denah Full">
+          <div id="viewMapPin" class="map-pin"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Update Progress & Full Image -->
 <div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
@@ -222,7 +282,6 @@
   </div>
 </div>
 
-<!-- Modal Full Image -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -239,17 +298,29 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxYfqKB2SSDxPXGdwI5mqwivozqUi28DiLw2yS8Q5pHbwAdvEPL2xUbsq7mdE1RQ5wN/exec";
-  
+
+  // GAMBAR DENAH DISESUAIKAN DENGAN NAMA FILE DI REPOSITORY GITHUB
+  const FLOOR_MAPS = {
+    "LG": "LG.jpg",
+    "L1": "L1.jpg",
+    "L2": "L2.jpg",
+    "L3": "L3.jpg",
+    "Rooftop": "Rooftop.jpg"
+  };
+
   let currentUser = JSON.parse(localStorage.getItem("user_civil")) || null;
   let selectedFile = null;
   let updateFile = null;
   let activeUpdateData = null;
   let allReports = [];
   let currentFilter = "ALL";
-  let targetResetUsername = ""; // Menyimpan username temporary saat reset password
+  let targetResetUsername = "";
+  let markedX = null;
+  let markedY = null;
 
   const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
   const updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
+  const mapModal = new bootstrap.Modal(document.getElementById('mapModal'));
   const fullImageEl = document.getElementById('fullImage');
 
   if (currentUser) showApp();
@@ -262,109 +333,95 @@
     document.getElementById(cardId).classList.remove("d-none");
   }
 
-  // --- HANDLER LOGIN ---
+  // MARKING DENAH
+  function updateFloorMap() {
+    const floor = document.getElementById("floor").value;
+    const mapImg = document.getElementById("mapImage");
+    mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+    
+    markedX = null; markedY = null;
+    document.getElementById("mapPin").classList.add("d-none");
+    document.getElementById("mapStatus").className = "text-danger small mt-1 d-block";
+    document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
+  }
+
+  function setMapMarking(e) {
+    const container = document.getElementById("mapContainer");
+    const rect = container.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+    markedX = x.toFixed(2);
+    markedY = y.toFixed(2);
+
+    const pin = document.getElementById("mapPin");
+    pin.style.left = markedX + "%";
+    pin.style.top = markedY + "%";
+    pin.classList.remove("d-none");
+
+    document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
+    document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";
+  }
+
+  function openMapModal(floor, x, y) {
+    document.getElementById("viewMapImage").src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+    const viewPin = document.getElementById("viewMapPin");
+    viewPin.style.left = x + "%";
+    viewPin.style.top = y + "%";
+    document.getElementById("mapModalTitle").innerText = `Denah Kerusakan (${floor})`;
+    mapModal.show();
+  }
+
+  // HANDLERS AUTENTIKASI
   document.getElementById("loginForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = document.getElementById("btnLogin");
     btn.disabled = true; btn.innerText = "Memproses...";
-
-    const res = await fetchAPI({
-      action: "login",
-      username: document.getElementById("loginUser").value,
-      password: document.getElementById("loginPass").value
-    });
-    
+    const res = await fetchAPI({ action: "login", username: document.getElementById("loginUser").value, password: document.getElementById("loginPass").value });
     btn.disabled = false; btn.innerText = "Login";
-
-    if (res.status === "success") {
-      currentUser = res.user;
-      localStorage.setItem("user_civil", JSON.stringify(currentUser));
-      showApp();
-    } else {
-      alert(res.message);
-    }
+    if (res.status === "success") { currentUser = res.user; localStorage.setItem("user_civil", JSON.stringify(currentUser)); showApp(); } 
+    else alert(res.message);
   });
 
-  // --- HANDLER BUAT AKUN (REGISTER + EMAIL) ---
   document.getElementById("registerForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = document.getElementById("btnRegister");
     btn.disabled = true; btn.innerText = "Mendaftarkan...";
-
-    const res = await fetchAPI({
-      action: "register",
-      fullname: document.getElementById("regFullname").value,
-      username: document.getElementById("regUser").value,
-      email: document.getElementById("regEmail").value,
-      password: document.getElementById("regPass").value
-    });
-
+    const res = await fetchAPI({ action: "register", fullname: document.getElementById("regFullname").value, username: document.getElementById("regUser").value, email: document.getElementById("regEmail").value, password: document.getElementById("regPass").value });
     btn.disabled = false; btn.innerText = "Daftar Akun";
     alert(res.message);
-
-    if (res.status === "success") {
-      document.getElementById("registerForm").reset();
-      showAuthCard("loginCard");
-    }
+    if (res.status === "success") { document.getElementById("registerForm").reset(); showAuthCard("loginCard"); }
   });
 
-  // --- HANDLER STEP 1: REQUEST OTP ---
   document.getElementById("requestOTPForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = document.getElementById("btnRequestOTP");
     btn.disabled = true; btn.innerText = "Mengirim Kode OTP...";
-
-    const res = await fetchAPI({
-      action: "requestOTP",
-      usernameOrEmail: document.getElementById("otpTarget").value
-    });
-
+    const res = await fetchAPI({ action: "requestOTP", usernameOrEmail: document.getElementById("otpTarget").value });
     btn.disabled = false; btn.innerText = "Kirim Kode OTP Ke Email";
-
-    if (res.status === "success") {
-      targetResetUsername = res.username;
-      document.getElementById("otpNotice").innerText = res.message;
-      showAuthCard("verifyOTPCard");
-    } else {
-      alert(res.message);
-    }
+    if (res.status === "success") { targetResetUsername = res.username; document.getElementById("otpNotice").innerText = res.message; showAuthCard("verifyOTPCard"); } 
+    else alert(res.message);
   });
 
-  // --- HANDLER STEP 2: VERIFIKASI OTP & SIMPAN PASSWORD BARU ---
   document.getElementById("verifyOTPForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const btn = document.getElementById("btnVerifyReset");
     btn.disabled = true; btn.innerText = "Memverifikasi...";
-
-    const res = await fetchAPI({
-      action: "verifyOTPAndReset",
-      username: targetResetUsername,
-      otp: document.getElementById("otpInputCode").value,
-      newPassword: document.getElementById("otpNewPass").value
-    });
-
+    const res = await fetchAPI({ action: "verifyOTPAndReset", username: targetResetUsername, otp: document.getElementById("otpInputCode").value, newPassword: document.getElementById("otpNewPass").value });
     btn.disabled = false; btn.innerText = "Simpan Password Baru";
     alert(res.message);
-
-    if (res.status === "success") {
-      document.getElementById("requestOTPForm").reset();
-      document.getElementById("verifyOTPForm").reset();
-      targetResetUsername = "";
-      showAuthCard("loginCard");
-    }
+    if (res.status === "success") { document.getElementById("requestOTPForm").reset(); document.getElementById("verifyOTPForm").reset(); targetResetUsername = ""; showAuthCard("loginCard"); }
   });
 
   function showApp() {
     document.getElementById("authContainer").classList.add("d-none");
     document.getElementById("appSection").classList.remove("d-none");
     document.getElementById("userGreeting").innerText = "Halo, " + currentUser.name;
+    updateFloorMap();
     loadReports();
   }
 
-  function logout() {
-    localStorage.removeItem("user_civil");
-    location.reload();
-  }
+  function logout() { localStorage.removeItem("user_civil"); location.reload(); }
 
   function switchTab(tab) {
     if (tab === 'create') {
@@ -372,10 +429,10 @@
       document.getElementById("listTab").classList.add("d-none");
       document.getElementById("tabCreate").classList.add("active");
       document.getElementById("tabList").classList.remove("active");
+      updateFloorMap();
     } else {
       document.getElementById("createTab").classList.add("d-none");
       document.getElementById("listTab").classList.remove("d-none");
-      document.getElementById("tabList").classList.active = true;
       document.getElementById("tabList").classList.add("active");
       document.getElementById("tabCreate").classList.remove("active");
       loadReports();
@@ -388,12 +445,10 @@
       btn.classList.remove('active', 'btn-primary', 'btn-danger', 'btn-warning', 'btn-success');
       btn.classList.add('btn-outline-secondary');
     });
-
     if (status === 'ALL') document.getElementById('btnFilterAll').className = 'btn btn-primary active';
     else if (status === 'REPORTED') document.getElementById('btnFilterReported').className = 'btn btn-danger active';
     else if (status === 'PROGRESS') document.getElementById('btnFilterProgress').className = 'btn btn-warning text-dark active';
     else if (status === 'RESOLVED') document.getElementById('btnFilterResolved').className = 'btn btn-success active';
-
     renderReports();
   }
 
@@ -406,10 +461,7 @@
   document.getElementById("photoGallery").addEventListener("change", (e) => handleFileSelect(e.target.files[0]));
 
   function handleFileSelect(file) {
-    if (file) {
-      selectedFile = file;
-      document.getElementById("photoStatus").innerText = "Foto terpilih: " + file.name;
-    }
+    if (file) { selectedFile = file; document.getElementById("photoStatus").innerText = "Foto terpilih: " + file.name; }
   }
 
   function triggerUpdateInput(type) {
@@ -429,50 +481,26 @@
         img.src = event.target.result;
         img.onload = () => {
           const canvas = document.createElement("canvas");
-          canvas.width = img.width;
-          canvas.height = img.height;
+          canvas.width = img.width; canvas.height = img.height;
           const ctx = canvas.getContext("2d");
-
           ctx.drawImage(img, 0, 0);
 
-          let statusText = "REPORTED";
-          let badgeBgColor = "#dc3545";
-          let badgeTextColor = "#FFFFFF";
-
-          if (status === "PROGRESS") {
-            statusText = "PROGRESS";
-            badgeBgColor = "#ffc107";
-            badgeTextColor = "#000000";
-          } else if (status === "RESOLVED") {
-            statusText = "RESOLVED";
-            badgeBgColor = "#198754";
-            badgeTextColor = "#FFFFFF";
-          }
+          let statusText = "REPORTED"; let badgeBgColor = "#dc3545"; let badgeTextColor = "#FFFFFF";
+          if (status === "PROGRESS") { statusText = "PROGRESS"; badgeBgColor = "#ffc107"; badgeTextColor = "#000000"; } 
+          else if (status === "RESOLVED") { statusText = "RESOLVED"; badgeBgColor = "#198754"; badgeTextColor = "#FFFFFF"; }
 
           const dateStr = new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
-          const lines = [
-            `User: ${username}`,
-            `Lokasi: ${locationDetail}`,
-            `Waktu: ${dateStr}`
-          ];
+          const lines = [`User: ${username}`, `Lokasi: ${locationDetail}`, `Waktu: ${dateStr}`];
 
           const fontSize = Math.max(14, Math.round(img.width * 0.022));
-          const padding = fontSize * 0.8;
-          const lineHeight = fontSize * 1.35;
-
+          const padding = fontSize * 0.8; const lineHeight = fontSize * 1.35;
           ctx.font = `bold ${fontSize}px sans-serif`;
 
           let maxTextWidth = ctx.measureText(`STATUS: ${statusText}`).width;
-          lines.forEach(line => {
-            const w = ctx.measureText(line).width;
-            if (w > maxTextWidth) maxTextWidth = w;
-          });
+          lines.forEach(line => { const w = ctx.measureText(line).width; if (w > maxTextWidth) maxTextWidth = w; });
 
-          const boxWidth = maxTextWidth + (padding * 2);
-          const boxHeight = (lines.length + 1) * lineHeight + (padding * 2);
-
-          const startX = padding;
-          const startY = img.height - boxHeight - padding;
+          const boxWidth = maxTextWidth + (padding * 2); const boxHeight = (lines.length + 1) * lineHeight + (padding * 2);
+          const startX = padding; const startY = img.height - boxHeight - padding;
 
           ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
           ctx.fillRect(startX, startY, boxWidth, boxHeight);
@@ -497,8 +525,10 @@
     });
   }
 
+  // SUBMIT REPORT
   document.getElementById("reportForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    if (!markedX || !markedY) { alert("Silakan berikan tanda titik lokasi pada denah layout!"); return; }
     if (!selectedFile) { alert("Pilih atau ambil foto laporan!"); return; }
 
     const btn = document.getElementById("btnSubmitReport");
@@ -515,7 +545,9 @@
       area_type: document.getElementById("area_type").value,
       location_detail: locationDetail,
       issue: document.getElementById("issue").value,
-      photo: watermarkedBase64
+      photo: watermarkedBase64,
+      marking_x: markedX,
+      marking_y: markedY
     };
 
     const res = await fetchAPI(payload);
@@ -534,13 +566,8 @@
     const container = document.getElementById("reportsContainer");
     container.innerHTML = "Memuat data...";
     const res = await fetchAPI({ action: "getReports" });
-    
-    if (res.status === "success") {
-      allReports = res.data || [];
-      renderReports();
-    } else {
-      container.innerHTML = "<div class='text-center text-danger py-4'>Gagal memuat data.</div>";
-    }
+    if (res.status === "success") { allReports = res.data || []; renderReports(); } 
+    else container.innerHTML = "<div class='text-center text-danger py-4'>Gagal memuat data.</div>";
   }
 
   function renderReports() {
@@ -572,22 +599,18 @@
           <p class="text-muted small mb-1">${item.issue}</p>
           ${item.progress_note ? `<p class="small text-primary mb-2"><strong>Progress Note:</strong> ${item.progress_note}</p>` : ''}
           
+          ${item.marking_x && item.marking_y ? `
+            <div class="mb-2">
+              <button onclick="openMapModal('${item.floor}', '${item.marking_x}', '${item.marking_y}')" class="btn btn-sm btn-outline-danger w-100">
+                📍 Lihat Titik Kerusakan Pada Denah
+              </button>
+            </div>
+          ` : ''}
+
           <div class="row g-2 mb-2">
-            ${photoReportThumbnail ? `
-              <div class="col">
-                <small class="d-block text-muted">Report:</small>
-                <img src="${photoReportThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_report}')">
-              </div>` : ''}
-            ${photoProgressThumbnail ? `
-              <div class="col">
-                <small class="d-block text-muted">Progress:</small>
-                <img src="${photoProgressThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_progress}')">
-              </div>` : ''}
-            ${photoResolvedThumbnail ? `
-              <div class="col">
-                <small class="d-block text-muted">Resolved:</small>
-                <img src="${photoResolvedThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_resolved}')">
-              </div>` : ''}
+            ${photoReportThumbnail ? `<div class="col"><small class="d-block text-muted">Report:</small><img src="${photoReportThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_report}')"></div>` : ''}
+            ${photoProgressThumbnail ? `<div class="col"><small class="d-block text-muted">Progress:</small><img src="${photoProgressThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_progress}')"></div>` : ''}
+            ${photoResolvedThumbnail ? `<div class="col"><small class="d-block text-muted">Resolved:</small><img src="${photoResolvedThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_resolved}')"></div>` : ''}
           </div>
 
           <div class="d-flex gap-2 mt-2">
@@ -645,30 +668,17 @@
   function getGoogleThumbnailUrl(driveUrl) {
     if (!driveUrl) return "";
     let fileId = "";
-    if (driveUrl.includes('open?id=')) {
-      fileId = driveUrl.split('open?id=')[1].split('&')[0];
-    } else if (driveUrl.includes('/file/d/')) {
-      fileId = driveUrl.split('/file/d/')[1].split('/')[0];
-    }
-    if (fileId) {
-      return `https://drive.google.com/thumbnail?id=${fileId}&w=600&sz=w600`;
-    }
-    return driveUrl;
+    if (driveUrl.includes('open?id=')) { fileId = driveUrl.split('open?id=')[1].split('&')[0]; } 
+    else if (driveUrl.includes('/file/d/')) { fileId = driveUrl.split('/file/d/')[1].split('/')[0]; }
+    return fileId ? `https://drive.google.com/thumbnail?id=${fileId}&w=600&sz=w600` : driveUrl;
   }
 
   function viewFullImage(driveUrl) {
     if (!driveUrl) return;
     let fileId = "";
-    if (driveUrl.includes('open?id=')) {
-      fileId = driveUrl.split('open?id=')[1].split('&')[0];
-    } else if (driveUrl.includes('/file/d/')) {
-      fileId = driveUrl.split('/file/d/')[1].split('/')[0];
-    }
-    if (fileId) {
-      fullImageEl.src = `https://drive.google.com/thumbnail?id=${fileId}&w=1600&sz=w1600`;
-    } else {
-      fullImageEl.src = driveUrl;
-    }
+    if (driveUrl.includes('open?id=')) { fileId = driveUrl.split('open?id=')[1].split('&')[0]; } 
+    else if (driveUrl.includes('/file/d/')) { fileId = driveUrl.split('/file/d/')[1].split('/')[0]; }
+    fullImageEl.src = fileId ? `https://drive.google.com/thumbnail?id=${fileId}&w=1600&sz=w1600` : driveUrl;
     imageModal.show();
   }
 
@@ -679,13 +689,8 @@
       const res = await fetchAPI({ action: "getComments", report_id: id });
       const list = document.getElementById(`commentList-${id}`);
       list.innerHTML = "";
-      if (!res.data || res.data.length === 0) {
-        list.innerHTML = "Belum ada komentar.";
-      } else {
-        res.data.forEach(c => {
-          list.innerHTML += `<div><strong>${c.username}:</strong> ${c.comment}</div>`;
-        });
-      }
+      if (!res.data || res.data.length === 0) { list.innerHTML = "Belum ada komentar."; } 
+      else { res.data.forEach(c => { list.innerHTML += `<div><strong>${c.username}:</strong> ${c.comment}</div>`; }); }
     }
   }
 

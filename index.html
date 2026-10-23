@@ -6,44 +6,99 @@
   <title>Civil Maintenance Mall System</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://unpkg.com/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <style>
-    body { background-color: #f4f6f9; }
-    .card-report { margin-bottom: 15px; border-left: 5px solid #0d6efd; }
-    .status-REPORTED { border-left-color: #dc3545; }
-    .status-PROGRESS { border-left-color: #ffc107; }
-    .status-RESOLVED { border-left-color: #198754; }
-    .img-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; background-color: #e9ecef; }
-    .filter-btn-group .btn { font-size: 0.85rem; }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700;800&display=swap');
 
-    /* STYLING DENAH RESPANSIF & PRESISI */
-    .map-outer-wrapper {
-      position: relative;
-      border: 2px dashed #0d6efd;
-      border-radius: 8px;
-      overflow: hidden;
-      background-color: #e9ecef;
-      width: 100%;
-      height: auto;
-      touch-action: none;
-      user-select: none;
-    }
-    .map-controls {
-      position: absolute; top: 10px; right: 10px; z-index: 20; display: flex; gap: 4px;
-      background: rgba(255, 255, 255, 0.9); padding: 4px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    }
-    .map-container { position: relative; width: 100%; height: auto; cursor: grab; touch-action: none; display: inline-block; }
-    .map-container:active { cursor: grabbing; }
-    .map-image { width: 100%; height: auto; display: block; pointer-events: none; user-select: none; -webkit-user-drag: none; }
-    
-    .map-pin {
-      position: absolute; width: 24px; height: 24px; background-color: #dc3545; border: 2px solid #ffffff;
-      border-radius: 50% 50% 50% 0; box-shadow: 0 2px 5px rgba(0,0,0,0.4); pointer-events: none; z-index: 10;
-      transform-origin: 0 100%;
-    }
-    .map-pin::after {
-      content: ''; width: 8px; height: 8px; margin: 6px 0 0 6px; background: #ffffff; position: absolute; border-radius: 50%;
-    }
-    .chk-item-card { background: #fff; border: 1px solid #dee2e6; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
+body {
+  background-color: #f7f7f7;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #000;
+}
+
+/* KARTU & CONTAINER NEO-BRUTALISM */
+.card, .chk-item-card, .fail-sub-item {
+  background-color: #ffffff !important;
+  border: 3px solid #000000 !important;
+  border-radius: 12px !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+  margin-bottom: 15px;
+}
+
+/* TOMBOL STYLE BRUTALISM */
+.btn {
+  font-weight: 700 !important;
+  border: 2px solid #000000 !important;
+  border-radius: 10px !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+  transition: all 0.1s ease !important;
+}
+
+.btn:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 1px 1px 0px #000000 !important;
+}
+
+.btn-primary { background-color: #ffd166 !important; color: #000 !important; }
+.btn-success { background-color: #06d6a0 !important; color: #000 !important; }
+.btn-danger { background-color: #ff70a6 !important; color: #000 !important; }
+.btn-warning { background-color: #ff9f1c !important; color: #000 !important; }
+.btn-outline-primary { background-color: #fff !important; color: #000 !important; }
+
+/* INPUT & SELECT BOX */
+.form-control, .form-select {
+  border: 2px solid #000000 !important;
+  border-radius: 10px !important;
+  box-shadow: 2px 2px 0px #000000 !important;
+  font-weight: 600;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #000 !important;
+  box-shadow: 3px 3px 0px #000000 !important;
+}
+
+/* NAVIGASI TAB MENU */
+.nav-pills .nav-link {
+  border: 2px solid #000000 !important;
+  color: #000 !important;
+  font-weight: 700;
+  margin: 0 2px;
+  background-color: #fff;
+  border-radius: 10px !important;
+  box-shadow: 2px 2px 0px #000 !important;
+}
+
+.nav-pills .nav-link.active {
+  background-color: #00f5d4 !important;
+  color: #000 !important;
+  box-shadow: 3px 3px 0px #000 !important;
+}
+
+/* STATUS BADGE */
+.badge {
+  border: 1.5px solid #000 !important;
+  color: #000 !important;
+  font-weight: 700;
+  box-shadow: 1px 1px 0px #000 !important;
+}
+.bg-danger { background-color: #ff70a6 !important; }
+.bg-warning { background-color: #ff9f1c !important; }
+.bg-success { background-color: #06d6a0 !important; }
+.bg-secondary { background-color: #e0e0e0 !important; }
+
+/* MAP WRAPPER & PIN DENAH */
+.map-outer-wrapper {
+  border: 3px solid #000 !important;
+  border-radius: 12px !important;
+  box-shadow: 4px 4px 0px #000 !important;
+}
+
+.map-controls button {
+  border: 2px solid #000 !important;
+  box-shadow: 1px 1px 0px #000 !important;
+  font-weight: bold;
+}
   </style>
 </head>
 <body>

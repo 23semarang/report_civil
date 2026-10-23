@@ -794,58 +794,79 @@
   document.getElementById("updateCamera").addEventListener("change", (e) => { updateFile = e.target.files[0]; document.getElementById("updatePhotoStatus").innerText = "Foto terpilih: " + updateFile.name; });
   document.getElementById("updateGallery").addEventListener("change", (e) => { updateFile = e.target.files[0]; document.getElementById("updatePhotoStatus").innerText = "Foto terpilih: " + updateFile.name; });
 
-  function applyWatermark(file, username, status, locationDetail) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target.result;
-        img.onload = () => {
-          const canvas = document.createElement("canvas");
-          canvas.width = img.width; canvas.height = img.height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(img, 0, 0);
+  // FUNGSI WATERMARK + RESIZE OTOMATIS (SANGAT CEPAT)
+function applyWatermark(file, username, status, locationDetail) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target.result;
+      img.onload = () => {
+        // RESIZE GAMBAR JIKA TERLALU BESAR (MAX LEBAR 1200PX)
+        const MAX_WIDTH = 1200;
+        let scaleSize = 1;
+        if (img.width > MAX_WIDTH) {
+          scaleSize = MAX_WIDTH / img.width;
+        }
 
-          let statusText = "REPORTED"; let badgeBgColor = "#dc3545"; let badgeTextColor = "#FFFFFF";
-          if (status === "PROGRESS") { statusText = "PROGRESS"; badgeBgColor = "#ffc107"; badgeTextColor = "#000000"; } 
-          else if (status === "RESOLVED") { statusText = "RESOLVED"; badgeBgColor = "#198754"; badgeTextColor = "#FFFFFF"; }
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scaleSize;
+        canvas.height = img.height * scaleSize;
 
-          const dateStr = new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
-          const lines = [`User: ${username}`, `Lokasi: ${locationDetail}`, `Waktu: ${dateStr}`];
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-          const fontSize = Math.max(14, Math.round(img.width * 0.022));
-          const padding = fontSize * 0.8; const lineHeight = fontSize * 1.35;
-          ctx.font = `bold ${fontSize}px sans-serif`;
+        let statusText = "REPORTED"; 
+        let badgeBgColor = "#dc3545"; 
+        let badgeTextColor = "#FFFFFF";
 
-          let maxTextWidth = ctx.measureText(`STATUS: ${statusText}`).width;
-          lines.forEach(line => { const w = ctx.measureText(line).width; if (w > maxTextWidth) maxTextWidth = w; });
+        if (status === "PROGRESS") { statusText = "PROGRESS"; badgeBgColor = "#ffc107"; badgeTextColor = "#000000"; } 
+        else if (status === "RESOLVED") { statusText = "RESOLVED"; badgeBgColor = "#198754"; badgeTextColor = "#FFFFFF"; }
 
-          const boxWidth = maxTextWidth + (padding * 2); const boxHeight = (lines.length + 1) * lineHeight + (padding * 2);
-          const startX = padding; const startY = img.height - boxHeight - padding;
+        const dateStr = new Date().toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
+        const lines = [`User: ${username}`, `Lokasi: ${locationDetail}`, `Waktu: ${dateStr}`];
 
-          ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
-          ctx.fillRect(startX, startY, boxWidth, boxHeight);
+        const fontSize = Math.max(14, Math.round(canvas.width * 0.025));
+        const padding = fontSize * 0.8; 
+        const lineHeight = fontSize * 1.35;
+        ctx.font = `bold ${fontSize}px sans-serif`;
 
-          const badgeHeight = lineHeight + (padding * 0.4);
-          ctx.fillStyle = badgeBgColor;
-          ctx.fillRect(startX + (padding / 2), startY + (padding / 2), boxWidth - padding, badgeHeight);
+        let maxTextWidth = ctx.measureText(`STATUS: ${statusText}`).width;
+        lines.forEach(line => { 
+          const w = ctx.measureText(line).width; 
+          if (w > maxTextWidth) maxTextWidth = w; 
+        });
 
-          ctx.fillStyle = badgeTextColor;
-          ctx.fillText(`STATUS: ${statusText}`, startX + padding, startY + (padding / 2) + fontSize);
+        const boxWidth = maxTextWidth + (padding * 2); 
+        const boxHeight = (lines.length + 1) * lineHeight + (padding * 2);
+        const startX = padding; 
+        const startY = canvas.height - boxHeight - padding;
 
-          ctx.fillStyle = "#FFFFFF";
-          lines.forEach((line, index) => {
-            const textY = startY + badgeHeight + padding + ((index + 1) * lineHeight) - 4;
-            ctx.fillText(line, startX + padding, textY);
-          });
+        ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+        ctx.fillRect(startX, startY, boxWidth, boxHeight);
 
-          resolve(canvas.toDataURL("image/jpeg", 0.7));
-        };
+        const badgeHeight = lineHeight + (padding * 0.4);
+        ctx.fillStyle = badgeBgColor;
+        ctx.fillRect(startX + (padding / 2), startY + (padding / 2), boxWidth - padding, badgeHeight);
+
+        ctx.fillStyle = badgeTextColor;
+        ctx.fillText(`STATUS: ${statusText}`, startX + padding, startY + (padding / 2) + fontSize - 2);
+
+        ctx.fillStyle = "#FFFFFF";
+        lines.forEach((line, index) => {
+          const textY = startY + badgeHeight + padding + ((index + 1) * lineHeight) - 4;
+          ctx.fillText(line, startX + padding, textY);
+        });
+
+        // KOMPRESI Ringan (0.6) Biar Pengiriman Kilat
+        resolve(canvas.toDataURL("image/jpeg", 0.6));
       };
-      reader.onerror = error => reject(error);
-    });
-  }
+      img.onerror = (err) => reject("Gagal memproses gambar. Pastikan format JPEG/PNG.");
+    };
+    reader.onerror = error => reject(error);
+  });
+}
 
   // SUBMIT REPORT DIRECT
   document.getElementById("reportForm").addEventListener("submit", async (e) => {

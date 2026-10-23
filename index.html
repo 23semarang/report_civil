@@ -16,7 +16,7 @@
     .img-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; background-color: #e9ecef; }
     .filter-btn-group .btn { font-size: 0.85rem; }
 
-    /* STYLING DENAH RESPANSIF & PRESISI UNTUK MOBILE & DESKTOP */
+    /* STYLING DENAH RESPANSIF & PRESISI */
     .map-outer-wrapper {
       position: relative;
       border: 2px dashed #0d6efd;
@@ -24,64 +24,28 @@
       overflow: hidden;
       background-color: #e9ecef;
       width: 100%;
-      height: auto; /* Mengikuti tinggi alami gambar denah */
+      height: auto;
       touch-action: none;
       user-select: none;
     }
     .map-controls {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      z-index: 20;
-      display: flex;
-      gap: 4px;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 4px;
-      border-radius: 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      position: absolute; top: 10px; right: 10px; z-index: 20; display: flex; gap: 4px;
+      background: rgba(255, 255, 255, 0.9); padding: 4px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);
     }
-    .map-container {
-      position: relative;
-      width: 100%;
-      height: auto;
-      cursor: grab;
-      touch-action: none;
-      display: inline-block;
-    }
-    .map-container:active {
-      cursor: grabbing;
-    }
-    .map-image {
-      width: 100%;
-      height: auto;
-      display: block;
-      pointer-events: none;
-      user-select: none;
-      -webkit-user-drag: none;
-    }
+    .map-container { position: relative; width: 100%; height: auto; cursor: grab; touch-action: none; display: inline-block; }
+    .map-container:active { cursor: grabbing; }
+    .map-image { width: 100%; height: auto; display: block; pointer-events: none; user-select: none; -webkit-user-drag: none; }
     
     /* PIN FIXED ANCHORING */
     .map-pin {
-      position: absolute;
-      width: 24px;
-      height: 24px;
-      background-color: #dc3545;
-      border: 2px solid #ffffff;
-      border-radius: 50% 50% 50% 0;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.4);
-      pointer-events: none;
-      z-index: 10;
+      position: absolute; width: 24px; height: 24px; background-color: #dc3545; border: 2px solid #ffffff;
+      border-radius: 50% 50% 50% 0; box-shadow: 0 2px 5px rgba(0,0,0,0.4); pointer-events: none; z-index: 10;
       transform-origin: 0 100%;
     }
     .map-pin::after {
-      content: '';
-      width: 8px;
-      height: 8px;
-      margin: 6px 0 0 6px;
-      background: #ffffff;
-      position: absolute;
-      border-radius: 50%;
+      content: ''; width: 8px; height: 8px; margin: 6px 0 0 6px; background: #ffffff; position: absolute; border-radius: 50%;
     }
+    .chk-item-card { background: #fff; border: 1px solid #dee2e6; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
   </style>
 </head>
 <body>
@@ -177,22 +141,62 @@
     </div>
 
     <ul class="nav nav-pills nav-justified mb-3">
-      <li class="nav-item"><a class="nav-link active" id="tabList" onclick="switchTab('list')" href="#">Daftar Laporan</a></li>
-      <li class="nav-item"><a class="nav-link" id="tabCreate" onclick="switchTab('create')" href="#">+ Buat Laporan</a></li>
+      <li class="nav-item"><a class="nav-link active" id="tabList" onclick="switchTab('list')" href="#">Laporan</a></li>
+      <li class="nav-item"><a class="nav-link" id="tabChecklist" onclick="switchTab('checklist')" href="#">📋 Inspeksi</a></li>
+      <li class="nav-item"><a class="nav-link" id="tabCreate" onclick="switchTab('create')" href="#">+ Lapor Direct</a></li>
     </ul>
 
-    <!-- CREATE REPORT FORM -->
+    <!-- TAB CHECKLIST INSPEKSI -->
+    <div id="checklistTab" class="card p-3 shadow-sm d-none">
+      <h5>Inspeksi Rutin Area & Sanitary</h5>
+      <form id="checklistForm">
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label>Lantai</label>
+            <select id="chkFloor" class="form-select" required>
+              <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label>Zone</label>
+            <select id="chkZone" class="form-select" required>
+              <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <label>Kategori Area</label>
+          <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
+            <option value="Toilet Customer">Toilet Customer (Pria/Wanita)</option>
+            <option value="Toilet Priority">Toilet Priority / Difabel</option>
+            <option value="Nursery Room">Nursery / Laktasi Room</option>
+            <option value="Public Corridor">Public Corridor & Floor HT</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label>Detail Nama Area/Tenant</label>
+          <input type="text" id="chkLocationDetail" class="form-control" placeholder="Contoh: Toilet Utama Dekat Atrium A" required>
+        </div>
+
+        <h6 class="mt-3 mb-2 text-primary fw-bold">Daftar Item Pemeriksaan:</h6>
+        <div id="checklistItemsContainer">
+          <!-- Item checklist dimuat otomatis via Javascript -->
+        </div>
+
+        <button type="submit" id="btnSubmitChecklist" class="btn btn-success w-100 mt-3">Simpan Hasil Inspeksi</button>
+      </form>
+    </div>
+
+    <!-- CREATE REPORT FORM (DIRECT) -->
     <div id="createTab" class="card p-3 shadow-sm d-none">
-      <b>Lapor Kerusakan Civil</b>
-      <form id="reportForm" class="mt-2">
+      <h5>Lapor Kerusakan Direct</h5>
+      <form id="reportForm">
         <div class="mb-2">
           <label>Lantai</label>
           <select id="floor" class="form-select" onchange="updateFloorMap()" required>
-            <option value="LG">LG</option>
-            <option value="L1">L1</option>
-            <option value="L2">L2</option>
-            <option value="L3">L3</option>
-            <option value="Rooftop">Rooftop</option>
+            <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
           </select>
         </div>
 
@@ -218,10 +222,7 @@
         <div class="mb-2">
           <label>Zone</label>
           <select id="zone" class="form-select" required>
-            <option value="Zone A">Zone A</option>
-            <option value="Zone B">Zone B</option>
-            <option value="Zone C">Zone C</option>
-            <option value="Zone D">Zone D</option>
+            <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
           </select>
         </div>
         <div class="mb-2">
@@ -351,6 +352,37 @@
     "Rooftop": "Rooftop.jpg"
   };
 
+  const CHECKLIST_PRESETS = {
+    "Toilet Customer": [
+      "Kloset Duduk / Jongkok (Flush & Bidet)",
+      "Urinoir & Flush Sensor",
+      "Kran Wastafel & Sensor Air",
+      "Cermin & Meja Wastafel",
+      "Partisi Cubicle & Handle Pintu",
+      "Lantai HT & Slope Drainage",
+      "Plafon & Exhaust Fan"
+    ],
+    "Toilet Priority": [
+      "Kloset Difabel & Flush Button",
+      "Grab Bar (Pegangan Tangan Besi)",
+      "Tombol Emergency Call / Alarm",
+      "Akses Ramp & Pintu Sliding",
+      "Wastafel Rendah & Kran"
+    ],
+    "Nursery Room": [
+      "Baby Changing Station (Meja Popok)",
+      "Kursi Sofa Laktasi",
+      "Wastafel Air Warm/Cold",
+      "Kebersihan Dinding & Kebocoran Plafon"
+    ],
+    "Public Corridor": [
+      "Lantai HT / Granit (Nat & Popping)",
+      "Dinding Pasangan & Cat",
+      "Plafon Gypsum & Manhole",
+      "Pintu Emergency / Fire Door"
+    ]
+  };
+
   let currentUser = JSON.parse(localStorage.getItem("user_civil")) || null;
   let selectedFile = null;
   let updateFile = null;
@@ -365,19 +397,8 @@
   const mapContainer = document.getElementById('mapContainer');
   const viewMapContainer = document.getElementById('viewMapContainer');
 
-  const pzCreate = Panzoom(mapContainer, {
-    maxScale: 6,
-    minScale: 1,
-    contain: 'outside',
-    cursor: 'grab'
-  });
-
-  const pzView = Panzoom(viewMapContainer, {
-    maxScale: 6,
-    minScale: 1,
-    contain: 'outside',
-    cursor: 'grab'
-  });
+  const pzCreate = Panzoom(mapContainer, { maxScale: 6, minScale: 1, contain: 'outside', cursor: 'grab' });
+  const pzView = Panzoom(viewMapContainer, { maxScale: 6, minScale: 1, contain: 'outside', cursor: 'grab' });
 
   function applyPinTransform(pinEl, scale) {
     if (!pinEl) return;
@@ -385,13 +406,8 @@
     pinEl.style.transform = `scale(${invScale}) rotate(-45deg)`;
   }
 
-  mapContainer.addEventListener('panzoomchange', (e) => {
-    applyPinTransform(document.getElementById('mapPin'), e.detail.scale);
-  });
-
-  viewMapContainer.addEventListener('panzoomchange', (e) => {
-    applyPinTransform(document.getElementById('viewMapPin'), e.detail.scale);
-  });
+  mapContainer.addEventListener('panzoomchange', (e) => applyPinTransform(document.getElementById('mapPin'), e.detail.scale));
+  viewMapContainer.addEventListener('panzoomchange', (e) => applyPinTransform(document.getElementById('viewMapPin'), e.detail.scale));
 
   document.getElementById('mapWrapper').addEventListener('wheel', pzCreate.zoomWithWheel);
   document.getElementById('viewMapWrapper').addEventListener('wheel', pzView.zoomWithWheel);
@@ -414,11 +430,8 @@
   function updateFloorMap() {
     const floor = document.getElementById("floor").value;
     const mapImg = document.getElementById("mapImage");
-    
     mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
-    mapImg.onload = () => {
-      pzCreate.reset();
-    };
+    mapImg.onload = () => pzCreate.reset();
 
     markedX = null; markedY = null;
     document.getElementById("mapPin").classList.add("d-none");
@@ -426,21 +439,15 @@
     document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
 
-  let startX = 0;
-  let startY = 0;
-
-  mapContainer.addEventListener('pointerdown', (e) => {
-    startX = e.clientX;
-    startY = e.clientY;
-  });
-
+  let startX = 0, startY = 0;
+  mapContainer.addEventListener('pointerdown', (e) => { startX = e.clientX; startY = e.clientY; });
   mapContainer.addEventListener('pointerup', (e) => {
     const diffX = Math.abs(e.clientX - startX);
     const diffY = Math.abs(e.clientY - startY);
 
     if (diffX < 8 && diffY < 8) {
       const mapImg = document.getElementById("mapImage");
-      const rect = mapImg.getBoundingClientRect(); // Menggunakan rect gambar asli
+      const rect = mapImg.getBoundingClientRect();
 
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
@@ -468,9 +475,7 @@
   function openMapModal(floor, x, y) {
     const viewImg = document.getElementById("viewMapImage");
     viewImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
-    viewImg.onload = () => {
-      pzView.reset();
-    };
+    viewImg.onload = () => pzView.reset();
 
     const viewPin = document.getElementById("viewMapPin");
     viewPin.style.left = x + "%";
@@ -527,26 +532,121 @@
     document.getElementById("appSection").classList.remove("d-none");
     document.getElementById("userGreeting").innerText = "Halo, " + currentUser.name;
     updateFloorMap();
+    loadChecklistItems();
     loadReports();
   }
 
   function logout() { localStorage.removeItem("user_civil"); location.reload(); }
 
   function switchTab(tab) {
-    if (tab === 'create') {
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    document.getElementById("listTab").classList.add("d-none");
+    document.getElementById("createTab").classList.add("d-none");
+    document.getElementById("checklistTab").classList.add("d-none");
+
+    if (tab === 'checklist') {
+      document.getElementById("checklistTab").classList.remove("d-none");
+      document.getElementById("tabChecklist").classList.add("active");
+    } else if (tab === 'create') {
       document.getElementById("createTab").classList.remove("d-none");
-      document.getElementById("listTab").classList.add("d-none");
       document.getElementById("tabCreate").classList.add("active");
-      document.getElementById("tabList").classList.remove("active");
       updateFloorMap();
     } else {
-      document.getElementById("createTab").classList.add("d-none");
       document.getElementById("listTab").classList.remove("d-none");
       document.getElementById("tabList").classList.add("active");
-      document.getElementById("tabCreate").classList.remove("active");
       loadReports();
     }
   }
+
+  function loadChecklistItems() {
+    const cat = document.getElementById("chkCategory").value;
+    const items = CHECKLIST_PRESETS[cat] || [];
+    const container = document.getElementById("checklistItemsContainer");
+    container.innerHTML = "";
+
+    items.forEach((item, idx) => {
+      container.innerHTML += `
+        <div class="chk-item-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fw-bold small">${idx + 1}. ${item}</span>
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" checked onchange="toggleFailDetail(${idx}, false)">
+              <label class="btn btn-outline-success" for="pass_${idx}">Baik</label>
+
+              <input type="radio" class="btn-check" name="chk_${idx}" id="fail_${idx}" value="FAIL" onchange="toggleFailDetail(${idx}, true)">
+              <label class="btn btn-outline-danger" for="fail_${idx}">Rusak</label>
+            </div>
+          </div>
+          <div id="fail_box_${idx}" class="mt-2 d-none border-top pt-2">
+            <textarea id="note_${idx}" class="form-control form-control-sm mb-2" placeholder="Jelaskan detail kerusakan..."></textarea>
+            <input type="file" id="file_${idx}" class="form-control form-control-sm" accept="image/*">
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  function toggleFailDetail(idx, isFail) {
+    const box = document.getElementById(`fail_box_${idx}`);
+    if (isFail) box.classList.remove("d-none");
+    else box.classList.add("d-none");
+  }
+
+  document.getElementById("checklistForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const cat = document.getElementById("chkCategory").value;
+    const items = CHECKLIST_PRESETS[cat] || [];
+    const btn = document.getElementById("btnSubmitChecklist");
+
+    let totalPass = 0; let totalFail = 0;
+    const chkData = [];
+    const failedReports = [];
+
+    btn.disabled = true; btn.innerText = "Memproses & Mengirim...";
+
+    for (let i = 0; i < items.length; i++) {
+      const status = document.querySelector(`input[name="chk_${i}"]:checked`).value;
+      if (status === "PASS") {
+        totalPass++;
+        chkData.push({ item_name: items[i], status: "PASS" });
+      } else {
+        totalFail++;
+        const note = document.getElementById(`note_${i}`).value || "Kerusakan ditemukan saat checklist rutin.";
+        const fileEl = document.getElementById(`file_${i}`);
+        
+        let base64Photo = "";
+        if (fileEl.files && fileEl.files[0]) {
+          base64Photo = await applyWatermark(fileEl.files[0], currentUser.username, "REPORTED", document.getElementById("chkLocationDetail").value);
+        }
+
+        chkData.push({ item_name: items[i], status: "FAIL", note: note });
+        failedReports.push({ item_name: items[i], issue: note, photo: base64Photo });
+      }
+    }
+
+    const payload = {
+      action: "saveChecklist",
+      username: currentUser.username,
+      floor: document.getElementById("chkFloor").value,
+      zone: document.getElementById("chkZone").value,
+      area_category: cat,
+      location_detail: document.getElementById("chkLocationDetail").value,
+      checklist_items: chkData,
+      total_pass: totalPass,
+      total_fail: totalFail,
+      failed_reports: failedReports
+    };
+
+    const res = await fetchAPI(payload);
+    alert(res.message);
+    btn.disabled = false; btn.innerText = "Simpan Hasil Inspeksi";
+
+    if (res.status === "success") {
+      document.getElementById("checklistForm").reset();
+      loadChecklistItems();
+      switchTab('list');
+    }
+  });
 
   function setFilter(status) {
     currentFilter = status;
@@ -634,7 +734,7 @@
     });
   }
 
-  // SUBMIT REPORT
+  // SUBMIT REPORT DIRECT
   document.getElementById("reportForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!markedX || !markedY) { alert("Silakan berikan tanda titik lokasi pada denah layout!"); return; }

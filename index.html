@@ -168,16 +168,16 @@
         <div class="mb-2">
           <label>Kategori Area</label>
           <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
-  <option value="Toilet Customer Public">Toilet Customer Public</option>
-  <option value="Toilet Priority / Difabel">Toilet Priority / Difabel</option>
-  <option value="Nursery / Laktasi Room">Nursery / Laktasi Room</option>
-  <option value="Public Corridor & Koridor Utama">Public Corridor & Koridor Utama</option>
-  <option value="Atrium & Event Area (Public Space)">Atrium & Event Area (Public Space)</option>
-  <option value="Service Corridor & Loading Area (Backside)">Service Corridor & Loading Area (Backside)</option>
-  <option value="Fasad Gedung & Drop-off Lobby">Fasad Gedung & Drop-off Lobby</option>
-  <option value="Rooftop & Struktur Gedung Outer">Rooftop & Struktur Gedung Outer</option>
-  <option value="Management Office (MO) Area">Management Office (MO) Area</option>
-</select>
+            <option value="Toilet Customer Public">Toilet Customer Public</option>
+            <option value="Toilet Priority / Difabel">Toilet Priority / Difabel</option>
+            <option value="Nursery / Laktasi Room">Nursery / Laktasi Room</option>
+            <option value="Public Corridor & Koridor Utama">Public Corridor & Koridor Utama</option>
+            <option value="Atrium & Event Area (Public Space)">Atrium & Event Area (Public Space)</option>
+            <option value="Service Corridor & Loading Area (Backside)">Service Corridor & Loading Area (Backside)</option>
+            <option value="Fasad Gedung & Drop-off Lobby">Fasad Gedung & Drop-off Lobby</option>
+            <option value="Rooftop & Struktur Gedung Outer">Rooftop & Struktur Gedung Outer</option>
+            <option value="Management Office (MO) Area">Management Office (MO) Area</option>
+          </select>
         </div>
 
         <div class="mb-3">
@@ -596,176 +596,170 @@
     }
   }
 
-  // 1. UPDATE FUNGSI UNTUK GENERATE ITEM CHECKLIST DENGAN TOMBOL KAMERA/GALERI
-function loadChecklistItems() {
-  const cat = document.getElementById("chkCategory").value;
-  const items = CHECKLIST_PRESETS[cat] || [];
-  const container = document.getElementById("checklistItemsContainer");
-  container.innerHTML = "";
+  // LOGIKA RENDER & FUNGSI CHECKLIST INSPEKSI
+  function loadChecklistItems() {
+    const cat = document.getElementById("chkCategory").value;
+    const items = CHECKLIST_PRESETS[cat] || [];
+    const container = document.getElementById("checklistItemsContainer");
+    container.innerHTML = "";
 
-  items.forEach((item, idx) => {
-    container.innerHTML += `
-      <div class="chk-item-card">
-        <div class="d-flex justify-content-between align-items-center">
-          <span class="fw-bold small">${idx + 1}. ${item}</span>
-          <div class="btn-group btn-group-sm" role="group">
-            <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" checked onchange="toggleFailDetail(${idx}, false)">
-            <label class="btn btn-outline-success" for="pass_${idx}">Baik</label>
+    items.forEach((item, idx) => {
+      container.innerHTML += `
+        <div class="chk-item-card">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fw-bold small">${idx + 1}. ${item}</span>
+            <div class="btn-group btn-group-sm" role="group">
+              <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" checked onchange="toggleFailDetail(${idx}, false)">
+              <label class="btn btn-outline-success" for="pass_${idx}">Baik</label>
 
-            <input type="radio" class="btn-check" name="chk_${idx}" id="fail_${idx}" value="FAIL" onchange="toggleFailDetail(${idx}, true)">
-            <label class="btn btn-outline-danger" for="fail_${idx}">Rusak</label>
-          </div>
-        </div>
-        
-        <!-- WRAPPER UNTUK MULTI-TITIK KERUSAKAN -->
-        <div id="fail_box_${idx}" class="mt-2 d-none border-top pt-2">
-          <div id="fail_list_${idx}">
-            <div class="fail-sub-item mb-2 p-2 bg-light rounded border">
-              <label class="small fw-bold text-danger mb-1">Titik Kerusakan #1</label>
-              <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Utara / Dekat AHU 2)">
-              <textarea class="form-control form-control-sm mb-2 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
-              
-              <!-- OPSI KAMERA & GALERI -->
-              <div class="d-flex gap-2 mb-1">
-                <button type="button" class="btn btn-outline-primary btn-sm w-50" onclick="triggerSubInput('${idx}', 0, 'camera')">📷 Kamera</button>
-                <button type="button" class="btn btn-outline-secondary btn-sm w-50" onclick="triggerSubInput('${idx}', 0, 'gallery')">🖼️ Galeri</button>
-              </div>
-              <input type="file" class="d-none sub-cam-${idx}" accept="image/*" capture="environment" onchange="handleSubFileSelect(this, '${idx}', 0)">
-              <input type="file" class="d-none sub-gal-${idx}" accept="image/*" onchange="handleSubFileSelect(this, '${idx}', 0)">
-              <small class="text-muted d-block sub-status-${idx}" style="font-size:0.75rem;"></small>
+              <input type="radio" class="btn-check" name="chk_${idx}" id="fail_${idx}" value="FAIL" onchange="toggleFailDetail(${idx}, true)">
+              <label class="btn btn-outline-danger" for="fail_${idx}">Rusak</label>
             </div>
           </div>
-          <button type="button" class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="addSubFailItem(${idx})">
-            ➕ Tambah Titik Kerusakan Lain untuk Item Ini
-          </button>
+          
+          <div id="fail_box_${idx}" class="mt-2 d-none border-top pt-2">
+            <div id="fail_list_${idx}">
+              <div class="fail-sub-item mb-2 p-2 bg-light rounded border">
+                <label class="small fw-bold text-danger mb-1">Titik Kerusakan #1</label>
+                <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Utara)">
+                <textarea class="form-control form-control-sm mb-2 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
+                
+                <div class="d-flex gap-2 mb-1">
+                  <button type="button" class="btn btn-outline-primary btn-sm w-50" onclick="triggerSubInput('${idx}', 0, 'camera')">📷 Kamera</button>
+                  <button type="button" class="btn btn-outline-secondary btn-sm w-50" onclick="triggerSubInput('${idx}', 0, 'gallery')">🖼️ Galeri</button>
+                </div>
+                <input type="file" class="d-none sub-cam-${idx}" accept="image/*" capture="environment" onchange="handleSubFileSelect(this, '${idx}', 0)">
+                <input type="file" class="d-none sub-gal-${idx}" accept="image/*" onchange="handleSubFileSelect(this, '${idx}', 0)">
+                <small class="text-muted d-block sub-status-${idx}" style="font-size:0.75rem;"></small>
+              </div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="addSubFailItem(${idx})">
+              ➕ Tambah Titik Kerusakan Lain untuk Item Ini
+            </button>
+          </div>
         </div>
-      </div>
-    `;
-  });
-}
-
-// 2. FUNGSI UNTUK TAMBAH TITIK SUB-ITEM BARU DENGAN DUA TOMBOL OPSI FOTO
-function addSubFailItem(idx) {
-  const failList = document.getElementById(`fail_list_${idx}`);
-  const subIdx = failList.getElementsByClassName('fail-sub-item').length;
-  
-  const newItem = document.createElement('div');
-  newItem.className = 'fail-sub-item mb-2 p-2 bg-light rounded border';
-  newItem.innerHTML = `
-    <div class="d-flex justify-content-between align-items-center mb-1">
-      <label class="small fw-bold text-danger">Titik Kerusakan #${subIdx + 1}</label>
-      <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="this.parentElement.parentElement.remove()">Hapus</button>
-    </div>
-    <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Selatan)">
-    <textarea class="form-control form-control-sm mb-2 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
-
-    <div class="d-flex gap-2 mb-1">
-      <button type="button" class="btn btn-outline-primary btn-sm w-50" onclick="triggerSubInput('${idx}', ${subIdx}, 'camera')">📷 Kamera</button>
-      <button type="button" class="btn btn-outline-secondary btn-sm w-50" onclick="triggerSubInput('${idx}', ${subIdx}, 'gallery')">🖼️ Galeri</button>
-    </div>
-    <input type="file" class="d-none sub-cam-${idx}" accept="image/*" capture="environment" onchange="handleSubFileSelect(this, '${idx}', ${subIdx})">
-    <input type="file" class="d-none sub-gal-${idx}" accept="image/*" onchange="handleSubFileSelect(this, '${idx}', ${subIdx})">
-    <small class="text-muted d-block sub-status-${idx}" style="font-size:0.75rem;"></small>
-  `;
-  failList.appendChild(newItem);
-}
-
-// 3. HANDLER TRIGGER FILE INPUT UNTUK SUB-ITEM
-function triggerSubInput(itemIdx, subIdx, type) {
-  const container = document.getElementById(`fail_list_${itemIdx}`).getElementsByClassName('fail-sub-item')[subIdx];
-  if (type === 'camera') {
-    container.querySelector(`.sub-cam-${itemIdx}`).click();
-  } else {
-    container.querySelector(`.sub-gal-${itemIdx}`).click();
+      `;
+    });
   }
-}
 
-function handleSubFileSelect(inputEl, itemIdx, subIdx) {
-  const container = document.getElementById(`fail_list_${itemIdx}`).getElementsByClassName('fail-sub-item')[subIdx];
-  const statusEl = container.querySelector(`.sub-status-${itemIdx}`);
-  if (inputEl.files && inputEl.files[0]) {
-    statusEl.innerText = "Foto terpilih: " + inputEl.files[0].name;
-    inputEl.setAttribute("data-has-file", "true");
-  }
-}
-
-// 4. SUBMIT FORM CHECKLIST WITH WATERMARK PROCESS
-document.getElementById("checklistForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const cat = document.getElementById("chkCategory").value;
-  const items = CHECKLIST_PRESETS[cat] || [];
-  const btn = document.getElementById("btnSubmitChecklist");
-
-  let totalPass = 0; 
-  let totalFail = 0;
-  const chkData = [];
-  const failedReports = [];
-
-  btn.disabled = true; 
-  btn.innerText = "Proses Watermark & Mengirim Inspeksi...";
-
-  const baseLocation = document.getElementById("chkLocationDetail").value;
-
-  for (let i = 0; i < items.length; i++) {
-    const status = document.querySelector(`input[name="chk_${i}"]:checked`).value;
-    
-    if (status === "PASS") {
-      totalPass++;
-      chkData.push({ item_name: items[i], status: "PASS" });
-    } else {
-      const subItems = document.getElementById(`fail_list_${i}`).getElementsByClassName('fail-sub-item');
-
-      for (let k = 0; k < subItems.length; k++) {
-        totalFail++;
-        const locVal = subItems[k].querySelector(`.sub-loc-${i}`).value;
-        const noteVal = subItems[k].querySelector(`.sub-note-${i}`).value || "Kerusakan ditemukan saat inspeksi rutin.";
-        const subLocText = locVal ? ` - ${locVal}` : '';
-        const fullLocation = `${baseLocation}${subLocText}`;
-
-        const camInput = subItems[k].querySelector(`.sub-cam-${i}`);
-        const galInput = subItems[k].querySelector(`.sub-gal-${i}`);
-        const targetFile = (camInput.files && camInput.files[0]) ? camInput.files[0] : (galInput.files && galInput.files[0] ? galInput.files[0] : null);
-
-        let base64Photo = "";
-        if (targetFile) {
-          // PROSES WATERMARK OTOMATIS
-          base64Photo = await applyWatermark(targetFile, currentUser.username, "REPORTED", fullLocation);
-        }
-
-        chkData.push({ item_name: `${items[i]}${subLocText}`, status: "FAIL", note: noteVal });
-        failedReports.push({ 
-          item_name: `${items[i]}${subLocText}`, 
-          issue: noteVal, 
-          photo: base64Photo 
-        });
-      }
+  function toggleFailDetail(idx, isFail) {
+    const box = document.getElementById(`fail_box_${idx}`);
+    if (box) {
+      if (isFail) box.classList.remove("d-none");
+      else box.classList.add("d-none");
     }
   }
 
-  const payload = {
-    action: "saveChecklist",
-    username: currentUser.username,
-    floor: document.getElementById("chkFloor").value,
-    zone: document.getElementById("chkZone").value,
-    area_category: cat,
-    location_detail: baseLocation,
-    checklist_items: chkData,
-    total_pass: totalPass,
-    total_fail: totalFail,
-    failed_reports: failedReports
-  };
+  function addSubFailItem(idx) {
+    const failList = document.getElementById(`fail_list_${idx}`);
+    const subIdx = failList.getElementsByClassName('fail-sub-item').length;
+    
+    const newItem = document.createElement('div');
+    newItem.className = 'fail-sub-item mb-2 p-2 bg-light rounded border';
+    newItem.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <label class="small fw-bold text-danger">Titik Kerusakan #${subIdx + 1}</label>
+        <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="this.parentElement.parentElement.remove()">Hapus</button>
+      </div>
+      <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Selatan)">
+      <textarea class="form-control form-control-sm mb-2 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
 
-  const res = await fetchAPI(payload);
-  alert(res.message);
-  btn.disabled = false; 
-  btn.innerText = "Simpan Hasil Inspeksi";
-
-  if (res.status === "success") {
-    document.getElementById("checklistForm").reset();
-    loadChecklistItems();
-    switchTab('list');
+      <div class="d-flex gap-2 mb-1">
+        <button type="button" class="btn btn-outline-primary btn-sm w-50" onclick="triggerSubInput('${idx}', ${subIdx}, 'camera')">📷 Kamera</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm w-50" onclick="triggerSubInput('${idx}', ${subIdx}, 'gallery')">🖼️ Galeri</button>
+      </div>
+      <input type="file" class="d-none sub-cam-${idx}" accept="image/*" capture="environment" onchange="handleSubFileSelect(this, '${idx}', ${subIdx})">
+      <input type="file" class="d-none sub-gal-${idx}" accept="image/*" onchange="handleSubFileSelect(this, '${idx}', ${subIdx})">
+      <small class="text-muted d-block sub-status-${idx}" style="font-size:0.75rem;"></small>
+    `;
+    failList.appendChild(newItem);
   }
-});
+
+  function triggerSubInput(itemIdx, subIdx, type) {
+    const container = document.getElementById(`fail_list_${itemIdx}`).getElementsByClassName('fail-sub-item')[subIdx];
+    if (type === 'camera') {
+      container.querySelector(`.sub-cam-${itemIdx}`).click();
+    } else {
+      container.querySelector(`.sub-gal-${itemIdx}`).click();
+    }
+  }
+
+  function handleSubFileSelect(inputEl, itemIdx, subIdx) {
+    const container = document.getElementById(`fail_list_${itemIdx}`).getElementsByClassName('fail-sub-item')[subIdx];
+    const statusEl = container.querySelector(`.sub-status-${itemIdx}`);
+    if (inputEl.files && inputEl.files[0]) {
+      statusEl.innerText = "Foto terpilih: " + inputEl.files[0].name;
+    }
+  }
+
+  document.getElementById("checklistForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const cat = document.getElementById("chkCategory").value;
+    const items = CHECKLIST_PRESETS[cat] || [];
+    const btn = document.getElementById("btnSubmitChecklist");
+
+    let totalPass = 0; let totalFail = 0;
+    const chkData = [];
+    const failedReports = [];
+
+    btn.disabled = true; btn.innerText = "Proses Watermark & Mengirim...";
+
+    const baseLocation = document.getElementById("chkLocationDetail").value;
+
+    for (let i = 0; i < items.length; i++) {
+      const status = document.querySelector(`input[name="chk_${i}"]:checked`).value;
+      
+      if (status === "PASS") {
+        totalPass++;
+        chkData.push({ item_name: items[i], status: "PASS" });
+      } else {
+        const subItems = document.getElementById(`fail_list_${i}`).getElementsByClassName('fail-sub-item');
+
+        for (let k = 0; k < subItems.length; k++) {
+          totalFail++;
+          const locVal = subItems[k].querySelector(`.sub-loc-${i}`).value;
+          const noteVal = subItems[k].querySelector(`.sub-note-${i}`).value || "Kerusakan ditemukan saat inspeksi rutin.";
+          const subLocText = locVal ? ` - ${locVal}` : '';
+          const fullLocation = `${baseLocation}${subLocText}`;
+
+          const camInput = subItems[k].querySelector(`.sub-cam-${i}`);
+          const galInput = subItems[k].querySelector(`.sub-gal-${i}`);
+          const targetFile = (camInput.files && camInput.files[0]) ? camInput.files[0] : (galInput.files && galInput.files[0] ? galInput.files[0] : null);
+
+          let base64Photo = "";
+          if (targetFile) {
+            base64Photo = await applyWatermark(targetFile, currentUser.username, "REPORTED", fullLocation);
+          }
+
+          chkData.push({ item_name: `${items[i]}${subLocText}`, status: "FAIL", note: noteVal });
+          failedReports.push({ item_name: `${items[i]}${subLocText}`, issue: noteVal, photo: base64Photo });
+        }
+      }
+    }
+
+    const payload = {
+      action: "saveChecklist",
+      username: currentUser.username,
+      floor: document.getElementById("chkFloor").value,
+      zone: document.getElementById("chkZone").value,
+      area_category: cat,
+      location_detail: baseLocation,
+      checklist_items: chkData,
+      total_pass: totalPass,
+      total_fail: totalFail,
+      failed_reports: failedReports
+    };
+
+    const res = await fetchAPI(payload);
+    alert(res.message);
+    btn.disabled = false; btn.innerText = "Simpan Hasil Inspeksi";
+
+    if (res.status === "success") {
+      document.getElementById("checklistForm").reset();
+      loadChecklistItems();
+      switchTab('list');
+    }
+  });
 
   function setFilter(status) {
     currentFilter = status;

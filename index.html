@@ -13,7 +13,7 @@
     .status-REPORTED { border-left-color: #dc3545; }
     .status-PROGRESS { border-left-color: #ffc107; }
     .status-RESOLVED { border-left-color: #198754; }
-    .img-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; }
+    .img-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; background-color: #e9ecef; }
     .filter-btn-group .btn { font-size: 0.85rem; }
 
     /* STYLING DENAH PANZOOM & PAN/DRAG */
@@ -69,7 +69,6 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.4);
       pointer-events: none;
       z-index: 10;
-      /* Titik rotasi dari sudut kiri bawah agar ujung lancip mengunci titik koordinat */
       transform-origin: 0 100%;
     }
     .map-pin::after {
@@ -182,7 +181,7 @@
 
     <!-- CREATE REPORT FORM -->
     <div id="createTab" class="card p-3 shadow-sm d-none">
-      ##### Lapor Kerusakan Civil
+      <h5>Lapor Kerusakan Civil</h5>
       <form id="reportForm">
         <div class="mb-2">
           <label>Lantai</label>
@@ -378,7 +377,6 @@
     cursor: 'grab'
   });
 
-  // FUNGSI KOMPENSASI PRESISE UNTUK MEMIKAT DUA KONDISI: UKURAN FIXED & KOORDINAT AKURAT
   function applyPinTransform(pinEl, scale) {
     if (!pinEl) return;
     const invScale = 1 / scale;
@@ -393,7 +391,6 @@
     applyPinTransform(document.getElementById('viewMapPin'), e.detail.scale);
   });
 
-  // Enable Mouse Wheel Zooming
   document.getElementById('mapWrapper').addEventListener('wheel', pzCreate.zoomWithWheel);
   document.getElementById('viewMapWrapper').addEventListener('wheel', pzView.zoomWithWheel);
 
@@ -412,7 +409,6 @@
     document.getElementById(cardId).classList.remove("d-none");
   }
 
-  // UPDATE GAMBAR DENAH & RESET PANZOOM
   function updateFloorMap() {
     const floor = document.getElementById("floor").value;
     const mapImg = document.getElementById("mapImage");
@@ -428,7 +424,6 @@
     document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
 
-  // LOGIKA MEMBEDAKAN KLIK MURNI vs GESER (PAN/DRAG)
   let startX = 0;
   let startY = 0;
 
@@ -584,6 +579,7 @@
   document.getElementById("updateCamera").addEventListener("change", (e) => { updateFile = e.target.files[0]; document.getElementById("updatePhotoStatus").innerText = "Foto terpilih: " + updateFile.name; });
   document.getElementById("updateGallery").addEventListener("change", (e) => { updateFile = e.target.files[0]; document.getElementById("updatePhotoStatus").innerText = "Foto terpilih: " + updateFile.name; });
 
+  // OPTIMASI DENGAN KOMPRESI 0.7 AGAR SIZE UNGGAHAN LAPORAN RINGAN
   function applyWatermark(file, username, status, locationDetail) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -630,7 +626,7 @@
             ctx.fillText(line, startX + padding, textY);
           });
 
-          resolve(canvas.toDataURL("image/jpeg", 0.85));
+          resolve(canvas.toDataURL("image/jpeg", 0.7)); // Kompresi ringan
         };
       };
       reader.onerror = error => reject(error);
@@ -682,6 +678,7 @@
     else container.innerHTML = "<div class='text-center text-danger py-4'>Gagal memuat data.</div>";
   }
 
+  // OPTIMASI POIN 2: LAZY LOADING GAMBAR & RESOLUSI THUMBNAIL sz=w300
   function renderReports() {
     const container = document.getElementById("reportsContainer");
     container.innerHTML = "";
@@ -720,9 +717,9 @@
           ` : ''}
 
           <div class="row g-2 mb-2">
-            ${photoReportThumbnail ? `<div class="col"><small class="d-block text-muted">Report:</small><img src="${photoReportThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_report}')"></div>` : ''}
-            ${photoProgressThumbnail ? `<div class="col"><small class="d-block text-muted">Progress:</small><img src="${photoProgressThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_progress}')"></div>` : ''}
-            ${photoResolvedThumbnail ? `<div class="col"><small class="d-block text-muted">Resolved:</small><img src="${photoResolvedThumbnail}" class="img-preview" onclick="viewFullImage('${item.photo_resolved}')"></div>` : ''}
+            ${photoReportThumbnail ? `<div class="col"><small class="d-block text-muted">Report:</small><img src="${photoReportThumbnail}" loading="lazy" class="img-preview" onclick="viewFullImage('${item.photo_report}')"></div>` : ''}
+            ${photoProgressThumbnail ? `<div class="col"><small class="d-block text-muted">Progress:</small><img src="${photoProgressThumbnail}" loading="lazy" class="img-preview" onclick="viewFullImage('${item.photo_progress}')"></div>` : ''}
+            ${photoResolvedThumbnail ? `<div class="col"><small class="d-block text-muted">Resolved:</small><img src="${photoResolvedThumbnail}" loading="lazy" class="img-preview" onclick="viewFullImage('${item.photo_resolved}')"></div>` : ''}
           </div>
 
           <div class="d-flex gap-2 mt-2">
@@ -777,12 +774,13 @@
     loadReports();
   }
 
+  // MENGGUNAKAN UKURAN THUMBNAIL sz=w300 AGAR RESPON PERANGKAT DAN BANDWIDTH SANGAT CEPAT
   function getGoogleThumbnailUrl(driveUrl) {
     if (!driveUrl) return "";
     let fileId = "";
     if (driveUrl.includes('open?id=')) { fileId = driveUrl.split('open?id=')[1].split('&')[0]; } 
     else if (driveUrl.includes('/file/d/')) { fileId = driveUrl.split('/file/d/')[1].split('/')[0]; }
-    return fileId ? `https://drive.google.com/thumbnail?id=${fileId}&w=600&sz=w600` : driveUrl;
+    return fileId ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w300` : driveUrl;
   }
 
   function viewFullImage(driveUrl) {
@@ -790,7 +788,7 @@
     let fileId = "";
     if (driveUrl.includes('open?id=')) { fileId = driveUrl.split('open?id=')[1].split('&')[0]; } 
     else if (driveUrl.includes('/file/d/')) { fileId = driveUrl.split('/file/d/')[1].split('/')[0]; }
-    fullImageEl.src = fileId ? `https://drive.google.com/thumbnail?id=${fileId}&w=1600&sz=w1600` : driveUrl;
+    fullImageEl.src = fileId ? `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600` : driveUrl;
     imageModal.show();
   }
 

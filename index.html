@@ -596,7 +596,8 @@
     }
   }
 
-  function loadChecklistItems() {
+  // 1. UPDATE FUNGSI UNTUK GENERATE ITEM CHECKLIST DENGAN TOMBOL KAMERA/GALERI
+function loadChecklistItems() {
   const cat = document.getElementById("chkCategory").value;
   const items = CHECKLIST_PRESETS[cat] || [];
   const container = document.getElementById("checklistItemsContainer");
@@ -622,8 +623,16 @@
             <div class="fail-sub-item mb-2 p-2 bg-light rounded border">
               <label class="small fw-bold text-danger mb-1">Titik Kerusakan #1</label>
               <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Utara / Dekat AHU 2)">
-              <textarea class="form-control form-control-sm mb-1 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
-              <input type="file" class="form-control form-control-sm sub-file-${idx}" accept="image/*">
+              <textarea class="form-control form-control-sm mb-2 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
+              
+              <!-- OPSI KAMERA & GALERI -->
+              <div class="d-flex gap-2 mb-1">
+                <button type="button" class="btn btn-outline-primary btn-sm w-50" onclick="triggerSubInput('${idx}', 0, 'camera')">📷 Kamera</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm w-50" onclick="triggerSubInput('${idx}', 0, 'gallery')">🖼️ Galeri</button>
+              </div>
+              <input type="file" class="d-none sub-cam-${idx}" accept="image/*" capture="environment" onchange="handleSubFileSelect(this, '${idx}', 0)">
+              <input type="file" class="d-none sub-gal-${idx}" accept="image/*" onchange="handleSubFileSelect(this, '${idx}', 0)">
+              <small class="text-muted d-block sub-status-${idx}" style="font-size:0.75rem;"></small>
             </div>
           </div>
           <button type="button" class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="addSubFailItem(${idx})">
@@ -635,32 +644,53 @@
   });
 }
 
-function toggleFailDetail(idx, isFail) {
-  const box = document.getElementById(`fail_box_${idx}`);
-  if (isFail) box.classList.remove("d-none");
-  else box.classList.add("d-none");
-}
-
-// FUNGSI UNTUK MENAMBAH FORM TITIK FOTO BARU
+// 2. FUNGSI UNTUK TAMBAH TITIK SUB-ITEM BARU DENGAN DUA TOMBOL OPSI FOTO
 function addSubFailItem(idx) {
   const failList = document.getElementById(`fail_list_${idx}`);
-  const currentCount = failList.getElementsByClassName('fail-sub-item').length + 1;
+  const subIdx = failList.getElementsByClassName('fail-sub-item').length;
   
   const newItem = document.createElement('div');
   newItem.className = 'fail-sub-item mb-2 p-2 bg-light rounded border';
   newItem.innerHTML = `
     <div class="d-flex justify-content-between align-items-center mb-1">
-      <label class="small fw-bold text-danger">Titik Kerusakan #${currentCount}</label>
+      <label class="small fw-bold text-danger">Titik Kerusakan #${subIdx + 1}</label>
       <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="this.parentElement.parentElement.remove()">Hapus</button>
     </div>
     <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Selatan)">
-    <textarea class="form-control form-control-sm mb-1 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
-    <input type="file" class="form-control form-control-sm sub-file-${idx}" accept="image/*">
+    <textarea class="form-control form-control-sm mb-2 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
+
+    <div class="d-flex gap-2 mb-1">
+      <button type="button" class="btn btn-outline-primary btn-sm w-50" onclick="triggerSubInput('${idx}', ${subIdx}, 'camera')">📷 Kamera</button>
+      <button type="button" class="btn btn-outline-secondary btn-sm w-50" onclick="triggerSubInput('${idx}', ${subIdx}, 'gallery')">🖼️ Galeri</button>
+    </div>
+    <input type="file" class="d-none sub-cam-${idx}" accept="image/*" capture="environment" onchange="handleSubFileSelect(this, '${idx}', ${subIdx})">
+    <input type="file" class="d-none sub-gal-${idx}" accept="image/*" onchange="handleSubFileSelect(this, '${idx}', ${subIdx})">
+    <small class="text-muted d-block sub-status-${idx}" style="font-size:0.75rem;"></small>
   `;
   failList.appendChild(newItem);
 }
 
-  document.getElementById("checklistForm").addEventListener("submit", async (e) => {
+// 3. HANDLER TRIGGER FILE INPUT UNTUK SUB-ITEM
+function triggerSubInput(itemIdx, subIdx, type) {
+  const container = document.getElementById(`fail_list_${itemIdx}`).getElementsByClassName('fail-sub-item')[subIdx];
+  if (type === 'camera') {
+    container.querySelector(`.sub-cam-${itemIdx}`).click();
+  } else {
+    container.querySelector(`.sub-gal-${itemIdx}`).click();
+  }
+}
+
+function handleSubFileSelect(inputEl, itemIdx, subIdx) {
+  const container = document.getElementById(`fail_list_${itemIdx}`).getElementsByClassName('fail-sub-item')[subIdx];
+  const statusEl = container.querySelector(`.sub-status-${itemIdx}`);
+  if (inputEl.files && inputEl.files[0]) {
+    statusEl.innerText = "Foto terpilih: " + inputEl.files[0].name;
+    inputEl.setAttribute("data-has-file", "true");
+  }
+}
+
+// 4. SUBMIT FORM CHECKLIST WITH WATERMARK PROCESS
+document.getElementById("checklistForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const cat = document.getElementById("chkCategory").value;
   const items = CHECKLIST_PRESETS[cat] || [];
@@ -672,7 +702,7 @@ function addSubFailItem(idx) {
   const failedReports = [];
 
   btn.disabled = true; 
-  btn.innerText = "Memproses & Mengompres Foto...";
+  btn.innerText = "Proses Watermark & Mengirim Inspeksi...";
 
   const baseLocation = document.getElementById("chkLocationDetail").value;
 
@@ -683,25 +713,29 @@ function addSubFailItem(idx) {
       totalPass++;
       chkData.push({ item_name: items[i], status: "PASS" });
     } else {
-      const locInputs = document.getElementsByClassName(`sub-loc-${i}`);
-      const noteInputs = document.getElementsByClassName(`sub-note-${i}`);
-      const fileInputs = document.getElementsByClassName(`sub-file-${i}`);
+      const subItems = document.getElementById(`fail_list_${i}`).getElementsByClassName('fail-sub-item');
 
-      for (let k = 0; k < locInputs.length; k++) {
+      for (let k = 0; k < subItems.length; k++) {
         totalFail++;
-        const subLoc = locInputs[k].value ? ` - ${locInputs[k].value}` : '';
-        const note = noteInputs[k].value || "Kerusakan ditemukan saat inspeksi rutin.";
-        const fullLocation = `${baseLocation}${subLoc}`;
-        
+        const locVal = subItems[k].querySelector(`.sub-loc-${i}`).value;
+        const noteVal = subItems[k].querySelector(`.sub-note-${i}`).value || "Kerusakan ditemukan saat inspeksi rutin.";
+        const subLocText = locVal ? ` - ${locVal}` : '';
+        const fullLocation = `${baseLocation}${subLocText}`;
+
+        const camInput = subItems[k].querySelector(`.sub-cam-${i}`);
+        const galInput = subItems[k].querySelector(`.sub-gal-${i}`);
+        const targetFile = (camInput.files && camInput.files[0]) ? camInput.files[0] : (galInput.files && galInput.files[0] ? galInput.files[0] : null);
+
         let base64Photo = "";
-        if (fileInputs[k].files && fileInputs[k].files[0]) {
-          base64Photo = await applyWatermark(fileInputs[k].files[0], currentUser.username, "REPORTED", fullLocation);
+        if (targetFile) {
+          // PROSES WATERMARK OTOMATIS
+          base64Photo = await applyWatermark(targetFile, currentUser.username, "REPORTED", fullLocation);
         }
 
-        chkData.push({ item_name: `${items[i]}${subLoc}`, status: "FAIL", note: note });
+        chkData.push({ item_name: `${items[i]}${subLocText}`, status: "FAIL", note: noteVal });
         failedReports.push({ 
-          item_name: `${items[i]}${subLoc}`, 
-          issue: note, 
+          item_name: `${items[i]}${subLocText}`, 
+          issue: noteVal, 
           photo: base64Photo 
         });
       }

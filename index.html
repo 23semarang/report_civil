@@ -597,94 +597,141 @@
   }
 
   function loadChecklistItems() {
-    const cat = document.getElementById("chkCategory").value;
-    const items = CHECKLIST_PRESETS[cat] || [];
-    const container = document.getElementById("checklistItemsContainer");
-    container.innerHTML = "";
+  const cat = document.getElementById("chkCategory").value;
+  const items = CHECKLIST_PRESETS[cat] || [];
+  const container = document.getElementById("checklistItemsContainer");
+  container.innerHTML = "";
 
-    items.forEach((item, idx) => {
-      container.innerHTML += `
-        <div class="chk-item-card">
-          <div class="d-flex justify-content-between align-items-center">
-            <span class="fw-bold small">${idx + 1}. ${item}</span>
-            <div class="btn-group btn-group-sm" role="group">
-              <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" checked onchange="toggleFailDetail(${idx}, false)">
-              <label class="btn btn-outline-success" for="pass_${idx}">Baik</label>
+  items.forEach((item, idx) => {
+    container.innerHTML += `
+      <div class="chk-item-card">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="fw-bold small">${idx + 1}. ${item}</span>
+          <div class="btn-group btn-group-sm" role="group">
+            <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" checked onchange="toggleFailDetail(${idx}, false)">
+            <label class="btn btn-outline-success" for="pass_${idx}">Baik</label>
 
-              <input type="radio" class="btn-check" name="chk_${idx}" id="fail_${idx}" value="FAIL" onchange="toggleFailDetail(${idx}, true)">
-              <label class="btn btn-outline-danger" for="fail_${idx}">Rusak</label>
-            </div>
-          </div>
-          <div id="fail_box_${idx}" class="mt-2 d-none border-top pt-2">
-            <textarea id="note_${idx}" class="form-control form-control-sm mb-2" placeholder="Jelaskan detail kerusakan..."></textarea>
-            <input type="file" id="file_${idx}" class="form-control form-control-sm" accept="image/*">
+            <input type="radio" class="btn-check" name="chk_${idx}" id="fail_${idx}" value="FAIL" onchange="toggleFailDetail(${idx}, true)">
+            <label class="btn btn-outline-danger" for="fail_${idx}">Rusak</label>
           </div>
         </div>
-      `;
-    });
-  }
+        
+        <!-- WRAPPER UNTUK MULTI-TITIK KERUSAKAN -->
+        <div id="fail_box_${idx}" class="mt-2 d-none border-top pt-2">
+          <div id="fail_list_${idx}">
+            <div class="fail-sub-item mb-2 p-2 bg-light rounded border">
+              <label class="small fw-bold text-danger mb-1">Titik Kerusakan #1</label>
+              <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Utara / Dekat AHU 2)">
+              <textarea class="form-control form-control-sm mb-1 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
+              <input type="file" class="form-control form-control-sm sub-file-${idx}" accept="image/*">
+            </div>
+          </div>
+          <button type="button" class="btn btn-sm btn-outline-primary w-100 mt-1" onclick="addSubFailItem(${idx})">
+            ➕ Tambah Titik Kerusakan Lain untuk Item Ini
+          </button>
+        </div>
+      </div>
+    `;
+  });
+}
 
-  function toggleFailDetail(idx, isFail) {
-    const box = document.getElementById(`fail_box_${idx}`);
-    if (isFail) box.classList.remove("d-none");
-    else box.classList.add("d-none");
-  }
+function toggleFailDetail(idx, isFail) {
+  const box = document.getElementById(`fail_box_${idx}`);
+  if (isFail) box.classList.remove("d-none");
+  else box.classList.add("d-none");
+}
+
+// FUNGSI UNTUK MENAMBAH FORM TITIK FOTO BARU
+function addSubFailItem(idx) {
+  const failList = document.getElementById(`fail_list_${idx}`);
+  const currentCount = failList.getElementsByClassName('fail-sub-item').length + 1;
+  
+  const newItem = document.createElement('div');
+  newItem.className = 'fail-sub-item mb-2 p-2 bg-light rounded border';
+  newItem.innerHTML = `
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <label class="small fw-bold text-danger">Titik Kerusakan #${currentCount}</label>
+      <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="this.parentElement.parentElement.remove()">Hapus</button>
+    </div>
+    <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Selatan)">
+    <textarea class="form-control form-control-sm mb-1 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
+    <input type="file" class="form-control form-control-sm sub-file-${idx}" accept="image/*">
+  `;
+  failList.appendChild(newItem);
+}
 
   document.getElementById("checklistForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const cat = document.getElementById("chkCategory").value;
-    const items = CHECKLIST_PRESETS[cat] || [];
-    const btn = document.getElementById("btnSubmitChecklist");
+  e.preventDefault();
+  const cat = document.getElementById("chkCategory").value;
+  const items = CHECKLIST_PRESETS[cat] || [];
+  const btn = document.getElementById("btnSubmitChecklist");
 
-    let totalPass = 0; let totalFail = 0;
-    const chkData = [];
-    const failedReports = [];
+  let totalPass = 0; 
+  let totalFail = 0;
+  const chkData = [];
+  const failedReports = [];
 
-    btn.disabled = true; btn.innerText = "Memproses & Mengirim...";
+  btn.disabled = true; 
+  btn.innerText = "Memproses & Mengompres Foto...";
 
-    for (let i = 0; i < items.length; i++) {
-      const status = document.querySelector(`input[name="chk_${i}"]:checked`).value;
-      if (status === "PASS") {
-        totalPass++;
-        chkData.push({ item_name: items[i], status: "PASS" });
-      } else {
+  const baseLocation = document.getElementById("chkLocationDetail").value;
+
+  for (let i = 0; i < items.length; i++) {
+    const status = document.querySelector(`input[name="chk_${i}"]:checked`).value;
+    
+    if (status === "PASS") {
+      totalPass++;
+      chkData.push({ item_name: items[i], status: "PASS" });
+    } else {
+      const locInputs = document.getElementsByClassName(`sub-loc-${i}`);
+      const noteInputs = document.getElementsByClassName(`sub-note-${i}`);
+      const fileInputs = document.getElementsByClassName(`sub-file-${i}`);
+
+      for (let k = 0; k < locInputs.length; k++) {
         totalFail++;
-        const note = document.getElementById(`note_${i}`).value || "Kerusakan ditemukan saat checklist rutin.";
-        const fileEl = document.getElementById(`file_${i}`);
+        const subLoc = locInputs[k].value ? ` - ${locInputs[k].value}` : '';
+        const note = noteInputs[k].value || "Kerusakan ditemukan saat inspeksi rutin.";
+        const fullLocation = `${baseLocation}${subLoc}`;
         
         let base64Photo = "";
-        if (fileEl.files && fileEl.files[0]) {
-          base64Photo = await applyWatermark(fileEl.files[0], currentUser.username, "REPORTED", document.getElementById("chkLocationDetail").value);
+        if (fileInputs[k].files && fileInputs[k].files[0]) {
+          base64Photo = await applyWatermark(fileInputs[k].files[0], currentUser.username, "REPORTED", fullLocation);
         }
 
-        chkData.push({ item_name: items[i], status: "FAIL", note: note });
-        failedReports.push({ item_name: items[i], issue: note, photo: base64Photo });
+        chkData.push({ item_name: `${items[i]}${subLoc}`, status: "FAIL", note: note });
+        failedReports.push({ 
+          item_name: `${items[i]}${subLoc}`, 
+          issue: note, 
+          photo: base64Photo 
+        });
       }
     }
+  }
 
-    const payload = {
-      action: "saveChecklist",
-      username: currentUser.username,
-      floor: document.getElementById("chkFloor").value,
-      zone: document.getElementById("chkZone").value,
-      area_category: cat,
-      location_detail: document.getElementById("chkLocationDetail").value,
-      checklist_items: chkData,
-      total_pass: totalPass,
-      total_fail: totalFail,
-      failed_reports: failedReports
-    };
+  const payload = {
+    action: "saveChecklist",
+    username: currentUser.username,
+    floor: document.getElementById("chkFloor").value,
+    zone: document.getElementById("chkZone").value,
+    area_category: cat,
+    location_detail: baseLocation,
+    checklist_items: chkData,
+    total_pass: totalPass,
+    total_fail: totalFail,
+    failed_reports: failedReports
+  };
 
-    const res = await fetchAPI(payload);
-    alert(res.message);
-    btn.disabled = false; btn.innerText = "Simpan Hasil Inspeksi";
+  const res = await fetchAPI(payload);
+  alert(res.message);
+  btn.disabled = false; 
+  btn.innerText = "Simpan Hasil Inspeksi";
 
-    if (res.status === "success") {
-      document.getElementById("checklistForm").reset();
-      loadChecklistItems();
-      switchTab('list');
-    }
-  });
+  if (res.status === "success") {
+    document.getElementById("checklistForm").reset();
+    loadChecklistItems();
+    switchTab('list');
+  }
+});
 
   function setFilter(status) {
     currentFilter = status;

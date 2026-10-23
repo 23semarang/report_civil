@@ -16,14 +16,15 @@
     .img-preview { width: 100%; max-height: 180px; object-fit: cover; border-radius: 5px; cursor: pointer; border: 1px solid #ddd; background-color: #e9ecef; }
     .filter-btn-group .btn { font-size: 0.85rem; }
 
-    /* STYLING DENAH PANZOOM & PAN/DRAG */
+    /* STYLING DENAH RESPANSIF & PRESISI UNTUK MOBILE & DESKTOP */
     .map-outer-wrapper {
       position: relative;
       border: 2px dashed #0d6efd;
       border-radius: 8px;
       overflow: hidden;
       background-color: #e9ecef;
-      height: 380px;
+      width: 100%;
+      height: auto; /* Mengikuti tinggi alami gambar denah */
       touch-action: none;
       user-select: none;
     }
@@ -42,9 +43,10 @@
     .map-container {
       position: relative;
       width: 100%;
-      height: 100%;
+      height: auto;
       cursor: grab;
       touch-action: none;
+      display: inline-block;
     }
     .map-container:active {
       cursor: grabbing;
@@ -181,8 +183,8 @@
 
     <!-- CREATE REPORT FORM -->
     <div id="createTab" class="card p-3 shadow-sm d-none">
-      <h5>Lapor Kerusakan Civil</h5>
-      <form id="reportForm">
+      <b>Lapor Kerusakan Civil</b>
+      <form id="reportForm" class="mt-2">
         <div class="mb-2">
           <label>Lantai</label>
           <select id="floor" class="form-select" onchange="updateFloorMap()" required>
@@ -438,7 +440,7 @@
 
     if (diffX < 8 && diffY < 8) {
       const mapImg = document.getElementById("mapImage");
-      const rect = mapImg.getBoundingClientRect();
+      const rect = mapImg.getBoundingClientRect(); // Menggunakan rect gambar asli
 
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
@@ -579,7 +581,6 @@
   document.getElementById("updateCamera").addEventListener("change", (e) => { updateFile = e.target.files[0]; document.getElementById("updatePhotoStatus").innerText = "Foto terpilih: " + updateFile.name; });
   document.getElementById("updateGallery").addEventListener("change", (e) => { updateFile = e.target.files[0]; document.getElementById("updatePhotoStatus").innerText = "Foto terpilih: " + updateFile.name; });
 
-  // OPTIMASI DENGAN KOMPRESI 0.7 AGAR SIZE UNGGAHAN LAPORAN RINGAN
   function applyWatermark(file, username, status, locationDetail) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -626,7 +627,7 @@
             ctx.fillText(line, startX + padding, textY);
           });
 
-          resolve(canvas.toDataURL("image/jpeg", 0.7)); // Kompresi ringan
+          resolve(canvas.toDataURL("image/jpeg", 0.7));
         };
       };
       reader.onerror = error => reject(error);
@@ -678,7 +679,6 @@
     else container.innerHTML = "<div class='text-center text-danger py-4'>Gagal memuat data.</div>";
   }
 
-  // OPTIMASI POIN 2: LAZY LOADING GAMBAR & RESOLUSI THUMBNAIL sz=w300
   function renderReports() {
     const container = document.getElementById("reportsContainer");
     container.innerHTML = "";
@@ -774,7 +774,6 @@
     loadReports();
   }
 
-  // MENGGUNAKAN UKURAN THUMBNAIL sz=w300 AGAR RESPON PERANGKAT DAN BANDWIDTH SANGAT CEPAT
   function getGoogleThumbnailUrl(driveUrl) {
     if (!driveUrl) return "";
     let fileId = "";

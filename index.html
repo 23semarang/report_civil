@@ -18,6 +18,40 @@
   <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
 
   <style>
+    /* STICKY HEADER DENGAN TRANSISI HIDE NAMA AKUN */
+.sticky-header {
+  position: sticky;
+  top: 10px;
+  z-index: 1030;
+  transition: all 0.3s ease;
+}
+
+.sticky-header.scrolled {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(10px);
+  padding: 8px 14px !important;
+}
+
+.sticky-header.scrolled .user-text-group {
+  display: none !important; /* Hide nama akun saat scroll down */
+}
+
+/* OFFNAV SIDEBAR STYLING */
+.offcanvas {
+  border-radius: 20px 0 0 20px !important;
+  background-color: #ffffff;
+}
+.offcanvas .nav-link {
+  color: #334155;
+  font-weight: 600;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 6px;
+}
+.offcanvas .nav-link.active {
+  background-color: #4361ee !important;
+  color: #ffffff !important;
+}
     /* ==========================================
        MODERN SAAS DASHBOARD STYLE (DARK & PASTEL)
        ========================================== */
@@ -363,26 +397,35 @@
 
   <!-- MAIN APP SECTION -->
 <div id="appSection" class="d-none">
-  
-  <!-- HEADER & USER GREETING MODERN -->
-  <div class="card p-3 mb-3 border-0 shadow-sm" style="background: #ffffff; border-radius: 16px !important;">
+
+  <!-- 1. STICKY HEADER (AUTO HIDE NAMA AKUN SAAT SCROLL) -->
+  <div id="topHeader" class="card p-3 mb-3 border-0 shadow-sm sticky-header" style="background: #ffffff; border-radius: 16px !important;">
     <div class="d-flex justify-content-between align-items-center">
-      <div class="d-flex align-items-center gap-2">
-        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+      
+      <!-- Sisi Kiri: Tombol Menu Sidebar (Drawer) -->
+      <button class="btn btn-light border-0 p-2 me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+        <i class="bi bi-list fs-4"></i>
+      </button>
+
+      <!-- Tengah: User Greeting (Bisa ter-hide saat scroll) -->
+      <div class="d-flex align-items-center gap-2 flex-grow-1 user-text-group">
+        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
           <i class="bi bi-person-fill fs-5"></i>
         </div>
         <div>
-          <small class="text-muted d-block" style="font-size: 0.75rem;">Selamat Datang,</small>
-          <span id="userGreeting" class="fw-bold text-dark" style="font-size: 0.95rem;">-</span>
+          <small class="text-muted d-block" style="font-size: 0.7rem;">Selamat Datang,</small>
+          <span id="userGreeting" class="fw-bold text-dark" style="font-size: 0.9rem;">-</span>
         </div>
       </div>
-      <button onclick="logout()" class="btn btn-sm btn-outline-danger border-0 rounded-circle p-2" title="Logout">
+
+      <!-- Sisi Kanan: Tombol Logout -->
+      <button onclick="logout()" class="btn btn-sm btn-outline-danger border-0 rounded-circle p-2 ms-auto" title="Logout">
         <i class="bi bi-box-arrow-right fs-5"></i>
       </button>
     </div>
   </div>
 
-  <!-- KARTU STATISTIK PASTEL (SAAS STYLE) -->
+  <!-- 2. KARTU STATISTIK PASTEL -->
   <div class="row g-2 mb-3">
     <div class="col-6">
       <div class="p-3 card-pastel-blue">
@@ -404,31 +447,41 @@
     </div>
   </div>
 
-  <!-- NAVIGASI TAB UTAMA (ICON VECTOR MODERN) -->
-  <ul class="nav nav-pills mb-3" id="mainTab" role="tablist">
-    <li class="nav-item">
-      <button class="nav-link active" id="tab-laporan" data-bs-toggle="pill" data-bs-target="#listTab">
-        <i class="bi bi-grid-fill me-1"></i> Laporan
-      </button>
-    </li>
-    <li class="nav-item">
-      <button class="nav-link" id="tab-inspeksi" data-bs-toggle="pill" data-bs-target="#checklistTab">
-        <i class="bi bi-clipboard-check-fill me-1"></i> Inspeksi
-      </button>
-    </li>
-    <li class="nav-item">
-      <button class="nav-link" id="tab-direct" data-bs-toggle="pill" data-bs-target="#createTab">
-        <i class="bi bi-plus-circle-fill me-1"></i> Direct
-      </button>
-    </li>
-    <li class="nav-item">
-      <button class="nav-link btn-warning text-white" id="tab-bocor" data-bs-toggle="pill" data-bs-target="#bocorTab">
-        <i class="bi bi-droplet-fill me-1"></i> Bocor
-      </button>
-    </li>
-  </ul>
+  <!-- 3. SIDEBAR MENUS (OFFCANVAS DRAWER) -->
+  <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+    <div class="offcanvas-header border-bottom">
+      <h5 class="offcanvas-title fw-bold text-primary" id="sidebarMenuLabel">
+        <i class="bi bi-building-gear me-2"></i>Civil Maintenance
+      </h5>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+      <ul class="nav nav-pills flex-column" id="mainTab" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link w-100 text-start active" id="tab-laporan" data-bs-toggle="pill" data-bs-target="#listTab" data-bs-dismiss="offcanvas">
+            <i class="bi bi-grid-fill me-2"></i> Laporan
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link w-100 text-start" id="tab-inspeksi" data-bs-toggle="pill" data-bs-target="#checklistTab" data-bs-dismiss="offcanvas">
+            <i class="bi bi-clipboard-check-fill me-2"></i> Inspeksi Area
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link w-100 text-start" id="tab-direct" data-bs-toggle="pill" data-bs-target="#createTab" data-bs-dismiss="offcanvas">
+            <i class="bi bi-plus-circle-fill me-2 text-primary"></i> Lapor Direct
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link w-100 text-start text-warning" id="tab-bocor" data-bs-toggle="pill" data-bs-target="#bocorTab" data-bs-dismiss="offcanvas">
+            <i class="bi bi-droplet-fill me-2 text-warning"></i> Lapor Kebocoran Air
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
 
-  <!-- TAB CONTENT WRAPPER (FORM & LIST LAPORAN TETAP PAKAI KODE LAMA ANDA) -->
+  <!-- TAB CONTENT WRAPPER JUGA MASIH MENGGUNAKAN FORM LAMA ANDA -->
   <div class="tab-content">
     
     <!-- 1. TAB CHECKLIST INSPEKSI -->
@@ -1734,6 +1787,21 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
       }
         });
       }
+  
+  // ==========================================
+// 3. EVENT LISTENER HIDE NAMA AKUN SAAT SCROLL DOWN
+// ==========================================
+window.addEventListener('scroll', function () {
+  const header = document.getElementById('topHeader');
+  if (header) {
+    if (window.scrollY > 40) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+  }
+});
+  
   </script> <!-- PENUTUP TAG SCRIPT PALING BAWAH -->
 </body>
 </html>

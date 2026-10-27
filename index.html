@@ -1598,6 +1598,8 @@ async function loadBocorReports() {
       const keterangan = item.keterangan || "-";
       const urlFoto = item.url_foto || "";
       const status = item.status || "REPORTED";
+      const mx = item.marking_x;
+      const my = item.marking_y;
 
       const photoUrl = getGoogleThumbnailUrl(urlFoto);
       const severityBadge = keparahan === 'DARURAT' ? 'bg-danger' : (keparahan === 'SEDANG' ? 'bg-warning text-dark' : 'bg-info text-dark');
@@ -1616,7 +1618,14 @@ async function loadBocorReports() {
 
           <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top small">
             <span class="text-muted"><i class="bi bi-clock"></i> ${timestamp}</span>
-            <span class="badge bg-light text-dark border">${idLaporan}</span>
+            <div class="d-flex align-items-center gap-2">
+              ${mx && my ? `
+                <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="showMapModal('${lantai}', ${mx}, ${my})">
+                  <i class="bi bi-geo-alt"></i> Denah
+                </button>
+              ` : ''}
+              <span class="badge bg-light text-dark border">${idLaporan}</span>
+            </div>
           </div>
         </div>
       `;

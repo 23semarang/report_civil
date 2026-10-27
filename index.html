@@ -1477,22 +1477,78 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
     return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(r => r.json());
   }
      
-      // ==========================================
-      // TEMPEL KODE HANDLER LAPOR BOCOR DI SINI
-      // ==========================================
-      const bocorForm = document.getElementById("bocorForm");
-      if (bocorForm) {
-        bocorForm.addEventListener("submit", function (e) {
-          e.preventDefault();
+      // 1. EVENT LISTENER: AMBIL FOTO, WATERMARK, & NOTIFIKASI STATUS LAPOR BOCOR
+  let bocorBase64Photo = "";
+  const bocorPhotoInput = document.getElementById("bocorPhotoCamera");
 
-          const btnSubmit = document.getElementById("btnSubmitBocor");
-          btnSubmit.disabled = true;
-          btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...`;
+  if (bocorPhotoInput) {
+    bocorPhotoInput.addEventListener("change", function (e) {
+      const file = e.target.files[0];
+      const statusElement = document.getElementById("bocorPhotoStatus");
 
-          const photoInput = document.getElementById("bocorPhotoCamera");
-          
-          // PERBAIKI BAGIAN FETCH DI DALAM sendBocorData
-      const sendBocorData = (base64Photo) => {
+      if (!file) {
+        if (statusElement) statusElement.innerText = "";
+        bocorBase64Photo = "";
+        return;
+      }
+
+      if (statusElement) {
+        statusElement.innerText = "⏳ Memproses foto & menambahkan watermark...";
+        statusElement.className = "text-warning small d-block mt-1 fw-bold";
+      }
+
+      const reader = new FileReader();
+      reader.onload = function (evt) {
+        const img = new Image();
+        img.onload = function () {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+
+          const now = new Date();
+          const timeString = now.toLocaleDateString('id-ID', {
+            day: '2-digit', month: 'short', year: 'numeric',
+            hour: '2-digit', minute: '2-digit', second: '2-digit'
+          });
+          const floorVal = document.getElementById("bocorFloor") ? document.getElementById("bocorFloor").value : "-";
+          const watermarkText = `[LAPOR BOCOR - MAL 23] ${floorVal} | ${timeString}`;
+
+          const fontSize = Math.max(16, Math.floor(canvas.width / 30));
+          ctx.font = `bold ${fontSize}px Arial`;
+
+          const textWidth = ctx.measureText(watermarkText).width;
+          ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+          ctx.fillRect(20, canvas.height - fontSize - 30, textWidth + 20, fontSize + 16);
+
+          ctx.fillStyle = "#ffffff";
+          ctx.fillText(watermarkText, 30, canvas.height - 25);
+
+          bocorBase64Photo = canvas.toDataURL("image/jpeg", 0.8);
+
+          if (statusElement) {
+            statusElement.innerText = "✓ Foto berhasil diambil & siap dikirim!";
+            statusElement.className = "text-success small d-block mt-1 fw-bold";
+          }
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // 2. HANDLER SUBMIT FORM LAPOR BOCOR
+  if (bocorForm) {
+    bocorForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const btnSubmit = document.getElementById("btnSubmitBocor");
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...`;
+
+      const sendBocorData = (photoData) => {
         const payload = {
           action: "saveLaporBocor",
           username: currentUser ? currentUser.username : "Petugas",
@@ -1503,7 +1559,7 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
           issue: document.getElementById("bocorIssue").value,
           marking_x: bocorMarkingX,
           marking_y: bocorMarkingY,
-          photo: base64Photo
+          photo: photoData || bocorBase64Photo
         };
 
         // PASTIKAN NAMA VARIABEL URL DI SINI SAMA DENGAN FORM DIREK (misal: SCRIPT_URL / API_URL)

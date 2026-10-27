@@ -606,15 +606,16 @@
     document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
 
- function updatePinPosition() {
+ // FUNGSI UPDATE POSISI & PENGUNCIAN UKURAN PIN
+  function updatePinPosition() {
     const pin = document.getElementById("mapPin");
     if (!markedX || !markedY || pin.classList.contains("d-none")) return;
 
-    // Set posisi persentase murni pada denah
+    // Set koordinat persentase murni pada denah
     pin.style.left = markedX + "%";
     pin.style.top = markedY + "%";
 
-    // Balikkan skala zoom agar ukuran pin tetap 20px & kunci titik tengah pas di kursor
+    // Balikkan skala agar ukuran pin tetap konsisten 20px
     const scale = pzCreate ? pzCreate.getScale() : 1;
     const invScale = 1 / scale;
     pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
@@ -632,9 +633,7 @@
     pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
   }
 
-  // Listener perubahan zoom untuk menjaga bentuk pin
-  mapContainer.addEventListener('panzoomchange', updatePinPosition);
-
+  // DETEKSI KLIK PRESISI MURNI PANZOOM (TIDAK AKAN MELENCENG)
   let startX = 0, startY = 0;
   if (mapContainer) {
     mapContainer.addEventListener('pointerdown', (e) => { 
@@ -647,15 +646,23 @@
       const diffY = Math.abs(e.clientY - startY);
 
       if (diffX < 8 && diffY < 8) {
-        const mapImg = document.getElementById("mapImage");
-        const imgRect = mapImg.getBoundingClientRect();
+        const containerRect = mapContainer.getBoundingClientRect();
 
-        // Hitung persentase murni titik klik pada bidang denah yang tampil
-        const clickX = e.clientX - imgRect.left;
-        const clickY = e.clientY - imgRect.top;
+        // Ambil posisi pan dan scale murni dari pustaka Panzoom
+        const scale = pzCreate ? pzCreate.getScale() : 1;
+        const pan = pzCreate ? pzCreate.getPan() : { x: 0, y: 0 };
 
-        const xPercent = (clickX / imgRect.width) * 100;
-        const yPercent = (clickY / imgRect.height) * 100;
+        // Hitung titik klik relatif terhadap container
+        const clickX = e.clientX - containerRect.left;
+        const clickY = e.clientY - containerRect.top;
+
+        // Dekonstruksi koordinat murni sebelum di-transform/zoom
+        const unscaledX = (clickX - pan.x) / scale;
+        const unscaledY = (clickY - pan.y) / scale;
+
+        // Konversi ke persentase asli container (1x scale)
+        const xPercent = (unscaledX / containerRect.width) * 100;
+        const yPercent = (unscaledY / containerRect.height) * 100;
 
         if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
           markedX = xPercent.toFixed(2);
@@ -671,15 +678,6 @@
         }
       }
     });
-  }
-
-  function updatePinPosition() {
-    const pin = document.getElementById("mapPin");
-    if (!markedX || !markedY || pin.classList.contains("d-none")) return;
-
-    // Kunci titik persentase murni denah
-    pin.style.left = markedX + "%";
-    pin.style.top = markedY + "%";
   }
 
   function loadChecklistItems() {

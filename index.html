@@ -122,7 +122,6 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
     pointer-events: none; 
     z-index: 10;
-    transform: translate(-50%, -100%) rotate(-45deg);
     transform-origin: bottom center;
   }
     .img-preview {
@@ -294,7 +293,6 @@
   </div>
   <div class="map-container" id="mapContainer">
     <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
-    <!-- PIN DIKUNCI DI DALAM CONTAINER -->
     <div id="mapPin" class="map-pin d-none"></div>
   </div>
 </div>
@@ -357,17 +355,17 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-2">
-        <div class="map-outer-wrapper" id="viewMapWrapper">
-          <div class="map-controls">
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.zoomIn()">🔍+</button>
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.zoomOut()">🔍-</button>
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.reset()">↺ Reset</button>
-          </div>
-          <div class="map-container" id="viewMapContainer" style="cursor: default;">
-            <img src="" id="viewMapImage" class="map-image" alt="Denah Full">
-          </div>
-          <div id="viewMapPin" class="map-pin d-none"></div>
-        </div>
+        <div class="map-outer-wrapper" id="mapWrapper">
+  <div class="map-controls">
+    <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomIn()">🔍+</button>
+    <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomOut()">🔍-</button>
+    <button type="button" class="btn btn-sm btn-light border" onclick="resetMapAndPin()">↺ Reset</button>
+  </div>
+  <div class="map-container" id="mapContainer">
+    <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
+    <div id="mapPin" class="map-pin d-none"></div>
+  </div>
+</div>
       </div>
     </div>
   </div>
@@ -606,25 +604,24 @@
     document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
 
-  // 1. UPDATE POSISI PIN MENGIKUTI POSISI DENAH MURNI
+  // Menjaga ukuran pin tetap konstan (tidak membengkak saat denah di-zoom)
   function updatePinPosition() {
     const pin = document.getElementById("mapPin");
     if (!markedX || !markedY || pin.classList.contains("d-none")) return;
 
-    // Kunci posisi relatif persentase murni di dalam mapContainer
     pin.style.left = markedX + "%";
     pin.style.top = markedY + "%";
+
+    // Balikkan skala zoom pada pin agar ukurannya tetap 24px
+    const scale = pzCreate ? pzCreate.getScale() : 1;
+    const invScale = 1 / scale;
+    pin.style.transform = `scale(${invScale}) translate(-50%, -100%) rotate(-45deg)`;
   }
 
-  function updateViewPinPosition() {
-    const pin = document.getElementById("viewMapPin");
-    if (!viewMarkedX || !viewMarkedY || pin.classList.contains("d-none")) return;
+  // Listener perubahan zoom untuk menjaga bentuk pin
+  mapContainer.addEventListener('panzoomchange', updatePinPosition);
 
-    pin.style.left = viewMarkedX + "%";
-    pin.style.top = viewMarkedY + "%";
-  }
-
-  // 2. DETEKSI KLIK PRESISI TEPAT PADA PIKSEL DENAH (WAKTU FIT MAUPUN ZOOM)
+  // Deteksi klik presisi murni terhadap piksel gambar denah
   let startX = 0, startY = 0;
   if (mapContainer) {
     mapContainer.addEventListener('pointerdown', (e) => { 
@@ -638,23 +635,14 @@
 
       if (diffX < 8 && diffY < 8) {
         const mapImg = document.getElementById("mapImage");
-        const containerRect = mapContainer.getBoundingClientRect();
+        const imgRect = mapImg.getBoundingClientRect();
 
-        // Ambil skala & pan dari instance Panzoom aktif
-        const scale = pzCreate ? pzCreate.getScale() : 1;
-        const pan = pzCreate ? pzCreate.getPan() : { x: 0, y: 0 };
+        // Hitung persentase klik langsung terhadap kotak bounding gambar aktual
+        const clickX = e.clientX - imgRect.left;
+        const clickY = e.clientY - imgRect.top;
 
-        // Hitung koordinat klik relatif terhadap container murni
-        const clickXInContainer = e.clientX - containerRect.left;
-        const clickYInContainer = e.clientY - containerRect.top;
-
-        // Hitung posisi titik asli pada skala 1x (tanpa efek zoom & pan)
-        const unscaledX = (clickXInContainer - pan.x) / scale;
-        const unscaledY = (clickYInContainer - pan.y) / scale;
-
-        // Dapatkan persentase murni terhadap dimensi container
-        const xPercent = (unscaledX / containerRect.width) * 100;
-        const yPercent = (unscaledY / containerRect.height) * 100;
+        const xPercent = (clickX / imgRect.width) * 100;
+        const yPercent = (clickY / imgRect.height) * 100;
 
         if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
           markedX = xPercent.toFixed(2);

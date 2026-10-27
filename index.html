@@ -461,15 +461,21 @@
   }
 
   let startX = 0, startY = 0;
-  mapContainer.addEventListener('pointerdown', (e) => { startX = e.clientX; startY = e.clientY; });
+  mapContainer.addEventListener('pointerdown', (e) => { 
+    startX = e.clientX; 
+    startY = e.clientY; 
+  });
+
   mapContainer.addEventListener('pointerup', (e) => {
     const diffX = Math.abs(e.clientX - startX);
     const diffY = Math.abs(e.clientY - startY);
 
+    // Hanya deteksi sebagai KLIK jika tidak ada pergeseran geser/pan (diff < 8px)
     if (diffX < 8 && diffY < 8) {
       const mapImg = document.getElementById("mapImage");
       const rect = mapImg.getBoundingClientRect();
 
+      // Hitung posisi klik relatif terhadap gambar denah
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
 
@@ -485,6 +491,7 @@
         pin.style.top = markedY + "%";
         pin.classList.remove("d-none");
 
+        // Koreksi ukuran pin agar tidak membesar/mengecil saat di-zoom
         applyPinTransform(pin, pzCreate.getScale());
 
         document.getElementById("mapStatus").className = "text-success small mt-1 d-block";

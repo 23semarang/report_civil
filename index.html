@@ -95,9 +95,6 @@
     height: 100%; 
     cursor: grab; 
     touch-action: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .map-image { 
@@ -105,11 +102,11 @@
     height: 100%;
     object-fit: contain;
     display: block; 
-    pointer-events: auto; /* Memastikan event sentuhan/zoom masuk ke Panzoom */
     user-select: none; 
     -webkit-user-drag: none; 
   }
 
+  /* PIN POSISI RELATIF WRAPPER (AKURAT 100%) */
   .map-pin {
     position: absolute; 
     width: 24px; 
@@ -120,6 +117,8 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
     pointer-events: none; 
     z-index: 10;
+    transform: translate(-50%, -100%) rotate(-45deg);
+    transform-origin: bottom center;
   }
 
   .img-preview {
@@ -284,15 +283,17 @@
           <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kerusakan untuk menandai titik.</small>
           
           <div class="map-outer-wrapper" id="mapWrapper">
-            <div class="map-controls">
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate.zoomIn()">🔍+</button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate.zoomOut()">🔍-</button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate.reset()">↺ Reset</button>
-            </div>
-            <div class="map-container" id="mapContainer">
-              <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
-              <div id="mapPin" class="map-pin d-none"></div>
-            </div>
+  <div class="map-controls">
+    <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate.zoomIn()">🔍+</button>
+    <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate.zoomOut()">🔍-</button>
+    <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate.reset()">↺ Reset</button>
+  </div>
+  <div class="map-container" id="mapContainer">
+    <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
+  </div>
+  <!-- PIN DIMASUKKAN DI LUAR CONTAINER PANZOOM -->
+  <div id="mapPin" class="map-pin d-none"></div>
+</div>
           </div>
           <small id="mapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
         </div>
@@ -353,16 +354,18 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-2">
-        <div class="map-outer-wrapper" id="viewMapWrapper">
-          <div class="map-controls">
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzView.zoomIn()">🔍+</button>
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzView.zoomOut()">🔍-</button>
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzView.reset()">↺ Reset</button>
-          </div>
-          <div class="map-container" id="viewMapContainer" style="cursor: default;">
-            <img src="" id="viewMapImage" class="map-image" alt="Denah Full">
-            <div id="viewMapPin" class="map-pin"></div>
-          </div>
+        <div class="map-outer-wrapper" id="mapWrapper">
+  <div class="map-controls">
+    <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate.zoomIn()">🔍+</button>
+    <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate.zoomOut()">🔍-</button>
+    <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate.reset()">↺ Reset</button>
+  </div>
+  <div class="map-container" id="mapContainer">
+    <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
+  </div>
+  <!-- PIN DIMASUKKAN DI LUAR CONTAINER PANZOOM -->
+  <div id="mapPin" class="map-pin d-none"></div>
+</div>
         </div>
       </div>
     </div>
@@ -496,11 +499,9 @@
   let markedX = null;
   let markedY = null;
 
-  // 1. ISI TARGET PANZOOM KE LANGSUNG ELEMEN GAMBAR (mapImage)
-  const mapImgEl = document.getElementById('mapImage');
-  const viewMapImgEl = document.getElementById('viewMapImage');
+  const mapContainer = document.getElementById('mapContainer');
+  const viewMapContainer = document.getElementById('viewMapContainer');
 
-  // INISIALISASI PANZOOM STABIL
   const pzCreate = Panzoom(mapContainer, { 
     maxScale: 6, 
     minScale: 1, 
@@ -515,17 +516,26 @@
     cursor: 'grab' 
   });
 
-  // TRANSFORM PIN AGAR UJUNG RUNCING BAWAH TEPAT DI KURSOR
-  function applyPinTransform(pinEl, scale) {
-    if (!pinEl) return;
-    const invScale = 1 / scale;
-    pinEl.style.transform = `scale(${invScale}) translate(-50%, -100%) rotate(-45deg)`;
+  // FUNGSI UPDATE POSISI VISUAL PIN SAAT ZOOM / GESER
+  function updatePinPosition() {
+    const pin = document.getElementById("mapPin");
+    if (!markedX || !markedY || pin.classList.contains("d-none")) return;
+
+    const mapImg = document.getElementById("mapImage");
+    const wrapperRect = document.getElementById("mapWrapper").getBoundingClientRect();
+    const imgRect = mapImg.getBoundingClientRect();
+
+    // Hitung posisi visual titik persentase terhadap wrapper luar
+    const pinPixelX = (imgRect.left - wrapperRect.left) + (imgRect.width * (markedX / 100));
+    const pinPixelY = (imgRect.top - wrapperRect.top) + (imgRect.height * (markedY / 100));
+
+    pin.style.left = pinPixelX + "px";
+    pin.style.top = pinPixelY + "px";
   }
 
-  mapContainer.addEventListener('panzoomchange', (e) => applyPinTransform(document.getElementById('mapPin'), e.detail.scale));
-  viewMapContainer.addEventListener('panzoomchange', (e) => applyPinTransform(document.getElementById('viewMapPin'), e.detail.scale));
+  mapContainer.addEventListener('panzoomchange', updatePinPosition);
 
-  // EVENT DETEKSI KLIK DENAH PRESISI 100%
+  // LOGIKA PENANDAN KLIK 100% AKURAT
   let startX = 0, startY = 0;
   mapContainer.addEventListener('pointerdown', (e) => { 
     startX = e.clientX; 
@@ -536,28 +546,25 @@
     const diffX = Math.abs(e.clientX - startX);
     const diffY = Math.abs(e.clientY - startY);
 
-    // Hanya dianggap klik jika tidak ada geseran drag/pan (kurang dari 8px)
     if (diffX < 8 && diffY < 8) {
       const mapImg = document.getElementById("mapImage");
-      const rect = mapImg.getBoundingClientRect();
+      const imgRect = mapImg.getBoundingClientRect();
 
-      // Hitung koordinat klik relatif terhadap posisi & ukuran gambar saat ini di layar
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
+      // Hitung koordinat klik relatif terhadap gambar denah yang sedang aktif
+      const clickX = e.clientX - imgRect.left;
+      const clickY = e.clientY - imgRect.top;
 
-      const xPercent = (clickX / rect.width) * 100;
-      const yPercent = (clickY / rect.height) * 100;
+      const xPercent = (clickX / imgRect.width) * 100;
+      const yPercent = (clickY / imgRect.height) * 100;
 
       if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
         markedX = xPercent.toFixed(2);
         markedY = yPercent.toFixed(2);
 
         const pin = document.getElementById("mapPin");
-        pin.style.left = markedX + "%";
-        pin.style.top = markedY + "%";
         pin.classList.remove("d-none");
 
-        applyPinTransform(pin, pzCreate.getScale());
+        updatePinPosition();
 
         document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
         document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";

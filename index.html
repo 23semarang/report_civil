@@ -606,16 +606,16 @@
     document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
 
- // FUNGSI UPDATE POSISI & PENGUNCIAN UKURAN PIN
+ // 1. KUNCI POSISI PIN DENGAN SKALA KEBALIKAN (BIAR TIDAK MEMBESAR DAN PRESISI)
   function updatePinPosition() {
     const pin = document.getElementById("mapPin");
     if (!markedX || !markedY || pin.classList.contains("d-none")) return;
 
-    // Set koordinat persentase murni pada denah
+    // Set posisi persentase murni pada denah
     pin.style.left = markedX + "%";
     pin.style.top = markedY + "%";
 
-    // Balikkan skala agar ukuran pin tetap konsisten 20px
+    // Balikkan skala zoom agar ukuran pin tetap 20px dan titik tengahnya pas di kursor
     const scale = pzCreate ? pzCreate.getScale() : 1;
     const invScale = 1 / scale;
     pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
@@ -633,36 +633,32 @@
     pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
   }
 
-  // DETEKSI KLIK PRESISI MURNI PANZOOM (TIDAK AKAN MELENCENG)
+  // 2. BACA KLIK LANGSUNG DARI ELEMEN GAMBAR (mapImage), BUKAN CONTAINER!
   let startX = 0, startY = 0;
-  if (mapContainer) {
-    mapContainer.addEventListener('pointerdown', (e) => { 
+  const mapImg = document.getElementById("mapImage");
+
+  if (mapImg) {
+    mapImg.addEventListener('pointerdown', (e) => { 
       startX = e.clientX; 
       startY = e.clientY; 
     });
 
-    mapContainer.addEventListener('pointerup', (e) => {
+    mapImg.addEventListener('pointerup', (e) => {
       const diffX = Math.abs(e.clientX - startX);
       const diffY = Math.abs(e.clientY - startY);
 
+      // Hanya proses jika klik murni (bukan drag/pan)
       if (diffX < 8 && diffY < 8) {
-        const containerRect = mapContainer.getBoundingClientRect();
+        // Ambil posisi & ukuran visual gambar saat ini di layar
+        const rect = mapImg.getBoundingClientRect();
 
-        // Ambil posisi pan dan scale murni dari pustaka Panzoom
-        const scale = pzCreate ? pzCreate.getScale() : 1;
-        const pan = pzCreate ? pzCreate.getPan() : { x: 0, y: 0 };
+        // Hitung posisi klik relatif terhadap gambar denah itu sendiri
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
 
-        // Hitung titik klik relatif terhadap container
-        const clickX = e.clientX - containerRect.left;
-        const clickY = e.clientY - containerRect.top;
-
-        // Dekonstruksi koordinat murni sebelum di-transform/zoom
-        const unscaledX = (clickX - pan.x) / scale;
-        const unscaledY = (clickY - pan.y) / scale;
-
-        // Konversi ke persentase asli container (1x scale)
-        const xPercent = (unscaledX / containerRect.width) * 100;
-        const yPercent = (unscaledY / containerRect.height) * 100;
+        // Hitung persentase murni piksel denah
+        const xPercent = (clickX / rect.width) * 100;
+        const yPercent = (clickY / rect.height) * 100;
 
         if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
           markedX = xPercent.toFixed(2);

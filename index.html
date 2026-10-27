@@ -2,149 +2,198 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Civil Maintenance System - Mal 23 Semarang</title>
-  
-  <!-- CSS External & Fonts -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
-
   <style>
-    /* ==========================================
-       1. RESET & BASE LAYOUT (DESKTOP)
-       ========================================== */
-    * {
-      box-sizing: border-box;
-    }
+    /* Custom Modern Layout Dashboard Style */
+body {
+  background-color: #f4f6f9;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: #1e293b;
+}
+
+/* Sidebar Kiri Bergaya Minimalis Gelap */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar-dark {
+  width: 260px;
+  background: #18181b;
+  color: #ffffff;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0 24px 24px 0;
+}
+
+.sidebar-dark .nav-link {
+  color: #a1a1aa;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  margin-bottom: 0.25rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar-dark .nav-link.active, 
+.sidebar-dark .nav-link:hover {
+  background: #27272a;
+  color: #ffffff;
+}
+
+/* Container Utama Berbentuk Kartu Besar (Rounded White Frame) */
+.main-wrapper {
+  flex: 1;
+  padding: 1.5rem 2rem;
+  background: #f4f6f9;
+}
+
+.content-card-frame {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+}
+
+/* Kartu Ringkasan Warna Pastel Soft */
+.card-pastel-purple {
+  background-color: #f3e8ff;
+  border: none;
+  border-radius: 20px;
+}
+
+.card-pastel-green {
+  background-color: #dcfce7;
+  border: none;
+  border-radius: 20px;
+}
+
+.card-pastel-yellow {
+  background-color: #fef9c3;
+  border: none;
+  border-radius: 20px;
+}
+
+.card-pastel-blue {
+  background-color: #e0f2fe;
+  border: none;
+  border-radius: 20px;
+}
+
+/* Input Form & Button Style */
+.form-control, .form-select {
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 0.6rem 0.9rem;
+  background-color: #f8fafc;
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  border: none;
+  border-radius: 14px;
+  padding: 0.75rem;
+  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
     body {
-      background-color: #f4f6f9;
+      background-color: #f8fafc;
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       color: #1e293b;
-      margin: 0;
-      padding: 0;
-      overflow-x: hidden;
     }
 
-    .app-container {
-      display: flex;
-      min-height: 100vh;
-      width: 100%;
-    }
-
-    /* Sidebar Kiri Gelap */
-    .sidebar-dark {
-      width: 260px;
-      background: #18181b;
-      color: #ffffff;
-      padding: 1.5rem 1rem;
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-    }
-
-    .sidebar-dark .nav-link {
-      color: #a1a1aa;
-      font-weight: 500;
-      padding: 0.75rem 1rem;
-      border-radius: 12px;
-      margin-bottom: 0.25rem;
-      transition: all 0.2s ease;
-    }
-
-    .sidebar-dark .nav-link.active, 
-    .sidebar-dark .nav-link:hover {
-      background: #27272a;
-      color: #ffffff;
-    }
-
-    /* Konten Utama (Frame Putih Membulat) */
-    .main-wrapper {
-      flex: 1;
-      padding: 1.5rem 2rem;
-      background: #f4f6f9;
-      width: 100%;
-    }
-
-    .content-card-frame {
+    /* CONTAINER & CARD MODERN */
+    .card, .chk-item-card, .fail-sub-item {
       background: #ffffff;
-      border-radius: 24px;
-      padding: 1.75rem;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-      border: 1px solid #e2e8f0;
-      width: 100%;
+      border: 1px solid #e2e8f0 !important;
+      border-radius: 12px !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
     }
 
-    /* Kartu Ringkasan Warna Pastel Soft */
-    .card-pastel-purple { background-color: #f3e8ff; border: none; border-radius: 18px; }
-    .card-pastel-green  { background-color: #dcfce7; border: none; border-radius: 18px; }
-    .card-pastel-yellow { background-color: #fef9c3; border: none; border-radius: 18px; }
-    .card-pastel-blue   { background-color: #e0f2fe; border: none; border-radius: 18px; }
-
-    /* Input Form & Tombol Modern */
-    .form-control, .form-select {
-      border: 1px solid #cbd5e1 !important;
-      border-radius: 10px !important;
-      padding: 8px 12px;
-      font-size: 0.9rem;
-      background-color: #f8fafc;
+    .card-report {
+      margin-bottom: 16px;
+      border-left: 5px solid #3b82f6 !important;
+      transition: transform 0.2s ease;
     }
 
-    .form-control:focus, .form-select:focus {
-      background-color: #ffffff;
-      border-color: #3b82f6 !important;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
-    }
+    .status-REPORTED { border-left-color: #ef4444 !important; }
+    .status-PROGRESS { border-left-color: #f59e0b !important; }
+    .status-RESOLVED { border-left-color: #10b981 !important; }
 
+    /* TOMBOL MODERN */
     .btn {
       font-weight: 600 !important;
-      border-radius: 10px !important;
+      border-radius: 8px !important;
       padding: 8px 16px;
       transition: all 0.2s ease !important;
     }
 
     .btn-primary { background-color: #2563eb !important; border-color: #2563eb !important; }
     .btn-primary:hover { background-color: #1d4ed8 !important; }
+
     .btn-success { background-color: #10b981 !important; border-color: #10b981 !important; }
-    .btn-danger  { background-color: #ef4444 !important; border-color: #ef4444 !important; }
+    .btn-success:hover { background-color: #059669 !important; }
+
+    .btn-danger { background-color: #ef4444 !important; border-color: #ef4444 !important; }
     .btn-warning { background-color: #f59e0b !important; border-color: #f59e0b !important; color: #fff !important; }
 
-    /* Cards Laporan & Status */
-    .card-report {
-      margin-bottom: 16px;
-      border-left: 5px solid #3b82f6 !important;
-      border-radius: 12px !important;
+    /* INPUT & SELECT */
+    .form-control, .form-select {
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 8px !important;
+      padding: 9px 12px;
+      font-size: 0.9rem;
     }
-    .status-REPORTED { border-left-color: #ef4444 !important; }
-    .status-PROGRESS { border-left-color: #f59e0b !important; }
-    .status-RESOLVED { border-left-color: #10b981 !important; }
 
-    /* TAB & FILTER RESPONSIVE */
+    .form-control:focus, .form-select:focus {
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15) !important;
+    }
+
+    /* TAB & FILTER RESPONSIVE (SCROLL HALUS & PROPORSI MOBILE) */
     .nav-pills {
       flex-wrap: nowrap !important;
       overflow-x: auto !important;
       white-space: nowrap !important;
       -webkit-overflow-scrolling: touch;
       padding-bottom: 4px;
-      gap: 6px;
     }
-    .nav-pills::-webkit-scrollbar { display: none; }
+
+    .nav-pills::-webkit-scrollbar {
+      display: none; /* Sembunyikan scrollbar kaku */
+    }
+
     .nav-pills .nav-link {
-      font-size: 0.82rem !important;
-      padding: 7px 14px !important;
+      font-size: 0.8rem !important;
+      padding: 6px 10px !important;
       font-weight: 600;
-      border-radius: 10px !important;
+      border-radius: 8px !important;
       color: #64748b;
       flex: 0 0 auto !important;
     }
+
     .nav-pills .nav-link.active {
       background-color: #2563eb !important;
       color: #ffffff !important;
     }
 
-    /* ITEM CHECKLIST INSPEKSI */
-    .inspection-item, .chk-item-card .card-body {
+    /* ITEM CHECKLIST INSPEKSI (RATA KANAN AUTOMATIS) */
+    .inspection-item, 
+    .chk-item-card .card-body {
       display: flex !important;
       align-items: center !important;
       justify-content: space-between !important;
@@ -152,7 +201,37 @@
       padding: 12px 14px !important;
     }
 
-    /* DENAH INTERAKTIF CONTAINER */
+    .inspection-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin: 0;
+      flex: 1;
+    }
+
+    /* PAKSA TOMBOL PASS/FAIL (BAIK/RUSAK) SEJAJAR KANAN & KECIL RINCI */
+    .status-btn-group,
+    div:has(> .btn-success), 
+    div:has(> .btn-outline-success) {
+      display: flex !important;
+      flex-direction: row !important;
+      gap: 6px !important;
+      margin-left: auto !important;
+      flex-shrink: 0 !important;
+    }
+
+    .btn-status-pass, .btn-status-fail,
+    .btn-success.btn-sm, .btn-danger.btn-sm, 
+    .btn-outline-success.btn-sm, .btn-outline-danger.btn-sm {
+      font-size: 0.72rem !important;
+      font-weight: 700 !important;
+      padding: 5px 10px !important;
+      border-radius: 6px !important;
+      min-width: 54px !important;
+      text-align: center;
+    }
+
+    /* RESPONSIVE DENAH CONTAINER & MAP */
     .map-outer-wrapper {
       position: relative;
       border: 2px dashed #0d6efd;
@@ -160,63 +239,96 @@
       overflow: hidden;
       background-color: #f1f5f9;
       width: 100%;
-      height: 260px;
+      height: 260px; /* Tinggi ideal mobile */
       touch-action: none;
       user-select: none;
     }
-    .map-container { position: relative; width: 100%; height: 100%; cursor: grab; touch-action: none; }
-    .map-image { width: 100%; height: 100%; object-fit: contain; display: block; user-select: none; -webkit-user-drag: none; }
+
+    .map-container { 
+      position: relative; 
+      width: 100%; 
+      height: 100%; 
+      cursor: grab; 
+      touch-action: none;
+    }
+
+    .map-image { 
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* Rasio asli denah terjaga, tidak ke-stretch */
+      display: block; 
+      user-select: none; 
+      -webkit-user-drag: none; 
+    }
+
     .map-controls {
-      position: absolute; top: 12px; right: 12px; z-index: 20;
-      display: flex; gap: 6px; background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(4px); padding: 4px; border-radius: 8px;
+      position: absolute; 
+      top: 12px; 
+      right: 12px; 
+      z-index: 20; 
+      display: flex; 
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.9); 
+      backdrop-filter: blur(4px); 
+      padding: 4px; 
+      border-radius: 8px;
     }
-    .map-controls button { font-size: 0.75rem !important; padding: 3px 8px !important; }
 
-    /* PIN MARKER DENAH */
+    .map-controls button {
+      font-size: 0.75rem !important;
+      padding: 3px 8px !important;
+    }
+
+    /* PIN KHUSUS KEBOCORAN AIR */
+  .map-pin-water {
+    position: absolute; 
+    width: 22px; 
+    height: 22px; 
+    background-color: #0284c7; /* Warna Biru Air */
+    border: 3px solid #ffffff;
+    border-radius: 50%; 
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.4), 0 4px 6px rgba(0,0,0,0.3); 
+    pointer-events: none; 
+    z-index: 10;
+  }
+    
+    /* PIN MARKER LINGKARAN PRESISI */
     .map-pin {
-      position: absolute; width: 20px; height: 20px;
-      background-color: #ef4444; border: 3px solid #ffffff;
-      border-radius: 50%; box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.4), 0 4px 6px rgba(0,0,0,0.3);
-      pointer-events: none; z-index: 10;
-    }
-    .map-pin-water {
-      position: absolute; width: 22px; height: 22px;
-      background-color: #0284c7; border: 3px solid #ffffff;
-      border-radius: 50%; box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.4), 0 4px 6px rgba(0,0,0,0.3);
-      pointer-events: none; z-index: 10;
+      position: absolute; 
+      width: 20px; 
+      height: 20px; 
+      background-color: #ef4444; 
+      border: 3px solid #ffffff;
+      border-radius: 50%; 
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.4), 0 4px 6px rgba(0,0,0,0.3); 
+      pointer-events: none; 
+      z-index: 10;
     }
 
-    /* ==========================================
-       2. PERBAIKAN RESPONSIVE KHUSUS MOBILE (HP)
-       ========================================== */
-    @media (max-width: 768px) {
-      .app-container {
-        display: block; /* Menghilangkan efek flexbox desktop yang memakan tempat */
+    .img-preview {
+      width: 100%; 
+      max-height: 180px; 
+      object-fit: cover; 
+      border-radius: 8px; 
+      border: 1px solid #e2e8f0;
+    }
+
+    @media (max-width: 576px) {
+      .container {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
       }
-      .main-wrapper {
-        padding: 0.5rem !important;
-      }
-      .content-card-frame {
-        border-radius: 16px !important;
-        padding: 0.85rem !important;
-      }
-      .card-pastel-blue, .card-pastel-purple, 
-      .card-pastel-yellow, .card-pastel-green {
-        padding: 0.75rem !important;
-        border-radius: 12px !important;
+      h3, h5 {
+        font-size: 1.15rem !important;
       }
     }
-  </style>
+</style>
 </head>
 <body>
 
-  <!-- ========================================== -->
-  <!-- 1. KONTEN UTAMA APLIKASI (DASHBOARD FRAME) -->
-  <!-- ========================================== -->
   <div class="app-container">
     
-    <!-- SIDEBAR KIRI GELAP (Desktop Navigation) -->
+    <!-- SIDEBAR KIRI (Menu Navigasi Baru) -->
     <aside class="sidebar-dark d-none d-md-flex">
       <div class="d-flex align-items-center gap-2 mb-4 px-2">
         <div class="bg-primary text-white rounded-3 p-2 fw-bold">23</div>
@@ -224,423 +336,450 @@
       </div>
 
       <nav class="nav flex-column gap-1">
-        <a class="nav-link active" id="tab-laporan-nav" data-bs-toggle="pill" href="#listTab">📊 Overview Laporan</a>
-        <a class="nav-link" id="tab-inspeksi-nav" data-bs-toggle="pill" href="#checklistTab">📋 Inspeksi</a>
-        <a class="nav-link" id="tab-direct-nav" data-bs-toggle="pill" href="#createTab">➕ Lapor Direct</a>
-        <a class="nav-link" id="tab-bocor-nav" data-bs-toggle="pill" href="#bocorTab">🌧️ Lapor Bocor</a>
+        <a class="nav-link active" id="tab-laporan" data-bs-toggle="tab" href="#laporanTab">📊 Overview Laporan</a>
+        <a class="nav-link" id="tab-inspeksi" data-bs-toggle="tab" href="#inspeksiTab">📋 Inspeksi</a>
+        <a class="nav-link" id="tab-direct" data-bs-toggle="tab" href="#directTab">➕ Lapor Direct</a>
+        <a class="nav-link" id="tab-bocor" data-bs-toggle="tab" href="#bocorTab">🌧️ Lapor Bocor</a>
       </nav>
     </aside>
 
-    <!-- MAIN CONTENT AREA -->
+    <!-- KONTEN UTAMA (Frame Putih Membulat) -->
     <main class="main-wrapper">
       <div class="content-card-frame">
-
-        <!-- AUTHENTICATION CONTAINER (LOGIN / REGISTER / OTP) -->
-        <div id="authContainer" class="mx-auto" style="max-width: 450px;">
-          <!-- LOGIN CARD -->
-          <div id="loginCard" class="card p-4 shadow-sm border-0">
-            <h4 class="text-center mb-3 fw-bold text-primary">Login System Civil</h4>
-            <form id="loginForm">
-              <div class="mb-3">
-                <label class="form-label fw-bold small">Username</label>
-                <input type="text" id="loginUser" class="form-control" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label fw-bold small">Password</label>
-                <input type="password" id="loginPass" class="form-control" required>
-              </div>
-              <button type="submit" id="btnLogin" class="btn btn-primary w-100">Login</button>
-            </form>
-            <div class="d-flex justify-content-between mt-3 small">
-              <a href="#" class="text-decoration-none" onclick="showAuthCard('registerCard')">Buat Akun Baru</a>
-              <a href="#" class="text-decoration-none" onclick="showAuthCard('forgotCard')">Lupa Password?</a>
-            </div>
+        
+        <!-- Top Bar Profile -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h3 class="fw-bold m-0">Civil Maintenance Dashboard</h3>
+            <small class="text-muted">Mal 23 Semarang</small>
           </div>
-
-          <!-- REGISTER CARD -->
-          <div id="registerCard" class="card p-4 shadow-sm border-0 d-none">
-            <h4 class="text-center mb-3 fw-bold text-success">Buat Akun Baru</h4>
-            <form id="registerForm">
-              <div class="mb-3">
-                <label class="form-label fw-bold small">Nama Lengkap</label>
-                <input type="text" id="regFullname" class="form-control" placeholder="Contoh: Vandi Tech" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label fw-bold small">Username</label>
-                <input type="text" id="regUser" class="form-control" placeholder="Contoh: vandi_civil" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label fw-bold small">Email Aktif</label>
-                <input type="email" id="regEmail" class="form-control" placeholder="Contoh: vandi@gmail.com" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label fw-bold small">Password</label>
-                <input type="password" id="regPass" class="form-control" required>
-              </div>
-              <button type="submit" id="btnRegister" class="btn btn-success w-100">Daftar Akun</button>
-            </form>
-            <div class="text-center mt-3 small">
-              Sudah punya akun? <a href="#" class="text-decoration-none" onclick="showAuthCard('loginCard')">Login di sini</a>
-            </div>
-          </div>
-
-          <!-- FORGOT PASSWORD CARD -->
-          <div id="forgotCard" class="card p-4 shadow-sm border-0 d-none">
-            <h4 class="text-center mb-3 fw-bold text-primary">Lupa Password</h4>
-            <form id="requestOTPForm">
-              <div class="mb-3">
-                <label class="form-label fw-bold small">Username atau Email Anda</label>
-                <input type="text" id="otpTarget" class="form-control" placeholder="Masukkan username/email" required>
-              </div>
-              <button type="submit" id="btnRequestOTP" class="btn btn-primary w-100">Kirim Kode OTP Ke Email</button>
-            </form>
-            <div class="text-center mt-3 small">
-              Kembali ke <a href="#" class="text-decoration-none" onclick="showAuthCard('loginCard')">Halaman Login</a>
-            </div>
-          </div>
-
-          <!-- VERIFY OTP CARD -->
-          <div id="verifyOTPCard" class="card p-4 shadow-sm border-0 d-none">
-            <h4 class="text-center mb-1 fw-bold text-success">Verifikasi OTP</h4>
-            <p class="text-muted text-center small mb-3" id="otpNotice">Kode OTP telah dikirim ke email Anda.</p>
-            <form id="verifyOTPForm">
-              <div class="mb-3">
-                <label class="form-label fw-bold small">Kode OTP (6 Digit)</label>
-                <input type="text" id="otpInputCode" class="form-control text-center fw-bold fs-4" maxlength="6" placeholder="------" required>
-              </div>
-              <div class="mb-3">
-                <label class="form-label fw-bold small">Password Baru</label>
-                <input type="password" id="otpNewPass" class="form-control" required>
-              </div>
-              <button type="submit" id="btnVerifyReset" class="btn btn-success w-100">Simpan Password Baru</button>
-            </form>
+          <div class="d-flex align-items-center gap-3">
+            <span class="fw-semibold">Halo, Vandi</span>
+            <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="logout()">Logout</button>
           </div>
         </div>
 
-        <!-- MAIN DASHBOARD SECTION (MUNCUL SETELAH LOGIN) -->
-        <div id="appSection" class="d-none">
-          
-          <!-- TOP HEADER USER -->
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <div>
-              <h4 class="fw-bold m-0 fs-5">Civil Maintenance System</h4>
-              <small class="text-muted">Mal 23 Semarang</small>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-              <span id="userGreeting" class="fw-bold small">Halo, Petugas</span>
-              <button onclick="logout()" class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1" style="font-size: 0.75rem;">Logout</button>
-            </div>
-          </div>
-
-          <!-- KARTU SUMMARY PASTEL -->
-          <div class="stat-grid mb-4">
+        <!-- KARTU RINGKASAN PASTEL (Top Overview) -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-3">
             <div class="p-3 card-pastel-blue">
-              <small class="text-muted d-block fw-semibold" style="font-size: 0.75rem;">Total Laporan</small>
+              <small class="text-muted d-block fw-semibold">Total Laporan</small>
               <h4 class="fw-bold m-0 mt-1" id="statTotal">--</h4>
             </div>
+          </div>
+          <div class="col-6 col-md-3">
             <div class="p-3 card-pastel-purple">
-              <small class="text-muted d-block fw-semibold" style="font-size: 0.75rem;">Lapor Bocor</small>
+              <small class="text-muted d-block fw-semibold">Lapor Bocor</small>
               <h4 class="fw-bold m-0 mt-1" id="statBocor">--</h4>
             </div>
+          </div>
+          <div class="col-6 col-md-3">
             <div class="p-3 card-pastel-yellow">
-              <small class="text-muted d-block fw-semibold" style="font-size: 0.75rem;">Dalam Proses</small>
+              <small class="text-muted d-block fw-semibold">Dalam Proses</small>
               <h4 class="fw-bold m-0 mt-1" id="statPending">--</h4>
             </div>
+          </div>
+          <div class="col-6 col-md-3">
             <div class="p-3 card-pastel-green">
-              <small class="text-muted d-block fw-semibold" style="font-size: 0.75rem;">Selesai</small>
+              <small class="text-muted d-block fw-semibold">Selesai</small>
               <h4 class="fw-bold m-0 mt-1" id="statDone">--</h4>
             </div>
           </div>
+        </div>
 
-          <!-- TAB SCROLLABLE UNTUK MOBILE -->
-          <ul class="nav nav-pills mb-3" id="mainTab" role="tablist">
-            <li class="nav-item">
-              <button class="nav-link active" id="tab-laporan" data-bs-toggle="pill" data-bs-target="#listTab">📊 Laporan</button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link" id="tab-inspeksi" data-bs-toggle="pill" data-bs-target="#checklistTab">📋 Inspeksi</button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link" id="tab-direct" data-bs-toggle="pill" data-bs-target="#createTab">➕ Lapor Direct</button>
-            </li>
-            <li class="nav-item">
-              <button class="nav-link btn-warning text-white" id="tab-bocor" data-bs-toggle="pill" data-bs-target="#bocorTab">🌧️ Lapor Bocor</button>
-            </li>
-          </ul>
+        <!-- ISI TAB FORM KAMU (Lapor Bocor, Direct, dll tetap di dalam sini) -->
+        <div class="tab-content" id="myTabContent">
+          
+          <!-- TAB LAPOR BOCOR -->
+          <div class="tab-pane fade" id="bocorTab" role="tabpanel">
+             <!-- Seluruh form bocorForm & denah interaktif tetap ada di sini -->
+          </div>
 
-          <!-- TAB CONTENT WRAPPER -->
-          <div class="tab-content" id="myTabContent">
-            
-            <!-- 1. TAB OVERVIEW & REPORT LIST -->
-            <div id="listTab" class="tab-pane fade show active" role="tabpanel">
-              <div class="card p-2 mb-3 border-0 shadow-sm">
-                <div class="btn-group w-100 filter-btn-group" role="group">
-                  <button type="button" class="btn btn-primary active" id="btnFilterAll" onclick="setFilter('ALL')">Semua</button>
-                  <button type="button" class="btn btn-outline-danger" id="btnFilterReported" onclick="setFilter('REPORTED')">Reported</button>
-                  <button type="button" class="btn btn-outline-warning text-dark" id="btnFilterProgress" onclick="setFilter('PROGRESS')">Progress</button>
-                  <button type="button" class="btn btn-outline-success" id="btnFilterResolved" onclick="setFilter('RESOLVED')">Resolved</button>
-                </div>
-              </div>
-              <div id="reportsContainer">Memuat data...</div>
-            </div>
+          <!-- TAB LAPOR DIRECT -->
+          <div class="tab-pane fade" id="directTab" role="tabpanel">
+             <!-- Form Lapor Direct lama kamu -->
+          </div>
 
-            <!-- 2. TAB CHECKLIST INSPEKSI -->
-            <div id="checklistTab" class="tab-pane fade" role="tabpanel">
-              <h5 class="fw-bold text-primary mb-3">Inspeksi Rutin Area & Sanitary</h5>
-              <form id="checklistForm">
-                <div class="row g-2 mb-2">
-                  <div class="col-6">
-                    <label class="form-label small fw-bold">Lantai</label>
-                    <select id="chkFloor" class="form-select" required>
-                      <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
-                    </select>
-                  </div>
-                  <div class="col-6">
-                    <label class="form-label small fw-bold">Zone</label>
-                    <select id="chkZone" class="form-select" required>
-                      <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="mb-2">
-                  <label class="form-label small fw-bold">Kategori Area</label>
-                  <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
-                    <option value="Toilet Customer Public">Toilet Customer Public</option>
-                    <option value="Toilet Priority / Difabel">Toilet Priority / Difabel</option>
-                    <option value="Nursery / Laktasi Room">Nursery / Laktasi Room</option>
-                    <option value="Public Corridor & Koridor Utama">Public Corridor & Koridor Utama</option>
-                    <option value="Atrium & Event Area (Public Space)">Atrium & Event Area (Public Space)</option>
-                    <option value="Service Corridor & Loading Area (Backside)">Service Corridor & Loading Area (Backside)</option>
-                    <option value="Fasad Gedung & Drop-off Lobby">Fasad Gedung & Drop-off Lobby</option>
-                    <option value="Rooftop & Struktur Gedung Outer">Rooftop & Struktur Gedung Outer</option>
-                    <option value="Management Office (MO) Area">Management Office (MO) Area</option>
-                  </select>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label small fw-bold">Detail Nama Area/Tenant</label>
-                  <input type="text" id="chkLocationDetail" class="form-control" placeholder="Contoh: Toilet Utama Dekat Atrium A" required>
-                </div>
-
-                <h6 class="mt-3 mb-2 text-primary fw-bold">Daftar Item Pemeriksaan:</h6>
-                <div id="checklistItemsContainer"></div>
-
-                <button type="submit" id="btnSubmitChecklist" class="btn btn-success w-100 mt-3">Simpan Hasil Inspeksi</button>
-              </form>
-            </div>
-
-            <!-- 3. CREATE REPORT FORM (LAPOR DIRECT) -->
-            <div id="createTab" class="tab-pane fade" role="tabpanel">
-              <h5 class="fw-bold text-primary mb-3">Lapor Kerusakan Direct</h5>
-              <form id="reportForm">
-                <div class="mb-2">
-                  <label class="form-label small fw-bold">Lantai</label>
-                  <select id="floor" class="form-select" onchange="updateFloorMap()" required>
-                    <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
-                  </select>
-                </div>
-
-                <div class="mb-3">
-                  <label class="fw-bold text-primary small">Marking Titik Lokasi Pada Denah:</label>
-                  <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kerusakan untuk menandai titik.</small>
-                  
-                  <div class="map-outer-wrapper" id="mapWrapper">
-                    <div class="map-controls">
-                      <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomIn()">🔍+</button>
-                      <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomOut()">🔍-</button>
-                      <button type="button" class="btn btn-sm btn-light border" onclick="resetMapAndPin()">↺ Reset</button>
-                    </div>
-                    <div class="map-container" id="mapContainer">
-                      <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
-                      <div id="mapPin" class="map-pin d-none"></div>
-                    </div>
-                  </div>
-                  <small id="mapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
-                </div>
-
-                <div class="mb-2">
-                  <label class="form-label small fw-bold">Zone</label>
-                  <select id="zone" class="form-select" required>
-                    <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
-                  </select>
-                </div>
-                <div class="mb-2">
-                  <label class="form-label small fw-bold">Tipe Area</label>
-                  <select id="area_type" class="form-select" required>
-                    <option value="Public Area">Public Area</option>
-                    <option value="Service Area">Service Area</option>
-                  </select>
-                </div>
-                <div class="mb-2">
-                  <label class="form-label small fw-bold">Detail Lokasi/Tenant</label>
-                  <input type="text" id="location_detail" class="form-control" placeholder="Contoh: Depan MO / Atrium" required>
-                </div>
-                <div class="mb-2">
-                  <label class="form-label small fw-bold">Detail Kerusakan</label>
-                  <textarea id="issue" class="form-control" rows="2" required></textarea>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label small fw-bold">Foto Bukti Kerusakan</label>
-                  <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('photoCamera').click()">📷 Buka Kamera HP</button>
-                  <input type="file" id="photoCamera" class="d-none" accept="image/*" capture="environment">
-                  <small id="photoStatus" class="text-muted d-block"></small>
-                </div>
-                <button type="submit" id="btnSubmitReport" class="btn btn-success w-100">Kirim Laporan</button>
-              </form>
-            </div>
-
-            <!-- 4. TAB FORM: LAPOR KEBOCORAN AIR -->
-            <div id="bocorTab" class="tab-pane fade" role="tabpanel">
-              <h5 class="fw-bold text-primary mb-3">🌧️ Laporan Kebocoran Air</h5>
-              <form id="bocorForm">
-                <div class="row g-2 mb-2">
-                  <div class="col-6">
-                    <label class="form-label small fw-bold">Lantai</label>
-                    <select id="bocorFloor" class="form-select" onchange="updateBocorFloorMap()" required>
-                      <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
-                    </select>
-                  </div>
-                  <div class="col-6">
-                    <label class="form-label small fw-bold">Sumber Bocor</label>
-                    <select id="bocorSource" class="form-select" required>
-                      <option value="Plafon / Ceiling">Plafon / Ceiling</option>
-                      <option value="Fasad / Kaca Outer">Fasad / Kaca Outer</option>
-                      <option value="Rooftop / Canopy">Rooftop / Canopy</option>
-                      <option value="Pipa AC / Drainase">Pipa AC / Drainase</option>
-                      <option value="Lantai / Dinding">Lantai / Dinding Merembes</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <label class="fw-bold text-primary small">Marking Titik Kebocoran Pada Denah:</label>
-                  <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kebocoran untuk menandai titik.</small>
-                  
-                  <div class="map-outer-wrapper" id="bocorMapWrapper">
-                    <div class="map-controls">
-                      <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomIn()">🔍+</button>
-                      <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomOut()">🔍-</button>
-                      <button type="button" class="btn btn-sm btn-light border" onclick="resetBocorMapAndPin()">↺ Reset</button>
-                    </div>
-                    <div class="map-container" id="bocorMapContainer">
-                      <img src="" id="bocorMapImage" class="map-image" alt="Denah Lantai Bocor">
-                      <div id="bocorMapPin" class="map-pin map-pin-water d-none"></div>
-                    </div>
-                  </div>
-                  <small id="bocorMapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label small fw-bold">Tingkat Keparahan / Debit Air</label>
-                  <div class="d-flex gap-2">
-                    <input type="radio" class="btn-check" name="debitAir" id="debit1" value="RINGAN" checked>
-                    <label class="btn btn-outline-info btn-sm flex-fill" for="debit1">💧 Tetesan</label>
-
-                    <input type="radio" class="btn-check" name="debitAir" id="debit2" value="SEDANG">
-                    <label class="btn btn-outline-warning btn-sm flex-fill" for="debit2">🌧️ Merembes</label>
-
-                    <input type="radio" class="btn-check" name="debitAir" id="debit3" value="DARURAT">
-                    <label class="btn btn-outline-danger btn-sm flex-fill" for="debit3">🌊 Deras / Banjir</label>
-                  </div>
-                </div>
-
-                <div class="mb-2">
-                  <label class="form-label small fw-bold">Detail Lokasi Kebocoran</label>
-                  <input type="text" id="bocorLocation" class="form-control" placeholder="Contoh: Depan Tenant X / Koridor Barat" required>
-                </div>
-
-                <div class="mb-2">
-                  <label class="form-label small fw-bold">Keterangan Tambahan</label>
-                  <textarea id="bocorIssue" class="form-control" rows="2" placeholder="Penjelasan temuan titik rembesan/aliran air..." required></textarea>
-                </div>
-
-                <div class="mb-3">
-                  <label class="form-label small fw-bold">Foto Dokumen Kebocoran</label>
-                  <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('bocorPhotoCamera').click()">📷 Ambil Foto Bocor</button>
-                  <input type="file" id="bocorPhotoCamera" class="d-none" accept="image/*" capture="environment">
-                  <small id="bocorPhotoStatus" class="text-muted d-block"></small>
-                </div>
-
-                <button type="submit" id="btnSubmitBocor" class="btn btn-primary w-100">Kirim Laporan Kebocoran 🌧️</button>
-              </form>
-            </div>
-
-          </div> <!-- END TAB CONTENT -->
-        </div> <!-- END APP SECTION -->
+          <!-- TAB LAINNYA... -->
+        </div>
 
       </div>
     </main>
   </div>
 
-  <!-- MODAL DIALOGS -->
-  <div class="modal fade" id="mapModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold" id="mapModalTitle">Lokasi Kerusakan Pada Denah</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div class="container py-3" style="max-width: 600px;">
+
+  <!-- FORM AUTENTIKASI -->
+  <div id="authContainer">
+    <div id="loginCard" class="card p-4 shadow-sm">
+      <h3 class="text-center mb-3 fw-bold text-primary">Login System Civil</h3>
+      <form id="loginForm">
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Username</label>
+          <input type="text" id="loginUser" class="form-control" required>
         </div>
-        <div class="modal-body p-2">
-          <div class="map-outer-wrapper" id="viewMapWrapper">
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Password</label>
+          <input type="password" id="loginPass" class="form-control" required>
+        </div>
+        <button type="submit" id="btnLogin" class="btn btn-primary w-100">Login</button>
+      </form>
+      <div class="d-flex justify-content-between mt-3 small">
+        <a href="#" class="text-decoration-none" onclick="showAuthCard('registerCard')">Buat Akun Baru</a>
+        <a href="#" class="text-decoration-none" onclick="showAuthCard('forgotCard')">Lupa Password?</a>
+      </div>
+    </div>
+
+    <div id="registerCard" class="card p-4 shadow-sm d-none">
+      <h3 class="text-center mb-3 fw-bold text-success">Buat Akun Baru</h3>
+      <form id="registerForm">
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Nama Lengkap</label>
+          <input type="text" id="regFullname" class="form-control" placeholder="Contoh: Vandi Tech" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Username</label>
+          <input type="text" id="regUser" class="form-control" placeholder="Contoh: vandi_civil" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Email Aktif</label>
+          <input type="email" id="regEmail" class="form-control" placeholder="Contoh: vandi@gmail.com" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Password</label>
+          <input type="password" id="regPass" class="form-control" required>
+        </div>
+        <button type="submit" id="btnRegister" class="btn btn-success w-100">Daftar Akun</button>
+      </form>
+      <div class="text-center mt-3 small">
+        Sudah punya akun? <a href="#" class="text-decoration-none" onclick="showAuthCard('loginCard')">Login di sini</a>
+      </div>
+    </div>
+
+    <div id="forgotCard" class="card p-4 shadow-sm d-none">
+      <h3 class="text-center mb-3 fw-bold text-primary">Lupa Password</h3>
+      <form id="requestOTPForm">
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Username atau Email Anda</label>
+          <input type="text" id="otpTarget" class="form-control" placeholder="Masukkan username/email" required>
+        </div>
+        <button type="submit" id="btnRequestOTP" class="btn btn-primary w-100">Kirim Kode OTP Ke Email</button>
+      </form>
+      <div class="text-center mt-3 small">
+        Kembali ke <a href="#" class="text-decoration-none" onclick="showAuthCard('loginCard')">Halaman Login</a>
+      </div>
+    </div>
+
+    <div id="verifyOTPCard" class="card p-4 shadow-sm d-none">
+      <h3 class="text-center mb-1 fw-bold text-success">Verifikasi OTP</h3>
+      <p class="text-muted text-center small mb-3" id="otpNotice">Kode OTP telah dikirim ke email Anda.</p>
+      <form id="verifyOTPForm">
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Kode OTP (6 Digit)</label>
+          <input type="text" id="otpInputCode" class="form-control text-center fw-bold fs-4" maxlength="6" placeholder="------" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-bold small">Password Baru</label>
+          <input type="password" id="otpNewPass" class="form-control" required>
+        </div>
+        <button type="submit" id="btnVerifyReset" class="btn btn-success w-100">Simpan Password Baru</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MAIN APP SECTION -->
+<div id="appSection" class="d-none">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <span id="userGreeting" class="fw-bold"></span>
+    <button onclick="logout()" class="btn btn-sm btn-outline-danger">Logout</button>
+  </div>
+
+  <!-- NAVIGASI TAB UTAMA -->
+  <ul class="nav nav-pills mb-3" id="mainTab" role="tablist">
+    <li class="nav-item">
+      <button class="nav-link active" id="tab-laporan" data-bs-toggle="pill" data-bs-target="#listTab">Laporan</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" id="tab-inspeksi" data-bs-toggle="pill" data-bs-target="#checklistTab">📋 Inspeksi</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" id="tab-direct" data-bs-toggle="pill" data-bs-target="#createTab">+ Lapor Direct</button>
+    </li>
+    <!-- MENU BARU: LAPOR BOCOR -->
+    <li class="nav-item">
+      <button class="nav-link btn-warning text-white" id="tab-bocor" data-bs-toggle="pill" data-bs-target="#bocorTab">🌧️ Lapor Bocor</button>
+    </li>
+  </ul>
+
+  <!-- TAB CONTENT WAPPER -->
+  <div class="tab-content">
+    
+    <!-- 1. TAB CHECKLIST INSPEKSI -->
+    <div id="checklistTab" class="tab-pane fade card p-3 shadow-sm">
+      <h5 class="fw-bold text-primary mb-3">Inspeksi Rutin Area & Sanitary</h5>
+      <form id="checklistForm">
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-label small fw-bold">Lantai</label>
+            <select id="chkFloor" class="form-select" required>
+              <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-bold">Zone</label>
+            <select id="chkZone" class="form-select" required>
+              <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label small fw-bold">Kategori Area</label>
+          <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
+            <option value="Toilet Customer Public">Toilet Customer Public</option>
+            <option value="Toilet Priority / Difabel">Toilet Priority / Difabel</option>
+            <option value="Nursery / Laktasi Room">Nursery / Laktasi Room</option>
+            <option value="Public Corridor & Koridor Utama">Public Corridor & Koridor Utama</option>
+            <option value="Atrium & Event Area (Public Space)">Atrium & Event Area (Public Space)</option>
+            <option value="Service Corridor & Loading Area (Backside)">Service Corridor & Loading Area (Backside)</option>
+            <option value="Fasad Gedung & Drop-off Lobby">Fasad Gedung & Drop-off Lobby</option>
+            <option value="Rooftop & Struktur Gedung Outer">Rooftop & Struktur Gedung Outer</option>
+            <option value="Management Office (MO) Area">Management Office (MO) Area</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Detail Nama Area/Tenant</label>
+          <input type="text" id="chkLocationDetail" class="form-control" placeholder="Contoh: Toilet Utama Dekat Atrium A" required>
+        </div>
+
+        <h6 class="mt-3 mb-2 text-primary fw-bold">Daftar Item Pemeriksaan:</h6>
+        <div id="checklistItemsContainer"></div>
+
+        <button type="submit" id="btnSubmitChecklist" class="btn btn-success w-100 mt-3">Simpan Hasil Inspeksi</button>
+      </form>
+    </div>
+
+    <!-- 2. CREATE REPORT FORM (DIRECT) -->
+    <div id="createTab" class="tab-pane fade card p-3 shadow-sm">
+      <h5 class="fw-bold text-primary mb-3">Lapor Kerusakan Direct</h5>
+      <form id="reportForm">
+        <div class="mb-2">
+          <label class="form-label small fw-bold">Lantai</label>
+          <select id="floor" class="form-select" onchange="updateFloorMap()" required>
+            <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label class="fw-bold text-primary small">Marking Titik Lokasi Pada Denah:</label>
+          <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kerusakan untuk menandai titik.</small>
+          
+          <div class="map-outer-wrapper" id="mapWrapper">
             <div class="map-controls">
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.zoomIn()">🔍+</button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.zoomOut()">🔍-</button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.reset()">↺ Reset</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomIn()">🔍+</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomOut()">🔍-</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="resetMapAndPin()">↺ Reset</button>
             </div>
-            <div class="map-container" id="viewMapContainer">
-              <img src="" id="viewMapImage" class="map-image" alt="Denah Lantai View">
-              <div id="viewMapPin" class="map-pin d-none"></div>
+            <div class="map-container" id="mapContainer">
+              <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
+              <div id="mapPin" class="map-pin d-none"></div>
             </div>
           </div>
+          <small id="mapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
         </div>
-      </div>
-    </div>
-  </div>
 
-  <div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold" id="updateModalTitle">Update Progress Pekerjaan</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="mb-2">
+          <label class="form-label small fw-bold">Zone</label>
+          <select id="zone" class="form-select" required>
+            <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
+          </select>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Deskripsi Progress / Tindakan</label>
-            <textarea id="progressNote" class="form-control" rows="3" placeholder="Jelaskan tindakan perbaikan yang dilakukan..." required></textarea>
+        <div class="mb-2">
+          <label class="form-label small fw-bold">Tipe Area</label>
+          <select id="area_type" class="form-select" required>
+            <option value="Public Area">Public Area</option>
+            <option value="Service Area">Service Area</option>
+          </select>
+        </div>
+        <div class="mb-2">
+          <label class="form-label small fw-bold">Detail Lokasi/Tenant</label>
+          <input type="text" id="location_detail" class="form-control" placeholder="Contoh: Depan MO / Atrium" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label small fw-bold">Detail Kerusakan</label>
+          <textarea id="issue" class="form-control" rows="2" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Foto Bukti Kerusakan</label>
+          <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('photoCamera').click()">📷 Buka Kamera HP</button>
+          <input type="file" id="photoCamera" class="d-none" accept="image/*" capture="environment">
+          <small id="photoStatus" class="text-muted d-block"></small>
+        </div>
+        <button type="submit" id="btnSubmitReport" class="btn btn-success w-100">Kirim Laporan</button>
+      </form>
+    </div>
+
+    <!-- TAB FORM: LAPOR KEBOCORAN AIR -->
+    <div id="bocorTab" class="tab-pane fade card p-3 shadow-sm">
+      <h5 class="fw-bold text-primary mb-3">🌧️ Laporan Kebocoran Air</h5>
+      <form id="bocorForm">
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-label small fw-bold">Lantai</label>
+            <select id="bocorFloor" class="form-select" onchange="updateBocorFloorMap()" required>
+              <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
+            </select>
           </div>
-          <div class="mb-3">
-            <label class="form-label small fw-bold">Bukti Foto Perbaikan</label>
-            <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('updateCamera').click()">📷 Ambil Foto Perbaikan</button>
-            <input type="file" id="updateCamera" class="d-none" accept="image/*" capture="environment">
-            <small id="updatePhotoStatus" class="text-muted d-block"></small>
+          <div class="col-6">
+            <label class="form-label small fw-bold">Sumber Bocor</label>
+            <select id="bocorSource" class="form-select" required>
+              <option value="Plafon / Ceiling">Plafon / Ceiling</option>
+              <option value="Fasad / Kaca Outer">Fasad / Kaca Outer</option>
+              <option value="Rooftop / Canopy">Rooftop / Canopy</option>
+              <option value="Pipa AC / Drainase">Pipa AC / Drainase</option>
+              <option value="Lantai / Dinding">Lantai / Dinding Merembes</option>
+            </select>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="button" id="btnSaveUpdate" onclick="submitUpdateProgress()" class="btn btn-primary">Simpan Progress</button>
+
+        <!-- DENAH INTERAKTIF KHUSUS KEBOCORAN -->
+        <div class="mb-3">
+          <label class="fw-bold text-primary small">Marking Titik Kebocoran Pada Denah:</label>
+          <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kebocoran untuk menandai titik.</small>
+          
+          <div class="map-outer-wrapper" id="bocorMapWrapper">
+            <div class="map-controls">
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomIn()">🔍+</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomOut()">🔍-</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="resetBocorMapAndPin()">↺ Reset</button>
+            </div>
+            <div class="map-container" id="bocorMapContainer">
+              <img src="" id="bocorMapImage" class="map-image" alt="Denah Lantai Bocor">
+              <div id="bocorMapPin" class="map-pin map-pin-water d-none"></div>
+            </div>
+          </div>
+          <small id="bocorMapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Tingkat Keparahan / Debit Air</label>
+          <div class="d-flex gap-2">
+            <input type="radio" class="btn-check" name="debitAir" id="debit1" value="RINGAN" checked>
+            <label class="btn btn-outline-info btn-sm flex-fill" for="debit1">💧 Tetesan</label>
+
+            <input type="radio" class="btn-check" name="debitAir" id="debit2" value="SEDANG">
+            <label class="btn btn-outline-warning btn-sm flex-fill" for="debit2">🌧️ Merembes</label>
+
+            <input type="radio" class="btn-check" name="debitAir" id="debit3" value="DARURAT">
+            <label class="btn btn-outline-danger btn-sm flex-fill" for="debit3">🌊 Deras / Banjir</label>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label small fw-bold">Detail Lokasi Kebocoran</label>
+          <input type="text" id="bocorLocation" class="form-control" placeholder="Contoh: Depan Tenant X / Koridor Barat" required>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label small fw-bold">Keterangan Tambahan</label>
+          <textarea id="bocorIssue" class="form-control" rows="2" placeholder="Penjelasan temuan titik rembesan/aliran air..." required></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Foto Dokumen Kebocoran</label>
+          <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('bocorPhotoCamera').click()">📷 Ambil Foto Bocor</button>
+          <input type="file" id="bocorPhotoCamera" class="d-none" accept="image/*" capture="environment">
+          <small id="bocorPhotoStatus" class="text-muted d-block"></small>
+        </div>
+
+        <button type="submit" id="btnSubmitBocor" class="btn btn-primary w-100">Kirim Laporan Kebocoran 🌧️</button>
+      </form>
+    </div>
+
+    <!-- 4. REPORT LIST & FILTER -->
+    <div id="listTab" class="tab-pane fade show active">
+      <div class="card p-2 mb-3 shadow-sm">
+        <div class="btn-group w-100 filter-btn-group" role="group">
+          <button type="button" class="btn btn-primary active" id="btnFilterAll" onclick="setFilter('ALL')">Semua</button>
+          <button type="button" class="btn btn-outline-danger" id="btnFilterReported" onclick="setFilter('REPORTED')">Reported</button>
+          <button type="button" class="btn btn-outline-warning text-dark" id="btnFilterProgress" onclick="setFilter('PROGRESS')">Progress</button>
+          <button type="button" class="btn btn-outline-success" id="btnFilterResolved" onclick="setFilter('RESOLVED')">Resolved</button>
+        </div>
+      </div>
+      <div id="reportsContainer">Memuat data...</div>
+    </div>
+
+  </div> <!-- END TAB CONTENT -->
+</div>
+
+<!-- MODAL DENAH VIEW WITH ZOOM & PAN (ID DISESUAIKAN UNTUK VIEW DENAH) -->
+<div class="modal fade" id="mapModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="mapModalTitle">Lokasi Kerusakan Pada Denah</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-2">
+        <div class="map-outer-wrapper" id="viewMapWrapper">
+          <div class="map-controls">
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.zoomIn()">🔍+</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.zoomOut()">🔍-</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.reset()">↺ Reset</button>
+          </div>
+          <div class="map-container" id="viewMapContainer">
+            <img src="" id="viewMapImage" class="map-image" alt="Denah Lantai View">
+            <div id="viewMapPin" class="map-pin d-none"></div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Modal Update Progress & Full Image -->
+<div class="modal fade" id="updateModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold" id="updateModalTitle">Update Progress Pekerjaan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Deskripsi Progress / Tindakan</label>
+          <textarea id="progressNote" class="form-control" rows="3" placeholder="Jelaskan tindakan perbaikan yang dilakukan..." required></textarea>
         </div>
-        <div class="modal-body p-0">
-          <img src="" id="fullImage" class="img-fluid w-100" alt="Full Image">
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Bukti Foto Perbaikan</label>
+          <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('updateCamera').click()">📷 Ambil Foto Perbaikan</button>
+          <input type="file" id="updateCamera" class="d-none" accept="image/*" capture="environment">
+          <small id="updatePhotoStatus" class="text-muted d-block"></small>
         </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" id="btnSaveUpdate" onclick="submitUpdateProgress()" class="btn btn-primary">Simpan Progress</button>
       </div>
     </div>
   </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0">
+        <img src="" id="fullImage" class="img-fluid w-100" alt="Full Image">
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   const API_URL = "https://script.google.com/macros/s/AKfycbxYfqKB2SSDxPXGdwI5mqwivozqUi28DiLw2yS8Q5pHbwAdvEPL2xUbsq7mdE1RQ5wN/exec";
 

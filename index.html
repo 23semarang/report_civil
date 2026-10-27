@@ -1569,50 +1569,66 @@ function updateDashboardStats(reports) {
     });
   }
 
-  // FUNGSI UNTUK MERENDER DAFTAR KEBOCORAN AIR
-function renderBocorReports() {
+  // FUNGSI MEMUAT DAN MERENDER DATA LANGSUNG DARI SHEET Laporan_Bocor
+async function loadBocorReports() {
   const container = document.getElementById("bocorReportsContainer");
   if (!container) return;
 
-  container.innerHTML = "";
+  container.innerHTML = `<div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data kebocoran...</div>`;
 
-  // Filter khusus laporan yang memiliki kriteria kebocoran
-  const bocorList = allReports.filter(item => 
-    item.source || item.severity || item.type === 'BOCOR' || (item.issue && item.issue.toLowerCase().includes('bocor'))
-  );
+  try {
+    const res = await fetchAPI({ action: "getBocorReports" });
+    const bocorList = res.data || [];
 
-  if (bocorList.length === 0) {
-    container.innerHTML = `<div class="text-center text-muted py-4">Belum ada riwayat laporan kebocoran air.</div>`;
-    return;
+    // Perbarui angka statistik di kartu pastel atas
+    const elBocor = document.getElementById("statBocorReport");
+    if (elBocor) elBocor.innerText = bocorList.length;
+
+    if (bocorList.length === 0) {
+      container.innerHTML = `<div class="text-center text-muted py-4">Belum ada riwayat laporan kebocoran air.</div>`;
+      return;
+    }
+
+    container.innerHTML = "";
+    
+    // Mapping data sesuai kolom sheet Laporan_Bocor
+    bocorList.forEach(item => {
+      const idLaporan = item.id_laporan || item["ID Laporan"] || "-";
+      const timestamp = item.timestamp || item["Timestamp"] || "-";
+      const lantai = item.lantai || item["Lantai"] || "-";
+      const sumberBocor = item.sumber_bocor || item["Sumber Bocor"] || "-";
+      const keparahan = item.tingkat_keparahan || item["Tingkat Keparahan"] || "RINGAN";
+      const detailLokasi = item.detail_lokasi || item["Detail Lokasi"] || "Lokasi Kebocoran";
+      const keterangan = item.keterangan || item["Keterangan"] || "-";
+      const urlFoto = item.url_foto || item["URL Foto"] || "";
+      const status = item.status || item["Status"] || "REPORTED";
+
+      const photoUrl = getGoogleThumbnailUrl(urlFoto);
+      const severityBadge = keparahan === 'DARURAT' ? 'bg-danger' : (keparahan === 'SEDANG' ? 'bg-warning text-dark' : 'bg-info text-dark');
+
+      container.innerHTML += `
+        <div class="card card-report status-${status} p-3 shadow-sm mb-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge ${severityBadge} fw-bold">DEBIT: ${keparahan}</span>
+            <span class="badge bg-secondary">${lantai} - ${sumberBocor}</span>
+          </div>
+          
+          <h6 class="fw-bold text-dark mb-1">${detailLokasi}</h6>
+          <p class="small text-muted mb-2">${keterangan}</p>
+          
+          ${photoUrl ? `<img src="${photoUrl}" class="img-preview mb-2" onclick="openImageModal('${photoUrl}')" style="cursor:pointer;" alt="Foto Bocor">` : ''}
+
+          <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top small">
+            <span class="text-muted"><i class="bi bi-clock"></i> ${timestamp}</span>
+            <span class="badge bg-light text-dark border">${idLaporan}</span>
+          </div>
+        </div>
+      `;
+    });
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = `<div class="text-center text-danger py-3">Gagal mengambil data kebocoran.</div>`;
   }
-
-  bocorList.forEach(item => {
-    const photoUrl = getGoogleThumbnailUrl(item.photo || item.photo_report);
-    const severityBadge = item.severity === 'DARURAT' ? 'bg-danger' : (item.severity === 'SEDANG' ? 'bg-warning text-dark' : 'bg-info text-dark');
-
-    container.innerHTML += `
-      <div class="card card-report status-${item.status || 'REPORTED'} p-3 shadow-sm mb-3">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="badge ${severityBadge} fw-bold">DEBIT: ${item.severity || 'RINGAN'}</span>
-          <span class="badge bg-secondary">${item.floor || '-'} - ${item.source || 'Sumber Air'}</span>
-        </div>
-        
-        <h6 class="fw-bold text-dark mb-1">${item.location_detail || 'Lokasi Kebocoran'}</h6>
-        <p class="small text-muted mb-2">${item.issue || '-'}</p>
-        
-        ${photoUrl ? `<img src="${photoUrl}" class="img-preview mb-2" onclick="openImageModal('${photoUrl}')" style="cursor:pointer;" alt="Foto Bocor">` : ''}
-
-        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top small">
-          <span class="text-muted"><i class="bi bi-clock"></i> ${item.timestamp || item.date || '-'}</span>
-          ${item.marking_x && item.marking_y ? `
-            <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="showMapModal('${item.floor}', ${item.marking_x}, ${item.marking_y})">
-              <i class="bi bi-geo-alt"></i> Denah
-            </button>
-          ` : ''}
-        </div>
-      </div>
-    `;
-  });
 }
   
   function openUpdateModal(id, targetStatus, locationDetail) {
@@ -1892,7 +1908,7 @@ window.addEventListener('scroll', function () {
 const bocorTabBtn = document.getElementById("tab-bocor");
 if (bocorTabBtn) {
   bocorTabBtn.addEventListener("shown.bs.tab", function () {
-    renderBocorReports();
+    loadBocorReports();
   });
 }
 

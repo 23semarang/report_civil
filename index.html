@@ -1593,15 +1593,17 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
         });
       };
 
-          if (photoInput && photoInput.files && photoInput.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function (evt) {
-              sendBocorData(evt.target.result);
-            };
-            reader.readAsDataURL(photoInput.files[0]);
-          } else {
-            sendBocorData("");
-          }
+          const bocorPhotoInput = document.getElementById("bocorPhotoCamera");
+      
+      if (bocorPhotoInput && bocorPhotoInput.files && bocorPhotoInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (evt) {
+          sendBocorData(bocorBase64Photo || evt.target.result);
+        };
+        reader.readAsDataURL(bocorPhotoInput.files[0]);
+      } else {
+        sendBocorData(bocorBase64Photo || "");
+      }
         });
       }
   </script> <!-- PENUTUP TAG SCRIPT PALING BAWAH -->

@@ -78,14 +78,16 @@ body {
 
 /* DENAH MAP WRAPPER */
 .map-outer-wrapper {
-  position: relative;
-  border: 2px dashed #94a3b8;
-  border-radius: 12px;
-  overflow: hidden;
-  background-color: #f1f5f9;
-  width: 100%;
-  touch-action: none;
-}
+    position: relative;
+    border: 2px dashed #0d6efd;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #e9ecef;
+    width: 100%;
+    height: 350px; /* MEMBATASI TINGGI KOTAK DENAH */
+    touch-action: none;
+    user-select: none;
+  }
 
 .map-controls {
   position: absolute; top: 12px; right: 12px; z-index: 20; display: flex; gap: 6px;
@@ -475,8 +477,19 @@ body {
   const mapContainer = document.getElementById('mapContainer');
   const viewMapContainer = document.getElementById('viewMapContainer');
 
-  const pzCreate = Panzoom(mapContainer, { maxScale: 6, minScale: 1, contain: 'outside', cursor: 'grab' });
-  const pzView = Panzoom(viewMapContainer, { maxScale: 6, minScale: 1, contain: 'outside', cursor: 'grab' });
+  const pzCreate = Panzoom(mapContainer, { 
+    maxScale: 5, 
+    minScale: 0.5, 
+    contain: 'inside', 
+    cursor: 'grab' 
+  });
+  
+  const pzView = Panzoom(viewMapContainer, { 
+    maxScale: 5, 
+    minScale: 0.5, 
+    contain: 'inside', 
+    cursor: 'grab' 
+  });
 
   function applyPinTransform(pinEl, scale) {
     if (!pinEl) return;

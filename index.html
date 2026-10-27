@@ -710,9 +710,15 @@
       <div class="modal-body p-2">
         <div class="map-outer-wrapper" id="viewMapWrapper">
           <div class="map-controls">
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.zoomIn()">🔍+</button>
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.zoomOut()">🔍-</button>
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.reset()">↺ Reset</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="zoomInMap()">
+  <i class="bi bi-zoom-in"></i> +
+</button>
+<button type="button" class="btn btn-sm btn-light border" onclick="zoomOutMap()">
+  <i class="bi bi-zoom-out"></i> -
+</button>
+<button type="button" class="btn btn-sm btn-light border" onclick="resetMapZoom()">
+  <i class="bi bi-arrow-counterclockwise"></i> Reset
+</button>
           </div>
           <div class="map-container" id="viewMapContainer">
             <img src="" id="viewMapImage" class="map-image" alt="Denah Lantai View">
@@ -1687,6 +1693,18 @@ async function loadBocorReports() {
     document.getElementById("mapModalTitle").innerText = `Denah Kerusakan (${floor})`;
     mapModal.show();
   }
+  // Tambahkan 3 fungsi ini di bawah openMapModal
+function zoomInMap() {
+  if (pzView) pzView.zoomIn();
+}
+
+function zoomOutMap() {
+  if (pzView) pzView.zoomOut();
+}
+
+function resetMapZoom() {
+  if (pzView) pzView.reset();
+}
 
   function getGoogleThumbnailUrl(driveUrl) {
     if (!driveUrl) return "";

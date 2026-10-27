@@ -111,8 +111,8 @@
       background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(4px); padding: 4px; border-radius: 8px;
     }
 
-    /* PIN MANDIRI DILUAR PANZOOM CONTAINER */
-    .map-pin {
+    /* POSISI UJUNG RUNCING PIN PRESISI */
+  .map-pin {
     position: absolute; 
     width: 24px; 
     height: 24px; 
@@ -122,7 +122,7 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
     pointer-events: none; 
     z-index: 10;
-    transform-origin: bottom center;
+    /* transform-origin dihapus agar tidak bentrok dengan kalkulasi JS */
   }
     .img-preview {
       width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;
@@ -604,18 +604,22 @@
     document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
 
-  // Menjaga ukuran pin tetap konstan (tidak membengkak saat denah di-zoom)
+  // MENJAGA UJUNG RUNCING PIN TEPAT DI KURSOR SAAT ZOOM/PAN
   function updatePinPosition() {
     const pin = document.getElementById("mapPin");
     if (!markedX || !markedY || pin.classList.contains("d-none")) return;
 
+    // Kunci posisi relatif persentase murni di dalam mapContainer
     pin.style.left = markedX + "%";
     pin.style.top = markedY + "%";
 
-    // Balikkan skala zoom pada pin agar ukurannya tetap 24px
+    // Hitung invScale untuk menjaga ukuran ikon pin tetap 24px saat denah di-zoom
     const scale = pzCreate ? pzCreate.getScale() : 1;
     const invScale = 1 / scale;
-    pin.style.transform = `scale(${invScale}) translate(-50%, -100%) rotate(-45deg)`;
+
+    // Skala ulang ikon, putar 45 derajat, dan geser pusat koordinat (-50% X, -100% Y) 
+    // agar ujung runcing bagian bawah terkunci pas di titik kursor
+    pin.style.transform = `translate(-50%, -100%) scale(${invScale}) rotate(-45deg)`;
   }
 
   // Listener perubahan zoom untuk menjaga bentuk pin

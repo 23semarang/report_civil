@@ -122,7 +122,6 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
     pointer-events: none; 
     z-index: 10;
-    /* transform-origin dihapus agar tidak bentrok dengan kalkulasi JS */
   }
     .img-preview {
       width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;
@@ -521,6 +520,8 @@
         contain: 'outside', 
         cursor: 'grab' 
       });
+
+      // LISTEN EVENT ZOOM & WHEEL UNTUK DENAH LAPOR DIRECT
       mapContainer.addEventListener('panzoomchange', updatePinPosition);
       document.getElementById('mapWrapper').addEventListener('wheel', pzCreate.zoomWithWheel);
     }
@@ -532,6 +533,8 @@
         contain: 'inside', 
         cursor: 'grab' 
       });
+
+      // LISTEN EVENT ZOOM & WHEEL UNTUK MODAL VIEW DENAH
       viewMapContainer.addEventListener('panzoomchange', updateViewPinPosition);
       document.getElementById('viewMapWrapper').addEventListener('wheel', pzView.zoomWithWheel);
     }
@@ -604,21 +607,31 @@
     document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
 
-  // MENJAGA UJUNG RUNCING PIN TEPAT DI KURSOR SAAT ZOOM/PAN
-  function updatePinPosition() {
+ function updatePinPosition() {
     const pin = document.getElementById("mapPin");
     if (!markedX || !markedY || pin.classList.contains("d-none")) return;
 
-    // Kunci posisi relatif persentase murni di dalam mapContainer
+    // Set koordinat persentase murni pada denah
     pin.style.left = markedX + "%";
     pin.style.top = markedY + "%";
 
-    // Hitung invScale untuk menjaga ukuran ikon pin tetap 24px saat denah di-zoom
+    // Hitung skala kebalikan agar ukuran pin tetap konsisten (tidak membesar saat di-zoom)
     const scale = pzCreate ? pzCreate.getScale() : 1;
     const invScale = 1 / scale;
 
-    // Skala ulang ikon, putar 45 derajat, dan geser pusat koordinat (-50% X, -100% Y) 
-    // agar ujung runcing bagian bawah terkunci pas di titik kursor
+    // Geser (-50% X, -100% Y) agar ujung runcing bawah pin PAS mengunci di koordinat klik kursor
+    pin.style.transform = `translate(-50%, -100%) scale(${invScale}) rotate(-45deg)`;
+  }
+
+  function updateViewPinPosition() {
+    const pin = document.getElementById("viewMapPin");
+    if (!viewMarkedX || !viewMarkedY || pin.classList.contains("d-none")) return;
+
+    pin.style.left = viewMarkedX + "%";
+    pin.style.top = viewMarkedY + "%";
+
+    const scale = pzView ? pzView.getScale() : 1;
+    const invScale = 1 / scale;
     pin.style.transform = `translate(-50%, -100%) scale(${invScale}) rotate(-45deg)`;
   }
 

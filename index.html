@@ -36,17 +36,10 @@
     .map-image { width: 100%; height: auto; display: block; pointer-events: none; user-select: none; -webkit-user-drag: none; }
     
     .map-pin {
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    background-color: #dc3545;
-    border: 2px solid #ffffff;
-    border-radius: 50% 50% 50% 0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
-    pointer-events: none;
-    z-index: 10;
-    transform-origin: 0 100%; /* Menjaga ujung bawah pin mengunci posisi titik */
-  }
+      position: absolute; width: 24px; height: 24px; background-color: #dc3545; border: 2px solid #ffffff;
+      border-radius: 50% 50% 50% 0; box-shadow: 0 2px 5px rgba(0,0,0,0.4); pointer-events: none; z-index: 10;
+      transform-origin: 0 100%;
+    }
     .map-pin::after {
       content: ''; width: 8px; height: 8px; margin: 6px 0 0 6px; background: #ffffff; position: absolute; border-radius: 50%;
     }
@@ -468,21 +461,15 @@
   }
 
   let startX = 0, startY = 0;
-  mapContainer.addEventListener('pointerdown', (e) => { 
-    startX = e.clientX; 
-    startY = e.clientY; 
-  });
-
+  mapContainer.addEventListener('pointerdown', (e) => { startX = e.clientX; startY = e.clientY; });
   mapContainer.addEventListener('pointerup', (e) => {
     const diffX = Math.abs(e.clientX - startX);
     const diffY = Math.abs(e.clientY - startY);
 
-    // Hanya deteksi sebagai KLIK jika tidak ada pergeseran geser/pan (diff < 8px)
     if (diffX < 8 && diffY < 8) {
       const mapImg = document.getElementById("mapImage");
       const rect = mapImg.getBoundingClientRect();
 
-      // Hitung posisi klik relatif terhadap gambar denah
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
 
@@ -498,7 +485,6 @@
         pin.style.top = markedY + "%";
         pin.classList.remove("d-none");
 
-        // Koreksi ukuran pin agar tidak membesar/mengecil saat di-zoom
         applyPinTransform(pin, pzCreate.getScale());
 
         document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
@@ -593,7 +579,7 @@
     }
   }
 
-  // LOGIKA CHECKLIST (KAMERA LANGSUNG - FAST PROCESS)
+  // LOGIKA CHECKLIST (HANYA KAMERA HARUS LANGSUNG - ANTI STUCK)
   function loadChecklistItems() {
     const cat = document.getElementById("chkCategory").value;
     const items = CHECKLIST_PRESETS[cat] || [];
@@ -769,7 +755,7 @@
     }
   });
 
-  // FUNGSI WATERMARK OPTIMAL & INSTAN (MAX 1000PX)
+  // FUNGSI WATERMARK FAST (MAX 1000PX WIDTH)
   function applyWatermark(file, username, status, locationDetail) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();

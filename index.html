@@ -103,10 +103,6 @@ body {
     }
 
     .map-image { 
-      max-width: 100%; 
-      max-height: 100%; 
-      width: auto;
-      height: auto;
       display: block; 
       pointer-events: none; 
       user-select: none; 
@@ -119,10 +115,19 @@ body {
       background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(4px); padding: 4px; border-radius: 8px;
     }
 
+    /* POSISI PIN PRESISI PADA UJUNG BAWAH */
     .map-pin {
-      position: absolute; width: 24px; height: 24px; background-color: #ef4444; border: 2px solid #ffffff;
-      border-radius: 50% 50% 50% 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3); pointer-events: none; z-index: 10;
-      transform-origin: 0 100%;
+      position: absolute; 
+      width: 24px; 
+      height: 24px; 
+      background-color: #ef4444; 
+      border: 2px solid #ffffff;
+      border-radius: 50% 50% 50% 0; 
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3); 
+      pointer-events: none; 
+      z-index: 10;
+      transform: translate(-50%, -100%) rotate(-45deg) !important;
+      transform-origin: bottom center !important;
     }
 
     .img-preview {
@@ -504,15 +509,15 @@ body {
 
   const pzCreate = Panzoom(mapContainer, { 
     maxScale: 5, 
-    minScale: 0.5, 
-    contain: 'inside', 
+    minScale: 0.8, 
+    contain: 'outside', 
     cursor: 'grab' 
   });
   
   const pzView = Panzoom(viewMapContainer, { 
     maxScale: 5, 
-    minScale: 0.5, 
-    contain: 'inside', 
+    minScale: 0.8, 
+    contain: 'outside', 
     cursor: 'grab' 
   });
 

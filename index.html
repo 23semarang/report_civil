@@ -436,15 +436,16 @@
         <h4 class="fw-bold m-0" id="statDirectReport">0</h4>
       </div>
     </div>
-    <div class="col-6">
-      <div class="p-3 card-pastel-yellow">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <span class="fw-bold small" style="font-size: 0.75rem;">Lapor Bocor</span>
-          <i class="bi bi-droplet-fill fs-6"></i>
-        </div>
-        <h4 class="fw-bold m-0" id="statBocorReport">0</h4>
-      </div>
+    <!-- KARTU LAPOR BOCOR (BISA DIKLIK) -->
+<div class="col-6">
+  <div class="p-3 card-pastel-yellow" onclick="switchTabToBocor()" style="cursor: pointer;">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <span class="fw-bold small" style="font-size: 0.75rem;">Lapor Bocor</span>
+      <i class="bi bi-droplet-fill fs-6"></i>
     </div>
+    <h4 class="fw-bold m-0" id="statBocorReport">1</h4>
+  </div>
+</div>
   </div>
 
   <!-- 3. SIDEBAR MENUS (OFFCANVAS DRAWER) -->
@@ -1893,6 +1894,21 @@ if (bocorTabBtn) {
   bocorTabBtn.addEventListener("shown.bs.tab", function () {
     renderBocorReports();
   });
+}
+
+  // FUNGSI UNTUK MEMINDAHKAN TAB KE LAPOR BOCOR SAAT KARTU KUNING DIKLIK
+function switchTabToBocor() {
+  const bocorTabBtn = document.getElementById("tab-bocor");
+  if (bocorTabBtn) {
+    // Pemicu perpindahan tab Bootstrap
+    const tab = new bootstrap.Tab(bocorTabBtn);
+    tab.show();
+    
+    // Render data riwayat kebocoran
+    if (typeof renderBocorReports === 'function') {
+      renderBocorReports();
+    }
+  }
 }
   
   </script> <!-- PENUTUP TAG SCRIPT PALING BAWAH -->

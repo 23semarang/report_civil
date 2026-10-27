@@ -1479,8 +1479,8 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
      
       // 1. EVENT LISTENER: AMBIL FOTO, WATERMARK, & NOTIFIKASI STATUS LAPOR BOCOR
   let bocorBase64Photo = "";
+  // HANDLER AMBIL FOTO & WATERMARK SESUAI FOTO 2
   const bocorPhotoInput = document.getElementById("bocorPhotoCamera");
-
   if (bocorPhotoInput) {
     bocorPhotoInput.addEventListener("change", function (e) {
       const file = e.target.files[0];
@@ -1508,24 +1508,54 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
           canvas.height = img.height;
           ctx.drawImage(img, 0, 0);
 
+          // Data untuk Watermark
           const now = new Date();
           const timeString = now.toLocaleDateString('id-ID', {
             day: '2-digit', month: 'short', year: 'numeric',
-            hour: '2-digit', minute: '2-digit', second: '2-digit'
+            hour: '2-digit', minute: '2-digit'
           });
+          
+          const userName = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : "Petugas";
           const floorVal = document.getElementById("bocorFloor") ? document.getElementById("bocorFloor").value : "-";
-          const watermarkText = `[LAPOR BOCOR - MAL 23] ${floorVal} | ${timeString}`;
+          const locationVal = document.getElementById("bocorLocation") ? document.getElementById("bocorLocation").value : "-";
+          const fullLocation = `${floorVal} - ${locationVal}`;
 
-          const fontSize = Math.max(16, Math.floor(canvas.width / 30));
-          ctx.font = `bold ${fontSize}px Arial`;
+          // Ukuran Font Responsif
+          const baseFontSize = Math.max(18, Math.floor(canvas.width / 25));
+          const padding = Math.floor(baseFontSize * 0.8);
+          const startX = Math.floor(canvas.width * 0.04);
+          let startY = canvas.height - Math.floor(baseFontSize * 6);
 
-          const textWidth = ctx.measureText(watermarkText).width;
-          ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
-          ctx.fillRect(20, canvas.height - fontSize - 30, textWidth + 20, fontSize + 16);
+          // 1. DOK MERAH: STATUS: REPORTED
+          ctx.font = `bold ${baseFontSize}px sans-serif`;
+          const statusText = "STATUS: REPORTED";
+          const statusWidth = ctx.measureText(statusText).width + (padding * 2);
+          const statusHeight = baseFontSize + padding;
 
-          ctx.fillStyle = "#ffffff";
-          ctx.fillText(watermarkText, 30, canvas.height - 25);
+          ctx.fillStyle = "#DC3545"; // Warna merah badge
+          ctx.fillRect(startX, startY, statusWidth, statusHeight);
 
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fillText(statusText, startX + padding, startY + statusHeight - Math.floor(padding / 2));
+
+          // 2. KOTAK HITAM TRANSPARAN DI BAWAHNYA
+          startY += statusHeight;
+          const lineGap = Math.floor(baseFontSize * 1.3);
+          const boxHeight = (lineGap * 3) + padding;
+          const boxWidth = Math.max(statusWidth * 1.3, Math.floor(canvas.width * 0.5));
+
+          ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+          ctx.fillRect(startX, startY, boxWidth, boxHeight);
+
+          // 3. TEKS ISI (User, Lokasi, Waktu)
+          ctx.fillStyle = "#FFFFFF";
+          ctx.font = `bold ${Math.floor(baseFontSize * 0.85)}px sans-serif`;
+
+          ctx.fillText(`User: ${userName}`, startX + padding, startY + lineGap);
+          ctx.fillText(`Lokasi: ${fullLocation}`, startX + padding, startY + (lineGap * 2));
+          ctx.fillText(`Waktu: ${timeString}`, startX + padding, startY + (lineGap * 3));
+
+          // Simpan foto ber-watermark
           bocorBase64Photo = canvas.toDataURL("image/jpeg", 0.8);
 
           if (statusElement) {

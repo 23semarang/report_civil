@@ -112,6 +112,7 @@
   }
 
   /* UJUNG RUNCING PIN PRESISI PADA KURSOR */
+ /* POSISI PIN PRESISI PADA UJUNG BAWAH */
   .map-pin {
     position: absolute; 
     width: 24px; 
@@ -516,10 +517,11 @@
   });
 
   function applyPinTransform(pinEl, scale) {
-  if (!pinEl) return;
-  const invScale = 1 / scale;
-  pinEl.style.transform = `scale(${invScale}) translate(-50%, -100%) rotate(-45deg)`;
-}
+    if (!pinEl) return;
+    const invScale = 1 / scale;
+    // Kita gabungkan scale, translate (ujung bawah), dan rotasi dalam satu perintah JS
+    pinEl.style.transform = `scale(${invScale}) translate(-50%, -100%) rotate(-45deg)`;
+  }
 
   mapContainer.addEventListener('panzoomchange', (e) => applyPinTransform(document.getElementById('mapPin'), e.detail.scale));
   viewMapContainer.addEventListener('panzoomchange', (e) => applyPinTransform(document.getElementById('viewMapPin'), e.detail.scale));

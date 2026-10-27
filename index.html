@@ -1358,6 +1358,75 @@
   function fetchAPI(body) {
     return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(r => r.json());
   }
-</script>
+     
+      // ==========================================
+      // TEMPEL KODE HANDLER LAPOR BOCOR DI SINI
+      // ==========================================
+      const bocorForm = document.getElementById("bocorForm");
+      if (bocorForm) {
+        bocorForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const btnSubmit = document.getElementById("btnSubmitBocor");
+          btnSubmit.disabled = true;
+          btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...`;
+
+          const photoInput = document.getElementById("bocorPhotoCamera");
+          
+          const sendBocorData = (base64Photo) => {
+            const payload = {
+              action: "saveLaporBocor",
+              username: currentUser ? currentUser.username : "Petugas",
+              floor: document.getElementById("bocorFloor").value,
+              source: document.getElementById("bocorSource").value,
+              severity: document.querySelector('input[name="debitAir"]:checked') ? document.querySelector('input[name="debitAir"]:checked').value : "RINGAN",
+              location_detail: document.getElementById("bocorLocation").value,
+              issue: document.getElementById("bocorIssue").value,
+              photo: base64Photo
+            };
+
+            fetch(SCRIPT_URL, {
+              method: "POST",
+              body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(res => {
+              btnSubmit.disabled = false;
+              btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
+
+              if (res.status === "success") {
+                alert("✓ " + res.message);
+                bocorForm.reset();
+                
+                const tabLaporanBtn = document.getElementById("tab-laporan");
+                if (tabLaporanBtn) tabLaporanBtn.click();
+                
+                if (typeof loadReports === "function") loadReports();
+              } else {
+                alert("Gagal mengirim laporan: " + res.message);
+              }
+            })
+            .catch(err => {
+              btnSubmit.disabled = false;
+              btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
+              alert("Terjadi kesalahan koneksi saat mengirim laporan kebocoran.");
+              console.error(err);
+            });
+          };
+
+          if (photoInput && photoInput.files && photoInput.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function (evt) {
+              sendBocorData(evt.target.result);
+            };
+            reader.readAsDataURL(photoInput.files[0]);
+          } else {
+            sendBocorData("");
+          }
+        });
+      }
+
+    }); // Penutup event DOMContentLoaded (jika ada)
+  </script> <!-- PENUTUP TAG SCRIPT PALING BAWAH -->
 </body>
 </html>

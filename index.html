@@ -499,63 +499,34 @@
   let markedX = null;
   let markedY = null;
 
-  const mapContainer = document.getElementById('mapContainer');
-  const viewMapContainer = document.getElementById('viewMapContainer');
+  // 1. ISI TARGET PANZOOM KE LANGSUNG ELEMEN GAMBAR (mapImage)
+  const mapImgEl = document.getElementById('mapImage');
+  const viewMapImgEl = document.getElementById('viewMapImage');
 
- const pzCreate = Panzoom(mapContainer, { 
-  maxScale: 5, 
-  minScale: 1, 
-  contain: 'outside', 
-  cursor: 'grab' 
-});
+  const pzCreate = Panzoom(mapImgEl, { 
+    maxScale: 5, 
+    minScale: 1, 
+    contain: 'outside', 
+    cursor: 'grab' 
+  });
   
-  const pzView = Panzoom(viewMapContainer, { 
+  const pzView = Panzoom(viewMapImgEl, { 
     maxScale: 5, 
     minScale: 1, 
     contain: 'inside', 
     cursor: 'grab' 
   });
 
+  // 2. TRANSFORM PIN PRESISI (TANPA IKUT TERDISTORSI ZOOM)
   function applyPinTransform(pinEl, scale) {
     if (!pinEl) return;
     const invScale = 1 / scale;
-    // Kita gabungkan scale, translate (ujung bawah), dan rotasi dalam satu perintah JS
     pinEl.style.transform = `scale(${invScale}) translate(-50%, -100%) rotate(-45deg)`;
   }
 
-  mapContainer.addEventListener('panzoomchange', (e) => applyPinTransform(document.getElementById('mapPin'), e.detail.scale));
-  viewMapContainer.addEventListener('panzoomchange', (e) => applyPinTransform(document.getElementById('viewMapPin'), e.detail.scale));
+  mapImgEl.parentElement.addEventListener('panzoomchange', (e) => applyPinTransform(document.getElementById('mapPin'), e.detail.scale));
 
-  document.getElementById('mapWrapper').addEventListener('wheel', pzCreate.zoomWithWheel);
-  document.getElementById('viewMapWrapper').addEventListener('wheel', pzView.zoomWithWheel);
-
-  const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
-  const updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
-  const mapModal = new bootstrap.Modal(document.getElementById('mapModal'));
-  const fullImageEl = document.getElementById('fullImage');
-
-  if (currentUser) showApp();
-
-  function showAuthCard(cardId) {
-    document.getElementById("loginCard").classList.add("d-none");
-    document.getElementById("registerCard").classList.add("d-none");
-    document.getElementById("forgotCard").classList.add("d-none");
-    document.getElementById("verifyOTPCard").classList.add("d-none");
-    document.getElementById(cardId).classList.remove("d-none");
-  }
-
-  function updateFloorMap() {
-    const floor = document.getElementById("floor").value;
-    const mapImg = document.getElementById("mapImage");
-    mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
-    mapImg.onload = () => pzCreate.reset();
-
-    markedX = null; markedY = null;
-    document.getElementById("mapPin").classList.add("d-none");
-    document.getElementById("mapStatus").className = "text-danger small mt-1 d-block";
-    document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
-  }
-
+  // 3. LOGIKA DETEKSI KLIK DENAH PRESISI 100%
   let startX = 0, startY = 0;
   mapContainer.addEventListener('pointerdown', (e) => { 
     startX = e.clientX; 
@@ -570,15 +541,10 @@
       const mapImg = document.getElementById("mapImage");
       const rect = mapImg.getBoundingClientRect();
 
-      // Mengambil skala zoom dan offset pan murni dari pustaka Panzoom
-      const scale = pzCreate.getScale();
-      const pan = pzCreate.getPan();
-
-      // Hitung koordinat murni piksel gambar asli sebelum di-transform
+      // Hitung posisi murni klik terhadap elemen gambar yang sedang tampil di layar
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
 
-      // Konversi persentase murni tanpa terpengaruh pergeseran zoom
       const xPercent = (clickX / rect.width) * 100;
       const yPercent = (clickY / rect.height) * 100;
 
@@ -587,11 +553,17 @@
         markedY = yPercent.toFixed(2);
 
         const pin = document.getElementById("mapPin");
+        
+        // Pindahkan pin langsung ke dalam konteks mapImage agar menempel pada koordinat gambar murni
+        if (pin.parentElement !== mapImg.parentElement) {
+          mapImg.parentElement.appendChild(pin);
+        }
+
         pin.style.left = markedX + "%";
         pin.style.top = markedY + "%";
         pin.classList.remove("d-none");
 
-        applyPinTransform(pin, scale);
+        applyPinTransform(pin, pzCreate.getScale());
 
         document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
         document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";

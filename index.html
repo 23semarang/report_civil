@@ -1462,10 +1462,32 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
     const container = document.getElementById("reportsContainer");
     container.innerHTML = "Memuat data...";
     const res = await fetchAPI({ action: "getReports" });
-    if (res.status === "success") { allReports = res.data || []; renderReports(); } 
+    if (res.status === "success") { 
+  allReports = res.data || []; 
+  updateDashboardStats(allReports); 
+  renderReports(); 
+}
     else container.innerHTML = "<div class='text-center text-danger py-4'>Gagal memuat data.</div>";
   }
+  
+function updateDashboardStats(reports) {
+  if (!Array.isArray(reports)) return;
 
+  const directCount = reports.filter(r => 
+    !r.source && !r.severity && (r.type === 'DIRECT' || !r.type || r.issue)
+  ).length;
+
+  const bocorCount = reports.filter(r => 
+    r.source || r.severity || r.type === 'BOCOR' || (r.issue && r.issue.toLowerCase().includes('bocor'))
+  ).length;
+
+  const elDirect = document.getElementById("statDirectReport");
+  const elBocor = document.getElementById("statBocorReport");
+
+  if (elDirect) elDirect.innerText = directCount;
+  if (elBocor) elBocor.innerText = bocorCount;
+}
+  
   function renderReports() {
     const container = document.getElementById("reportsContainer");
     container.innerHTML = "";

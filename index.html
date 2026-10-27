@@ -1506,8 +1506,6 @@ function updateDashboardStats(reports) {
 }
   
   function renderReports() {
-  renderBocorReports(); // <--- Sisipkan di sini (baris 1508)
-  
   const container = document.getElementById("reportsContainer");
   container.innerHTML = "";
 
@@ -1580,7 +1578,6 @@ async function loadBocorReports() {
     const res = await fetchAPI({ action: "getBocorReports" });
     const bocorList = res.data || [];
 
-    // Perbarui angka statistik di kartu pastel atas
     const elBocor = document.getElementById("statBocorReport");
     if (elBocor) elBocor.innerText = bocorList.length;
 
@@ -1591,17 +1588,16 @@ async function loadBocorReports() {
 
     container.innerHTML = "";
     
-    // Mapping data sesuai kolom sheet Laporan_Bocor
     bocorList.forEach(item => {
-      const idLaporan = item.id_laporan || item["ID Laporan"] || "-";
-      const timestamp = item.timestamp || item["Timestamp"] || "-";
-      const lantai = item.lantai || item["Lantai"] || "-";
-      const sumberBocor = item.sumber_bocor || item["Sumber Bocor"] || "-";
-      const keparahan = item.tingkat_keparahan || item["Tingkat Keparahan"] || "RINGAN";
-      const detailLokasi = item.detail_lokasi || item["Detail Lokasi"] || "Lokasi Kebocoran";
-      const keterangan = item.keterangan || item["Keterangan"] || "-";
-      const urlFoto = item.url_foto || item["URL Foto"] || "";
-      const status = item.status || item["Status"] || "REPORTED";
+      const idLaporan = item.id_laporan || "-";
+      const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString("id-ID") : "-";
+      const lantai = item.lantai || "-";
+      const sumberBocor = item.sumber_bocor || "-";
+      const keparahan = item.tingkat_keparahan || "RINGAN";
+      const detailLokasi = item.detail_lokasi || "Lokasi Kebocoran";
+      const keterangan = item.keterangan || "-";
+      const urlFoto = item.url_foto || "";
+      const status = item.status || "REPORTED";
 
       const photoUrl = getGoogleThumbnailUrl(urlFoto);
       const severityBadge = keparahan === 'DARURAT' ? 'bg-danger' : (keparahan === 'SEDANG' ? 'bg-warning text-dark' : 'bg-info text-dark');

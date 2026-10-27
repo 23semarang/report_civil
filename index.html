@@ -76,33 +76,58 @@ body {
   color: #ffffff !important;
 }
 
-/* DENAH MAP WRAPPER */
 .map-outer-wrapper {
-    position: relative;
-    border: 2px dashed #0d6efd;
-    border-radius: 8px;
-    overflow: hidden;
-    background-color: #e9ecef;
-    width: 100%;
-    height: 350px; /* MEMBATASI TINGGI KOTAK DENAH */
-    touch-action: none;
-    user-select: none;
-  }
+      position: relative;
+      border: 2px dashed #0d6efd;
+      border-radius: 8px;
+      overflow: hidden;
+      background-color: #e9ecef;
+      width: 100%;
+      height: 320px;
+      touch-action: none;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-.map-controls {
-  position: absolute; top: 12px; right: 12px; z-index: 20; display: flex; gap: 6px;
-  background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(4px); padding: 4px; border-radius: 8px;
-}
+    .map-container { 
+      position: relative; 
+      width: 100%; 
+      height: 100%; 
+      cursor: grab; 
+      touch-action: none; 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-.map-pin {
-  position: absolute; width: 24px; height: 24px; background-color: #ef4444; border: 2px solid #ffffff;
-  border-radius: 50% 50% 50% 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3); pointer-events: none; z-index: 10;
-  transform-origin: 0 100%;
-}
+    .map-image { 
+      max-width: 100%; 
+      max-height: 100%; 
+      width: auto;
+      height: auto;
+      display: block; 
+      pointer-events: none; 
+      user-select: none; 
+      -webkit-user-drag: none; 
+      margin: auto;
+    }
 
-.img-preview {
-  width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;
-}
+    .map-controls {
+      position: absolute; top: 12px; right: 12px; z-index: 20; display: flex; gap: 6px;
+      background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(4px); padding: 4px; border-radius: 8px;
+    }
+
+    .map-pin {
+      position: absolute; width: 24px; height: 24px; background-color: #ef4444; border: 2px solid #ffffff;
+      border-radius: 50% 50% 50% 0; box-shadow: 0 4px 6px rgba(0,0,0,0.3); pointer-events: none; z-index: 10;
+      transform-origin: 0 100%;
+    }
+
+    .img-preview {
+      width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;
+    }
   </style>
 </head>
 <body>
@@ -531,7 +556,11 @@ body {
   }
 
   let startX = 0, startY = 0;
-  mapContainer.addEventListener('pointerdown', (e) => { startX = e.clientX; startY = e.clientY; });
+  mapContainer.addEventListener('pointerdown', (e) => { 
+    startX = e.clientX; 
+    startY = e.clientY; 
+  });
+
   mapContainer.addEventListener('pointerup', (e) => {
     const diffX = Math.abs(e.clientX - startX);
     const diffY = Math.abs(e.clientY - startY);
@@ -647,6 +676,23 @@ body {
       document.getElementById("tabList").classList.add("active");
       loadReports();
     }
+  }
+
+  function updateFloorMap() {
+    const floor = document.getElementById("floor").value;
+    const mapImg = document.getElementById("mapImage");
+    mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+    
+    mapImg.onload = () => {
+      setTimeout(() => {
+        pzCreate.reset();
+      }, 50);
+    };
+
+    markedX = null; markedY = null;
+    document.getElementById("mapPin").classList.add("d-none");
+    document.getElementById("mapStatus").className = "text-danger small mt-1 d-block";
+    document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
 
   // LOGIKA CHECKLIST (HANYA KAMERA HARUS LANGSUNG - ANTI STUCK)

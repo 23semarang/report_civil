@@ -98,13 +98,13 @@
     }
 
     .map-image { 
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block; 
-      user-select: none; 
-      -webkit-user-drag: none; 
-    }
+    width: 100%;
+    height: 100%;
+    object-fit: fill; /* Memastikan gambar denah mengisi 100% ruang tanpa sisa ruang kosong */
+    display: block; 
+    user-select: none; 
+    -webkit-user-drag: none; 
+  }
 
     .map-controls {
       position: absolute; top: 12px; right: 12px; z-index: 20; display: flex; gap: 6px;
@@ -625,7 +625,6 @@
   // Listener perubahan zoom untuk menjaga bentuk pin
   mapContainer.addEventListener('panzoomchange', updatePinPosition);
 
-  // Deteksi klik presisi murni terhadap piksel gambar denah
   let startX = 0, startY = 0;
   if (mapContainer) {
     mapContainer.addEventListener('pointerdown', (e) => { 
@@ -641,7 +640,7 @@
         const mapImg = document.getElementById("mapImage");
         const imgRect = mapImg.getBoundingClientRect();
 
-        // Hitung persentase klik langsung terhadap kotak bounding gambar aktual
+        // Hitung persentase murni titik klik pada bidang denah yang tampil
         const clickX = e.clientX - imgRect.left;
         const clickY = e.clientY - imgRect.top;
 
@@ -662,6 +661,15 @@
         }
       }
     });
+  }
+
+  function updatePinPosition() {
+    const pin = document.getElementById("mapPin");
+    if (!markedX || !markedY || pin.classList.contains("d-none")) return;
+
+    // Kunci titik persentase murni denah
+    pin.style.left = markedX + "%";
+    pin.style.top = markedY + "%";
   }
 
   function loadChecklistItems() {

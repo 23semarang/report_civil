@@ -363,34 +363,77 @@
 
   <!-- MAIN APP SECTION -->
 <div id="appSection" class="d-none">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <span id="userGreeting" class="fw-bold"></span>
-    <button onclick="logout()" class="btn btn-sm btn-outline-danger">Logout</button>
+  
+  <!-- HEADER & USER GREETING MODERN -->
+  <div class="card p-3 mb-3 border-0 shadow-sm" style="background: #ffffff; border-radius: 16px !important;">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="d-flex align-items-center gap-2">
+        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+          <i class="bi bi-person-fill fs-5"></i>
+        </div>
+        <div>
+          <small class="text-muted d-block" style="font-size: 0.75rem;">Selamat Datang,</small>
+          <span id="userGreeting" class="fw-bold text-dark" style="font-size: 0.95rem;">-</span>
+        </div>
+      </div>
+      <button onclick="logout()" class="btn btn-sm btn-outline-danger border-0 rounded-circle p-2" title="Logout">
+        <i class="bi bi-box-arrow-right fs-5"></i>
+      </button>
+    </div>
   </div>
 
-  <!-- NAVIGASI TAB UTAMA -->
+  <!-- KARTU STATISTIK PASTEL (SAAS STYLE) -->
+  <div class="row g-2 mb-3">
+    <div class="col-6">
+      <div class="p-3 card-pastel-blue">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="fw-bold small" style="font-size: 0.75rem;">Lapor Direct</span>
+          <i class="bi bi-megaphone-fill fs-6"></i>
+        </div>
+        <h4 class="fw-bold m-0" id="statDirectReport">0</h4>
+      </div>
+    </div>
+    <div class="col-6">
+      <div class="p-3 card-pastel-yellow">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+          <span class="fw-bold small" style="font-size: 0.75rem;">Lapor Bocor</span>
+          <i class="bi bi-droplet-fill fs-6"></i>
+        </div>
+        <h4 class="fw-bold m-0" id="statBocorReport">0</h4>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGASI TAB UTAMA (ICON VECTOR MODERN) -->
   <ul class="nav nav-pills mb-3" id="mainTab" role="tablist">
     <li class="nav-item">
-      <button class="nav-link active" id="tab-laporan" data-bs-toggle="pill" data-bs-target="#listTab">Laporan</button>
+      <button class="nav-link active" id="tab-laporan" data-bs-toggle="pill" data-bs-target="#listTab">
+        <i class="bi bi-grid-fill me-1"></i> Laporan
+      </button>
     </li>
     <li class="nav-item">
-      <button class="nav-link" id="tab-inspeksi" data-bs-toggle="pill" data-bs-target="#checklistTab">📋 Inspeksi</button>
+      <button class="nav-link" id="tab-inspeksi" data-bs-toggle="pill" data-bs-target="#checklistTab">
+        <i class="bi bi-clipboard-check-fill me-1"></i> Inspeksi
+      </button>
     </li>
     <li class="nav-item">
-      <button class="nav-link" id="tab-direct" data-bs-toggle="pill" data-bs-target="#createTab">+ Lapor Direct</button>
+      <button class="nav-link" id="tab-direct" data-bs-toggle="pill" data-bs-target="#createTab">
+        <i class="bi bi-plus-circle-fill me-1"></i> Direct
+      </button>
     </li>
-    <!-- MENU BARU: LAPOR BOCOR -->
     <li class="nav-item">
-      <button class="nav-link btn-warning text-white" id="tab-bocor" data-bs-toggle="pill" data-bs-target="#bocorTab">🌧️ Lapor Bocor</button>
+      <button class="nav-link btn-warning text-white" id="tab-bocor" data-bs-toggle="pill" data-bs-target="#bocorTab">
+        <i class="bi bi-droplet-fill me-1"></i> Bocor
+      </button>
     </li>
   </ul>
 
-  <!-- TAB CONTENT WAPPER -->
+  <!-- TAB CONTENT WRAPPER (FORM & LIST LAPORAN TETAP PAKAI KODE LAMA ANDA) -->
   <div class="tab-content">
     
     <!-- 1. TAB CHECKLIST INSPEKSI -->
     <div id="checklistTab" class="tab-pane fade card p-3 shadow-sm">
-      <h5 class="fw-bold text-primary mb-3">Inspeksi Rutin Area & Sanitary</h5>
+      <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Inspeksi Rutin Area & Sanitary</h5>
       <form id="checklistForm">
         <div class="row g-2 mb-2">
           <div class="col-6">
@@ -436,7 +479,7 @@
 
     <!-- 2. CREATE REPORT FORM (DIRECT) -->
     <div id="createTab" class="tab-pane fade card p-3 shadow-sm">
-      <h5 class="fw-bold text-primary mb-3">Lapor Kerusakan Direct</h5>
+      <h5 class="fw-bold text-primary mb-3"><i class="bi bi-megaphone me-2"></i>Lapor Kerusakan Direct</h5>
       <form id="reportForm">
         <div class="mb-2">
           <label class="form-label small fw-bold">Lantai</label>
@@ -451,9 +494,9 @@
           
           <div class="map-outer-wrapper" id="mapWrapper">
             <div class="map-controls">
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomIn()">🔍+</button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomOut()">🔍-</button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="resetMapAndPin()">↺ Reset</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomIn()"><i class="bi bi-zoom-in"></i></button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomOut()"><i class="bi bi-zoom-out"></i></button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="resetMapAndPin()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
             </div>
             <div class="map-container" id="mapContainer">
               <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
@@ -486,7 +529,7 @@
         </div>
         <div class="mb-3">
           <label class="form-label small fw-bold">Foto Bukti Kerusakan</label>
-          <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('photoCamera').click()">📷 Buka Kamera HP</button>
+          <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('photoCamera').click()"><i class="bi bi-camera me-1"></i> Buka Kamera HP</button>
           <input type="file" id="photoCamera" class="d-none" accept="image/*" capture="environment">
           <small id="photoStatus" class="text-muted d-block"></small>
         </div>
@@ -494,9 +537,9 @@
       </form>
     </div>
 
-    <!-- TAB FORM: LAPOR KEBOCORAN AIR -->
+    <!-- 3. TAB FORM: LAPOR KEBOCORAN AIR -->
     <div id="bocorTab" class="tab-pane fade card p-3 shadow-sm">
-      <h5 class="fw-bold text-primary mb-3">🌧️ Laporan Kebocoran Air</h5>
+      <h5 class="fw-bold text-primary mb-3"><i class="bi bi-droplet-half me-2"></i>Laporan Kebocoran Air</h5>
       <form id="bocorForm">
         <div class="row g-2 mb-2">
           <div class="col-6">
@@ -517,16 +560,15 @@
           </div>
         </div>
 
-        <!-- DENAH INTERAKTIF KHUSUS KEBOCORAN -->
         <div class="mb-3">
           <label class="fw-bold text-primary small">Marking Titik Kebocoran Pada Denah:</label>
           <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kebocoran untuk menandai titik.</small>
           
           <div class="map-outer-wrapper" id="bocorMapWrapper">
             <div class="map-controls">
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomIn()">🔍+</button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomOut()">🔍-</button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="resetBocorMapAndPin()">↺ Reset</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomIn()"><i class="bi bi-zoom-in"></i></button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomOut()"><i class="bi bi-zoom-out"></i></button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="resetBocorMapAndPin()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
             </div>
             <div class="map-container" id="bocorMapContainer">
               <img src="" id="bocorMapImage" class="map-image" alt="Denah Lantai Bocor">
@@ -540,13 +582,13 @@
           <label class="form-label small fw-bold">Tingkat Keparahan / Debit Air</label>
           <div class="d-flex gap-2">
             <input type="radio" class="btn-check" name="debitAir" id="debit1" value="RINGAN" checked>
-            <label class="btn btn-outline-info btn-sm flex-fill" for="debit1">💧 Tetesan</label>
+            <label class="btn btn-outline-info btn-sm flex-fill" for="debit1"><i class="bi bi-droplet"></i> Tetesan</label>
 
             <input type="radio" class="btn-check" name="debitAir" id="debit2" value="SEDANG">
-            <label class="btn btn-outline-warning btn-sm flex-fill" for="debit2">🌧️ Merembes</label>
+            <label class="btn btn-outline-warning btn-sm flex-fill" for="debit2"><i class="bi bi-cloud-rain"></i> Merembes</label>
 
             <input type="radio" class="btn-check" name="debitAir" id="debit3" value="DARURAT">
-            <label class="btn btn-outline-danger btn-sm flex-fill" for="debit3">🌊 Deras / Banjir</label>
+            <label class="btn btn-outline-danger btn-sm flex-fill" for="debit3"><i class="bi bi-tsunami"></i> Deras</label>
           </div>
         </div>
 
@@ -562,12 +604,12 @@
 
         <div class="mb-3">
           <label class="form-label small fw-bold">Foto Dokumen Kebocoran</label>
-          <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('bocorPhotoCamera').click()">📷 Ambil Foto Bocor</button>
+          <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('bocorPhotoCamera').click()"><i class="bi bi-camera me-1"></i> Ambil Foto Bocor</button>
           <input type="file" id="bocorPhotoCamera" class="d-none" accept="image/*" capture="environment">
           <small id="bocorPhotoStatus" class="text-muted d-block"></small>
         </div>
 
-        <button type="submit" id="btnSubmitBocor" class="btn btn-primary w-100">Kirim Laporan Kebocoran 🌧️</button>
+        <button type="submit" id="btnSubmitBocor" class="btn btn-primary w-100">Kirim Laporan Kebocoran</button>
       </form>
     </div>
 

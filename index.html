@@ -76,7 +76,7 @@
     color: #ffffff !important;
   }
 
-  /* DENAH MAP WRAPPER FIX */
+  /* MAP CONTAINER & IMAGE CLEAN FIX */
   .map-outer-wrapper {
     position: relative;
     border: 2px dashed #0d6efd;
@@ -94,25 +94,22 @@
     width: 100%; 
     height: 100%; 
     cursor: grab; 
-    touch-action: none; 
+    touch-action: none;
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
-  /* GAMBAR BISA DI-ZOOM DENGAN BEBAS & TETAP CENTER */
   .map-image { 
     width: 100%;
     height: 100%;
     object-fit: contain;
     display: block; 
-    pointer-events: none; 
+    pointer-events: auto; /* Memastikan event sentuhan/zoom masuk ke Panzoom */
     user-select: none; 
     -webkit-user-drag: none; 
   }
 
-  /* UJUNG RUNCING PIN PRESISI PADA KURSOR */
- /* POSISI PIN PRESISI PADA UJUNG BAWAH */
   .map-pin {
     position: absolute; 
     width: 24px; 
@@ -503,30 +500,32 @@
   const mapImgEl = document.getElementById('mapImage');
   const viewMapImgEl = document.getElementById('viewMapImage');
 
-  const pzCreate = Panzoom(mapImgEl, { 
-    maxScale: 5, 
+  // INISIALISASI PANZOOM STABIL
+  const pzCreate = Panzoom(mapContainer, { 
+    maxScale: 6, 
     minScale: 1, 
     contain: 'outside', 
     cursor: 'grab' 
   });
   
-  const pzView = Panzoom(viewMapImgEl, { 
-    maxScale: 5, 
+  const pzView = Panzoom(viewMapContainer, { 
+    maxScale: 6, 
     minScale: 1, 
     contain: 'inside', 
     cursor: 'grab' 
   });
 
-  // 2. TRANSFORM PIN PRESISI (TANPA IKUT TERDISTORSI ZOOM)
+  // TRANSFORM PIN AGAR UJUNG RUNCING BAWAH TEPAT DI KURSOR
   function applyPinTransform(pinEl, scale) {
     if (!pinEl) return;
     const invScale = 1 / scale;
     pinEl.style.transform = `scale(${invScale}) translate(-50%, -100%) rotate(-45deg)`;
   }
 
-  mapImgEl.parentElement.addEventListener('panzoomchange', (e) => applyPinTransform(document.getElementById('mapPin'), e.detail.scale));
+  mapContainer.addEventListener('panzoomchange', (e) => applyPinTransform(document.getElementById('mapPin'), e.detail.scale));
+  viewMapContainer.addEventListener('panzoomchange', (e) => applyPinTransform(document.getElementById('viewMapPin'), e.detail.scale));
 
-  // 3. LOGIKA DETEKSI KLIK DENAH PRESISI 100%
+  // EVENT DETEKSI KLIK DENAH PRESISI 100%
   let startX = 0, startY = 0;
   mapContainer.addEventListener('pointerdown', (e) => { 
     startX = e.clientX; 
@@ -537,11 +536,12 @@
     const diffX = Math.abs(e.clientX - startX);
     const diffY = Math.abs(e.clientY - startY);
 
+    // Hanya dianggap klik jika tidak ada geseran drag/pan (kurang dari 8px)
     if (diffX < 8 && diffY < 8) {
       const mapImg = document.getElementById("mapImage");
       const rect = mapImg.getBoundingClientRect();
 
-      // Hitung posisi murni klik terhadap elemen gambar yang sedang tampil di layar
+      // Hitung koordinat klik relatif terhadap posisi & ukuran gambar saat ini di layar
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
 
@@ -553,12 +553,6 @@
         markedY = yPercent.toFixed(2);
 
         const pin = document.getElementById("mapPin");
-        
-        // Pindahkan pin langsung ke dalam konteks mapImage agar menempel pada koordinat gambar murni
-        if (pin.parentElement !== mapImg.parentElement) {
-          mapImg.parentElement.appendChild(pin);
-        }
-
         pin.style.left = markedX + "%";
         pin.style.top = markedY + "%";
         pin.classList.remove("d-none");

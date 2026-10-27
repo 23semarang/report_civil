@@ -846,7 +846,10 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
       contain: 'outside'
     });
 
+    // Bikin skala pin terkunci pas di-zoom & di-drag (sama seperti Lapor Direct)
     container.parentElement.addEventListener('wheel', pzBocor.zoomWithWheel);
+    container.parentElement.addEventListener('panzoomzoom', updateBocorPinPosition);
+    container.parentElement.addEventListener('panzoompan', updateBocorPinPosition);
     container.parentElement.addEventListener('panzoomchange', updateBocorPinPosition);
 
     container.addEventListener('click', function (e) {
@@ -873,6 +876,7 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
     });
   }
 });
+  
  // 1. KUNCI POSISI PIN DENGAN SKALA KEBALIKAN (BIAR TIDAK MEMBESAR DAN PRESISI)
   function updatePinPosition() {
     const pin = document.getElementById("mapPin");

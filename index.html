@@ -828,8 +828,11 @@ function resetBocorMapAndPin() {
 function updateBocorPinPosition() {
   const pin = document.getElementById("bocorMapPin");
   if (!bocorMarkingX || !bocorMarkingY || !pin || pin.classList.contains("d-none")) return;
+  
+  // Ambil skala zoom saat ini
   const scale = pzBocor ? pzBocor.getScale() : 1;
-  const invScale = 1 / scale;
+  const invScale = 1 / scale; // Kebalikan skala agar ukuran pixel tetap sama
+  
   pin.style.left = bocorMarkingX + "%";
   pin.style.top = bocorMarkingY + "%";
   pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
@@ -838,22 +841,31 @@ function updateBocorPinPosition() {
 document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function () {
   updateBocorFloorMap();
   const container = document.getElementById("bocorMapContainer");
+  const wrapper = document.getElementById("bocorMapWrapper");
   
   if (container && !pzBocor && typeof Panzoom !== 'undefined') {
+    // 1. Inisialisasi Panzoom pada container
     pzBocor = Panzoom(container, {
       maxScale: 5,
       minScale: 1,
       contain: 'outside'
     });
 
-    // Bikin skala pin terkunci pas di-zoom & di-drag (sama seperti Lapor Direct)
-    container.parentElement.addEventListener('wheel', pzBocor.zoomWithWheel);
-    container.parentElement.addEventListener('panzoomzoom', updateBocorPinPosition);
-    container.parentElement.addEventListener('panzoompan', updateBocorPinPosition);
-    container.parentElement.addEventListener('panzoomchange', updateBocorPinPosition);
+    // 2. Pasang Listener Zoom & Pan TEPAT pada elemen container
+    if (wrapper) {
+      wrapper.addEventListener('wheel', pzBocor.zoomWithWheel);
+    }
+    
+    // Kunci skala pin saat zoom in/out dan pan/geser
+    container.addEventListener('panzoomchange', updateBocorPinPosition);
+    container.addEventListener('panzoomzoom', updateBocorPinPosition);
+    container.addEventListener('panzoompan', updateBocorPinPosition);
 
+    // 3. Listener Klik Marking Pin Bocor
     container.addEventListener('click', function (e) {
       const img = document.getElementById("bocorMapImage");
+      if (!img) return;
+
       const rect = img.getBoundingClientRect();
 
       const clickX = e.clientX - rect.left;
@@ -865,8 +877,11 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
       bocorMarkingY = (clickY / rect.height) * 100;
 
       const pin = document.getElementById("bocorMapPin");
-      pin.classList.remove("d-none");
-      updateBocorPinPosition();
+      if (pin) {
+        // Pastikan class pin biru aktif
+        pin.className = "map-pin map-pin-water";
+        updateBocorPinPosition();
+      }
 
       const status = document.getElementById("bocorMapStatus");
       if (status) {

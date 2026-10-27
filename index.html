@@ -1620,7 +1620,7 @@ async function loadBocorReports() {
             <span class="text-muted"><i class="bi bi-clock"></i> ${timestamp}</span>
             <div class="d-flex align-items-center gap-2">
               ${mx && my ? `
-                <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="showMapModal('${lantai}', ${mx}, ${my})">
+                <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="openMapModal('${lantai}', ${mx}, ${my})">
                   <i class="bi bi-geo-alt"></i> Denah
                 </button>
               ` : ''}

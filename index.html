@@ -1491,7 +1491,8 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
 
           const photoInput = document.getElementById("bocorPhotoCamera");
           
-          const sendBocorData = (base64Photo) => {
+          // PERBAIKI BAGIAN FETCH DI DALAM sendBocorData
+      const sendBocorData = (base64Photo) => {
         const payload = {
           action: "saveLaporBocor",
           username: currentUser ? currentUser.username : "Petugas",
@@ -1500,39 +1501,41 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
           severity: document.querySelector('input[name="debitAir"]:checked') ? document.querySelector('input[name="debitAir"]:checked').value : "RINGAN",
           location_detail: document.getElementById("bocorLocation").value,
           issue: document.getElementById("bocorIssue").value,
-          marking_x: bocorMarkingX,  // <--- TAMBAHKAN INI
-          marking_y: bocorMarkingY,  // <--- TAMBAHKAN INI
+          marking_x: bocorMarkingX,
+          marking_y: bocorMarkingY,
           photo: base64Photo
         };
 
-            fetch(SCRIPT_URL, {
-              method: "POST",
-              body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(res => {
-              btnSubmit.disabled = false;
-              btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
+        // PASTIKAN NAMA VARIABEL URL DI SINI SAMA DENGAN FORM DIREK (misal: SCRIPT_URL / API_URL)
+        fetch("https://script.google.com/macros/s/AKfycbxYfqKB2SSDxPXGdwI5mqwivozqUi28DiLw2yS8Q5pHbwAdvEPL2xUbsq7mdE1RQ5wN/exec", {
+          method: "POST",
+          body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(res => {
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
 
-              if (res.status === "success") {
-                alert("✓ " + res.message);
-                bocorForm.reset();
-                
-                const tabLaporanBtn = document.getElementById("tab-laporan");
-                if (tabLaporanBtn) tabLaporanBtn.click();
-                
-                if (typeof loadReports === "function") loadReports();
-              } else {
-                alert("Gagal mengirim laporan: " + res.message);
-              }
-            })
-            .catch(err => {
-              btnSubmit.disabled = false;
-              btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
-              alert("Terjadi kesalahan koneksi saat mengirim laporan kebocoran.");
-              console.error(err);
-            });
-          };
+          if (res.status === "success") {
+            alert("✓ " + res.message);
+            bocorForm.reset();
+            resetBocorMapAndPin();
+            
+            const tabLaporanBtn = document.getElementById("tab-laporan");
+            if (tabLaporanBtn) tabLaporanBtn.click();
+            
+            if (typeof loadReports === "function") loadReports();
+          } else {
+            alert("Gagal mengirim laporan: " + res.message);
+          }
+        })
+        .catch(err => {
+          btnSubmit.disabled = false;
+          btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
+          alert("Terjadi kesalahan koneksi saat mengirim laporan kebocoran.");
+          console.error(err);
+        });
+      };
 
           if (photoInput && photoInput.files && photoInput.files[0]) {
             const reader = new FileReader();

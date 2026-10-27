@@ -570,9 +570,15 @@
       const mapImg = document.getElementById("mapImage");
       const rect = mapImg.getBoundingClientRect();
 
+      // Mengambil skala zoom dan offset pan murni dari pustaka Panzoom
+      const scale = pzCreate.getScale();
+      const pan = pzCreate.getPan();
+
+      // Hitung koordinat murni piksel gambar asli sebelum di-transform
       const clickX = e.clientX - rect.left;
       const clickY = e.clientY - rect.top;
 
+      // Konversi persentase murni tanpa terpengaruh pergeseran zoom
       const xPercent = (clickX / rect.width) * 100;
       const yPercent = (clickY / rect.height) * 100;
 
@@ -585,13 +591,19 @@
         pin.style.top = markedY + "%";
         pin.classList.remove("d-none");
 
-        applyPinTransform(pin, pzCreate.getScale());
+        applyPinTransform(pin, scale);
 
         document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
         document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";
       }
     }
   });
+
+  function applyPinTransform(pinEl, scale) {
+    if (!pinEl) return;
+    const invScale = 1 / scale;
+    pinEl.style.transform = `scale(${invScale}) translate(-50%, -100%) rotate(-45deg)`;
+  }
 
   function openMapModal(floor, x, y) {
     const viewImg = document.getElementById("viewMapImage");

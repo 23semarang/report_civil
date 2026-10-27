@@ -178,6 +178,19 @@
       padding: 3px 8px !important;
     }
 
+    /* PIN KHUSUS KEBOCORAN AIR */
+  .map-pin-water {
+    position: absolute; 
+    width: 22px; 
+    height: 22px; 
+    background-color: #0284c7; /* Warna Biru Air */
+    border: 3px solid #ffffff;
+    border-radius: 50%; 
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.4), 0 4px 6px rgba(0,0,0,0.3); 
+    pointer-events: none; 
+    z-index: 10;
+  }
+    
     /* PIN MARKER LINGKARAN PRESISI */
     .map-pin {
       position: absolute; 
@@ -293,20 +306,34 @@
   </div>
 
   <!-- MAIN APP SECTION -->
-  <div id="appSection" class="d-none">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <span id="userGreeting" class="fw-bold"></span>
-      <button onclick="logout()" class="btn btn-sm btn-outline-danger">Logout</button>
-    </div>
+<div id="appSection" class="d-none">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <span id="userGreeting" class="fw-bold"></span>
+    <button onclick="logout()" class="btn btn-sm btn-outline-danger">Logout</button>
+  </div>
 
-    <ul class="nav nav-pills nav-justified mb-3">
-      <li class="nav-item"><a class="nav-link active" id="tabList" onclick="switchTab('list')" href="#">Laporan</a></li>
-      <li class="nav-item"><a class="nav-link" id="tabChecklist" onclick="switchTab('checklist')" href="#">📋 Inspeksi</a></li>
-      <li class="nav-item"><a class="nav-link" id="tabCreate" onclick="switchTab('create')" href="#">+ Lapor Direct</a></li>
-    </ul>
+  <!-- NAVIGASI TAB UTAMA -->
+  <ul class="nav nav-pills mb-3" id="mainTab" role="tablist">
+    <li class="nav-item">
+      <button class="nav-link active" id="tab-laporan" data-bs-toggle="pill" data-bs-target="#listTab">Laporan</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" id="tab-inspeksi" data-bs-toggle="pill" data-bs-target="#checklistTab">📋 Inspeksi</button>
+    </li>
+    <li class="nav-item">
+      <button class="nav-link" id="tab-direct" data-bs-toggle="pill" data-bs-target="#createTab">+ Lapor Direct</button>
+    </li>
+    <!-- MENU BARU: LAPOR BOCOR -->
+    <li class="nav-item">
+      <button class="nav-link btn-warning text-white" id="tab-bocor" data-bs-toggle="pill" data-bs-target="#bocorTab">🌧️ Lapor Bocor</button>
+    </li>
+  </ul>
 
-    <!-- TAB CHECKLIST INSPEKSI -->
-    <div id="checklistTab" class="card p-3 shadow-sm d-none">
+  <!-- TAB CONTENT WAPPER -->
+  <div class="tab-content">
+    
+    <!-- 1. TAB CHECKLIST INSPEKSI -->
+    <div id="checklistTab" class="tab-pane fade card p-3 shadow-sm">
       <h5 class="fw-bold text-primary mb-3">Inspeksi Rutin Area & Sanitary</h5>
       <form id="checklistForm">
         <div class="row g-2 mb-2">
@@ -351,8 +378,8 @@
       </form>
     </div>
 
-    <!-- CREATE REPORT FORM (DIRECT) -->
-    <div id="createTab" class="card p-3 shadow-sm d-none">
+    <!-- 2. CREATE REPORT FORM (DIRECT) -->
+    <div id="createTab" class="tab-pane fade card p-3 shadow-sm">
       <h5 class="fw-bold text-primary mb-3">Lapor Kerusakan Direct</h5>
       <form id="reportForm">
         <div class="mb-2">
@@ -367,16 +394,16 @@
           <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kerusakan untuk menandai titik.</small>
           
           <div class="map-outer-wrapper" id="mapWrapper">
-  <div class="map-controls">
-    <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomIn()">🔍+</button>
-    <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomOut()">🔍-</button>
-    <button type="button" class="btn btn-sm btn-light border" onclick="resetMapAndPin()">↺ Reset</button>
-  </div>
-  <div class="map-container" id="mapContainer">
-    <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
-    <div id="mapPin" class="map-pin d-none"></div>
-  </div>
-</div>
+            <div class="map-controls">
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomIn()">🔍+</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomOut()">🔍-</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="resetMapAndPin()">↺ Reset</button>
+            </div>
+            <div class="map-container" id="mapContainer">
+              <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
+              <div id="mapPin" class="map-pin d-none"></div>
+            </div>
+          </div>
           <small id="mapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
         </div>
 
@@ -411,8 +438,66 @@
       </form>
     </div>
 
-    <!-- REPORT LIST & FILTER -->
-    <div id="listTab">
+    <!-- 3. TAB FORM BARU: LAPOR KEBOCORAN AIR (MUSIM HUJAN) -->
+    <div id="bocorTab" class="tab-pane fade card p-3 shadow-sm">
+      <h5 class="fw-bold text-primary mb-3">🌧️ Laporan Kebocoran Air</h5>
+      <form id="bocorForm">
+        <div class="row g-2 mb-2">
+          <div class="col-6">
+            <label class="form-label small fw-bold">Lantai</label>
+            <select id="bocorFloor" class="form-select" required>
+              <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
+            </select>
+          </div>
+          <div class="col-6">
+            <label class="form-label small fw-bold">Sumber Bocor</label>
+            <select id="bocorSource" class="form-select" required>
+              <option value="Plafon / Ceiling">Plafon / Ceiling</option>
+              <option value="Fasad / Kaca Outer">Fasad / Kaca Outer</option>
+              <option value="Rooftop / Canopy">Rooftop / Canopy</option>
+              <option value="Pipa AC / Drainase">Pipa AC / Drainase</option>
+              <option value="Lantai / Dinding">Lantai / Dinding Merembes</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Tingkat Keparahan / Debit Air</label>
+          <div class="d-flex gap-2">
+            <input type="radio" class="btn-check" name="debitAir" id="debit1" value="RINGAN" checked>
+            <label class="btn btn-outline-info btn-sm flex-fill" for="debit1">💧 Tetesan</label>
+
+            <input type="radio" class="btn-check" name="debitAir" id="debit2" value="SEDANG">
+            <label class="btn btn-outline-warning btn-sm flex-fill" for="debit2">🌧️ Merembes</label>
+
+            <input type="radio" class="btn-check" name="debitAir" id="debit3" value="DARURAT">
+            <label class="btn btn-outline-danger btn-sm flex-fill" for="debit3">🌊 Deras / Banjir</label>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label small fw-bold">Detail Lokasi Kebocoran</label>
+          <input type="text" id="bocorLocation" class="form-control" placeholder="Contoh: Depan Tenant X / Koridor Barat" required>
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label small fw-bold">Keterangan Tambahan</label>
+          <textarea id="bocorIssue" class="form-control" rows="2" placeholder="Penjelasan temuan titik rembesan/aliran air..." required></textarea>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label small fw-bold">Foto Dokumen Kebocoran</label>
+          <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('bocorPhotoCamera').click()">📷 Ambil Foto Bocor</button>
+          <input type="file" id="bocorPhotoCamera" class="d-none" accept="image/*" capture="environment">
+          <small id="bocorPhotoStatus" class="text-muted d-block"></small>
+        </div>
+
+        <button type="submit" id="btnSubmitBocor" class="btn btn-primary w-100">Kirim Laporan Kebocoran 🌧️</button>
+      </form>
+    </div>
+
+    <!-- 4. REPORT LIST & FILTER -->
+    <div id="listTab" class="tab-pane fade show active">
       <div class="card p-2 mb-3 shadow-sm">
         <div class="btn-group w-100 filter-btn-group" role="group">
           <button type="button" class="btn btn-primary active" id="btnFilterAll" onclick="setFilter('ALL')">Semua</button>
@@ -423,11 +508,11 @@
       </div>
       <div id="reportsContainer">Memuat data...</div>
     </div>
-  </div>
 
+  </div> <!-- END TAB CONTENT -->
 </div>
 
-<!-- MODAL DENAH VIEW WITH ZOOM & PAN -->
+<!-- MODAL DENAH VIEW WITH ZOOM & PAN (ID DISESUAIKAN UNTUK VIEW DENAH) -->
 <div class="modal fade" id="mapModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -436,17 +521,17 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-2">
-        <div class="map-outer-wrapper" id="mapWrapper">
-  <div class="map-controls">
-    <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomIn()">🔍+</button>
-    <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomOut()">🔍-</button>
-    <button type="button" class="btn btn-sm btn-light border" onclick="resetMapAndPin()">↺ Reset</button>
-  </div>
-  <div class="map-container" id="mapContainer">
-    <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
-    <div id="mapPin" class="map-pin d-none"></div>
-  </div>
-</div>
+        <div class="map-outer-wrapper" id="viewMapWrapper">
+          <div class="map-controls">
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.zoomIn()">🔍+</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.zoomOut()">🔍-</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzView && pzView.reset()">↺ Reset</button>
+          </div>
+          <div class="map-container" id="viewMapContainer">
+            <img src="" id="viewMapImage" class="map-image" alt="Denah Lantai View">
+            <div id="viewMapPin" class="map-pin d-none"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

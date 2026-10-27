@@ -36,10 +36,20 @@
     .map-image { width: 100%; height: auto; display: block; pointer-events: none; user-select: none; -webkit-user-drag: none; }
     
     .map-pin {
-      position: absolute; width: 24px; height: 24px; background-color: #dc3545; border: 2px solid #ffffff;
-      border-radius: 50% 50% 50% 0; box-shadow: 0 2px 5px rgba(0,0,0,0.4); pointer-events: none; z-index: 10;
-      transform-origin: 0 100%;
-    }
+    position: absolute; 
+    width: 24px; 
+    height: 24px; 
+    background-color: #dc3545; 
+    border: 2px solid #ffffff;
+    border-radius: 50% 50% 50% 0; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4); 
+    pointer-events: none; 
+    z-index: 10;
+    
+    /* Mengunci ujung bawah pin agar tepat di posisi kursor/jari */
+    transform: translate(-50%, -100%) rotate(-45deg);
+    transform-origin: bottom center;
+  }
     .map-pin::after {
       content: ''; width: 8px; height: 8px; margin: 6px 0 0 6px; background: #ffffff; position: absolute; border-radius: 50%;
     }

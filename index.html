@@ -498,23 +498,31 @@
   let targetResetUsername = "";
   let markedX = null;
   let markedY = null;
+let pzCreate = null;
+  let pzView = null;
 
   const mapContainer = document.getElementById('mapContainer');
   const viewMapContainer = document.getElementById('viewMapContainer');
 
-  const pzCreate = Panzoom(mapContainer, { 
-    maxScale: 6, 
-    minScale: 1, 
-    contain: 'outside', 
-    cursor: 'grab' 
-  });
-  
-  const pzView = Panzoom(viewMapContainer, { 
-    maxScale: 6, 
-    minScale: 1, 
-    contain: 'inside', 
-    cursor: 'grab' 
-  });
+  // INISIALISASI PANZOOM AMAN (DICEK APABILA ELEMEN ADA)
+  if (mapContainer) {
+    pzCreate = Panzoom(mapContainer, { 
+      maxScale: 6, 
+      minScale: 1, 
+      contain: 'outside', 
+      cursor: 'grab' 
+    });
+    mapContainer.addEventListener('panzoomchange', updatePinPosition);
+  }
+
+  if (viewMapContainer) {
+    pzView = Panzoom(viewMapContainer, { 
+      maxScale: 6, 
+      minScale: 1, 
+      contain: 'inside', 
+      cursor: 'grab' 
+    });
+  }
 
   // FUNGSI UPDATE POSISI VISUAL PIN SAAT ZOOM / GESER
   function updatePinPosition() {
@@ -533,44 +541,44 @@
     pin.style.top = pinPixelY + "px";
   }
 
-  mapContainer.addEventListener('panzoomchange', updatePinPosition);
-
   // LOGIKA PENANDAN KLIK 100% AKURAT
   let startX = 0, startY = 0;
-  mapContainer.addEventListener('pointerdown', (e) => { 
-    startX = e.clientX; 
-    startY = e.clientY; 
-  });
+  if (mapContainer) {
+    mapContainer.addEventListener('pointerdown', (e) => { 
+      startX = e.clientX; 
+      startY = e.clientY; 
+    });
 
-  mapContainer.addEventListener('pointerup', (e) => {
-    const diffX = Math.abs(e.clientX - startX);
-    const diffY = Math.abs(e.clientY - startY);
+    mapContainer.addEventListener('pointerup', (e) => {
+      const diffX = Math.abs(e.clientX - startX);
+      const diffY = Math.abs(e.clientY - startY);
 
-    if (diffX < 8 && diffY < 8) {
-      const mapImg = document.getElementById("mapImage");
-      const imgRect = mapImg.getBoundingClientRect();
+      if (diffX < 8 && diffY < 8) {
+        const mapImg = document.getElementById("mapImage");
+        const imgRect = mapImg.getBoundingClientRect();
 
-      // Hitung koordinat klik relatif terhadap gambar denah yang sedang aktif
-      const clickX = e.clientX - imgRect.left;
-      const clickY = e.clientY - imgRect.top;
+        // Hitung koordinat klik relatif terhadap gambar denah yang sedang aktif
+        const clickX = e.clientX - imgRect.left;
+        const clickY = e.clientY - imgRect.top;
 
-      const xPercent = (clickX / imgRect.width) * 100;
-      const yPercent = (clickY / imgRect.height) * 100;
+        const xPercent = (clickX / imgRect.width) * 100;
+        const yPercent = (clickY / imgRect.height) * 100;
 
-      if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
-        markedX = xPercent.toFixed(2);
-        markedY = yPercent.toFixed(2);
+        if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
+          markedX = xPercent.toFixed(2);
+          markedY = yPercent.toFixed(2);
 
-        const pin = document.getElementById("mapPin");
-        pin.classList.remove("d-none");
+          const pin = document.getElementById("mapPin");
+          pin.classList.remove("d-none");
 
-        updatePinPosition();
+          updatePinPosition();
 
-        document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
-        document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";
+          document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
+          document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";
+        }
       }
-    }
-  });
+    });
+  }
 
   function applyPinTransform(pinEl, scale) {
     if (!pinEl) return;

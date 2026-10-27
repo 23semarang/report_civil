@@ -438,14 +438,14 @@
       </form>
     </div>
 
-    <!-- 3. TAB FORM BARU: LAPOR KEBOCORAN AIR (MUSIM HUJAN) -->
+    <!-- TAB FORM: LAPOR KEBOCORAN AIR -->
     <div id="bocorTab" class="tab-pane fade card p-3 shadow-sm">
       <h5 class="fw-bold text-primary mb-3">🌧️ Laporan Kebocoran Air</h5>
       <form id="bocorForm">
         <div class="row g-2 mb-2">
           <div class="col-6">
             <label class="form-label small fw-bold">Lantai</label>
-            <select id="bocorFloor" class="form-select" required>
+            <select id="bocorFloor" class="form-select" onchange="updateBocorFloorMap()" required>
               <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
             </select>
           </div>
@@ -459,6 +459,25 @@
               <option value="Lantai / Dinding">Lantai / Dinding Merembes</option>
             </select>
           </div>
+        </div>
+
+        <!-- DENAH INTERAKTIF KHUSUS KEBOCORAN -->
+        <div class="mb-3">
+          <label class="fw-bold text-primary small">Marking Titik Kebocoran Pada Denah:</label>
+          <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kebocoran untuk menandai titik.</small>
+          
+          <div class="map-outer-wrapper" id="bocorMapWrapper">
+            <div class="map-controls">
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomIn()">🔍+</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomOut()">🔍-</button>
+              <button type="button" class="btn btn-sm btn-light border" onclick="resetBocorMapAndPin()">↺ Reset</button>
+            </div>
+            <div class="map-container" id="bocorMapContainer">
+              <img src="" id="bocorMapImage" class="map-image" alt="Denah Lantai Bocor">
+              <div id="bocorMapPin" class="map-pin map-pin-water d-none"></div>
+            </div>
+          </div>
+          <small id="bocorMapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
         </div>
 
         <div class="mb-3">
@@ -773,7 +792,87 @@
     document.getElementById("mapStatus").className = "text-danger small mt-1 d-block";
     document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
+// ==========================================
+// KODE DENAH INTERAKTIF LAPOR BOCOR
+// ==========================================
+let pzBocor = null;
+let bocorMarkingX = null;
+let bocorMarkingY = null;
 
+function updateBocorFloorMap() {
+  const floor = document.getElementById("bocorFloor").value;
+  const mapImg = document.getElementById("bocorMapImage");
+  if (mapImg && typeof FLOOR_MAPS !== 'undefined') {
+    mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+    mapImg.onload = () => {
+      if (pzBocor) pzBocor.reset();
+      updateBocorPinPosition();
+    };
+  }
+  resetBocorMapAndPin();
+}
+
+function resetBocorMapAndPin() {
+  if (pzBocor) pzBocor.reset();
+  bocorMarkingX = null;
+  bocorMarkingY = null;
+  const pin = document.getElementById("bocorMapPin");
+  if (pin) pin.classList.add("d-none");
+  const status = document.getElementById("bocorMapStatus");
+  if (status) {
+    status.innerText = "* Belum menandai titik pada denah";
+    status.className = "text-danger small mt-1 d-block";
+  }
+}
+
+function updateBocorPinPosition() {
+  const pin = document.getElementById("bocorMapPin");
+  if (!bocorMarkingX || !bocorMarkingY || !pin || pin.classList.contains("d-none")) return;
+  const scale = pzBocor ? pzBocor.getScale() : 1;
+  const invScale = 1 / scale;
+  pin.style.left = bocorMarkingX + "%";
+  pin.style.top = bocorMarkingY + "%";
+  pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
+}
+
+document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function () {
+  updateBocorFloorMap();
+  const container = document.getElementById("bocorMapContainer");
+  
+  if (container && !pzBocor && typeof Panzoom !== 'undefined') {
+    pzBocor = Panzoom(container, {
+      maxScale: 5,
+      minScale: 1,
+      contain: 'outside'
+    });
+
+    container.parentElement.addEventListener('wheel', pzBocor.zoomWithWheel);
+    container.parentElement.addEventListener('panzoomchange', updateBocorPinPosition);
+
+    container.addEventListener('click', function (e) {
+      const img = document.getElementById("bocorMapImage");
+      const rect = img.getBoundingClientRect();
+
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      if (clickX < 0 || clickX > rect.width || clickY < 0 || clickY > rect.height) return;
+
+      bocorMarkingX = (clickX / rect.width) * 100;
+      bocorMarkingY = (clickY / rect.height) * 100;
+
+      const pin = document.getElementById("bocorMapPin");
+      pin.classList.remove("d-none");
+      updateBocorPinPosition();
+
+      const status = document.getElementById("bocorMapStatus");
+      if (status) {
+        status.innerText = `✓ Titik lokasi marked (${bocorMarkingX.toFixed(1)}%, ${bocorMarkingY.toFixed(1)}%)`;
+        status.className = "text-success small mt-1 d-block fw-bold";
+      }
+    });
+  }
+});
  // 1. KUNCI POSISI PIN DENGAN SKALA KEBALIKAN (BIAR TIDAK MEMBESAR DAN PRESISI)
   function updatePinPosition() {
     const pin = document.getElementById("mapPin");
@@ -1374,16 +1473,18 @@
           const photoInput = document.getElementById("bocorPhotoCamera");
           
           const sendBocorData = (base64Photo) => {
-            const payload = {
-              action: "saveLaporBocor",
-              username: currentUser ? currentUser.username : "Petugas",
-              floor: document.getElementById("bocorFloor").value,
-              source: document.getElementById("bocorSource").value,
-              severity: document.querySelector('input[name="debitAir"]:checked') ? document.querySelector('input[name="debitAir"]:checked').value : "RINGAN",
-              location_detail: document.getElementById("bocorLocation").value,
-              issue: document.getElementById("bocorIssue").value,
-              photo: base64Photo
-            };
+        const payload = {
+          action: "saveLaporBocor",
+          username: currentUser ? currentUser.username : "Petugas",
+          floor: document.getElementById("bocorFloor").value,
+          source: document.getElementById("bocorSource").value,
+          severity: document.querySelector('input[name="debitAir"]:checked') ? document.querySelector('input[name="debitAir"]:checked').value : "RINGAN",
+          location_detail: document.getElementById("bocorLocation").value,
+          issue: document.getElementById("bocorIssue").value,
+          marking_x: bocorMarkingX,  // <--- TAMBAHKAN INI
+          marking_y: bocorMarkingY,  // <--- TAMBAHKAN INI
+          photo: base64Photo
+        };
 
             fetch(SCRIPT_URL, {
               method: "POST",

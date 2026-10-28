@@ -436,14 +436,14 @@
         <h4 class="fw-bold m-0" id="statDirectReport">0</h4>
       </div>
     </div>
-    <!-- KARTU LAPOR BOCOR (BISA DIKLIK) -->
-<div class="col-6">
-  <div class="p-3 card-pastel-yellow" onclick="switchTabToBocor()" style="cursor: pointer;">
-    <div class="d-flex justify-content-between align-items-center mb-1">
-      <span class="fw-bold small" style="font-size: 0.75rem;">Lapor Bocor</span>
-      <i class="bi bi-droplet-fill fs-6"></i>
+    <!-- Kartu Kuning Lapor Bocor di Dashboard -->
+<div class="card bg-warning-subtle p-3 cursor-pointer" onclick="openBocorHistoryTab()">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <div class="small text-muted fw-bold">Lapor Bocor</div>
+      <h3 class="fw-bold mb-0" id="statBocorReport">0</h3>
     </div>
-    <h4 class="fw-bold m-0" id="statBocorReport">1</h4>
+    <div class="fs-1 text-warning"><i class="bi bi-droplet-fill"></i></div>
   </div>
 </div>
   </div>
@@ -481,6 +481,7 @@
       </ul>
     </div>
   </div>
+  
 
   <!-- TAB CONTENT WRAPPER JUGA MASIH MENGGUNAKAN FORM LAMA ANDA -->
   <div class="tab-content">
@@ -682,6 +683,17 @@
       <div id="bocorReportsContainer">Memuat riwayat kebocoran...</div>
     </div>
 
+    <!-- 4. TAB BARU: KHUSUS RIWAYAT LAPOR BOCOR (HARUS DI DALAM TAB-CONTENT) -->
+  <div id="bocorHistoryTab" class="tab-pane fade card p-3 shadow-sm">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold text-primary m-0">
+        <i class="bi bi-journal-text me-2"></i> Riwayat Laporan Kebocoran Air
+      </h5>
+      <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadBocorReports()">
+        <i class="bi bi-arrow-clockwise"></i> Refresh
+      </button>
+    </div>
+    
     <!-- 4. REPORT LIST & FILTER -->
     <div id="listTab" class="tab-pane fade show active">
       <div class="card p-2 mb-3 shadow-sm">
@@ -1639,6 +1651,22 @@ async function loadBocorReports() {
     console.error(err);
     container.innerHTML = `<div class="text-center text-danger py-3">Gagal mengambil data kebocoran.</div>`;
   }
+}
+
+  function openBocorHistoryTab() {
+  // 1. Sembunyikan semua tab yang sedang aktif
+  document.querySelectorAll('.tab-pane').forEach(el => {
+    el.classList.remove('show', 'active');
+  });
+  
+  // 2. Tampilkan tab riwayat bocor
+  const historyTab = document.getElementById('bocorHistoryTab');
+  if (historyTab) {
+    historyTab.classList.add('show', 'active');
+  }
+
+  // 3. Ambil data riwayat dari spreadsheet
+  loadBocorReports();
 }
   
   function openUpdateModal(id, targetStatus, locationDetail) {

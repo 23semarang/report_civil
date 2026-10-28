@@ -1141,37 +1141,37 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
       }
     });
   }
+function loadChecklistItems() {
+  const cat = document.getElementById("chkCategory").value;
+  const items = CHECKLIST_PRESETS[cat] || [];
+  const container = document.getElementById("checklistItemsContainer");
+  container.innerHTML = "";
 
-  function loadChecklistItems() {
-    const cat = document.getElementById("chkCategory").value;
-    const items = CHECKLIST_PRESETS[cat] || [];
-    const container = document.getElementById("checklistItemsContainer");
-    container.innerHTML = "";
+  items.forEach((item, idx) => {
+    // Ambil teks item (apabila string langsung atau objek)
+    const itemName = typeof item === 'string' ? item : (item.name || item.title || item);
 
-    items.forEach((item, idx) => {
-      container.innerHTML += `
-        <div class="chk-item-card p-3 mb-2">
-          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
-    <div class="fw-bold small pe-2">${item.name}</div>
-    <div class="btn-group" role="group">
-            <div>
-              <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" checked onchange="toggleFailDetail(${idx}, false)">
-              <label class="btn btn-sm btn-outline-success" for="pass_${idx}">NORMAL</label>
-              
-              <input type="radio" class="btn-check" name="chk_${idx}" id="fail_${idx}" value="FAIL" onchange="toggleFailDetail(${idx}, true)">
-              <label class="btn btn-sm btn-outline-danger" for="fail_${idx}">RUSAK</label>
-            </div>
-          </div>
-
-          <div id="fail_box_${idx}" class="d-none mt-2 pt-2 border-top">
-            <div id="fail_list_${idx}"></div>
-            <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="addSubFailItem(${idx})">+ Tambah Detail Kerusakan</button>
+    container.innerHTML += `
+      <div class="chk-item-card p-3 mb-2 card border-0 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <div class="fw-bold small pe-2 text-dark">${idx + 1}. ${itemName}</div>
+          <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" checked onchange="toggleFailDetail(${idx}, false)">
+            <label class="btn btn-sm btn-outline-success" for="pass_${idx}">NORMAL</label>
+            
+            <input type="radio" class="btn-check" name="chk_${idx}" id="fail_${idx}" value="FAIL" onchange="toggleFailDetail(${idx}, true)">
+            <label class="btn btn-sm btn-outline-danger" for="fail_${idx}">RUSAK</label>
           </div>
         </div>
-      `;
-    });
-  }
 
+        <div id="fail_box_${idx}" class="d-none mt-2 pt-2 border-top">
+          <div id="fail_list_${idx}"></div>
+          <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-2" onclick="addSubFailItem(${idx})">+ Tambah Detail Kerusakan</button>
+        </div>
+      </div>
+    `;
+  });
+}
   function toggleFailDetail(idx, isFail) {
     const box = document.getElementById(`fail_box_${idx}`);
     if (box) {

@@ -2001,12 +2001,17 @@ function switchTabToBocor() {
   }
 }
 
-  // TARUH DI BAGIAN DOMContentLoaded ATAU PALING BAWAH SCRIPT
+  // GANTI KODE EVENT LISTENER DOMCONTENTLOADED DENGAN YANG INI
 document.addEventListener("DOMContentLoaded", function () {
   const sidebarButtons = document.querySelectorAll('#mainTab button[data-bs-toggle="pill"]');
   sidebarButtons.forEach(btn => {
-    btn.addEventListener('click', function () {
-      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('show', 'active'));
+    btn.addEventListener('shown.bs.tab', function (e) {
+      // Hanya membersihkan tab lain SETELAH tab baru resmi aktif oleh Bootstrap
+      document.querySelectorAll('.tab-pane').forEach(el => {
+        if (el !== document.querySelector(e.target.getAttribute('data-bs-target'))) {
+          el.classList.remove('show', 'active');
+        }
+      });
     });
   });
 });

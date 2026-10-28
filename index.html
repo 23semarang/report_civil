@@ -1550,10 +1550,13 @@ function updateDashboardStats(reports) {
   if (elProgress) elProgress.innerText = progressCount;
   if (elResolved) elResolved.innerText = resolvedCount;
 
-  // Hitung dan tampilkan Lapor Bocor
-  const bocorCount = reports.filter(r => r.source || r.severity || r.type === 'BOCOR' || (r.issue && r.issue.toLowerCase().includes('bocor'))).length;
-  const elBocor = document.getElementById("statBocorReport");
-  if (elBocor) elBocor.innerText = bocorCount;
+  // Hitung Lapor Bocor langsung dari API agar angkanya sama persis dengan Sheet Laporan_Bocor
+  fetchAPI({ action: "getBocorReports" }).then(res => {
+    if (res && res.data) {
+      const elBocor = document.getElementById("statBocorReport");
+      if (elBocor) elBocor.innerText = res.data.length;
+    }
+  }).catch(err => console.log(err));
 }
 
   // FUNGSI UTAMA PERPINDAHAN TAB BERSIH

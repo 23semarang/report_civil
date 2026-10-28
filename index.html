@@ -2056,7 +2056,25 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   });
 });
+
+  // FUNGSI UNTUK MEMBUKA FORM LAPOR BOCOR SECARA CEAPAT VIA HOT BUTTON
+function openQuickBocorForm() {
+  // Pindah ke tab form lapor bocor
+  switchTab('bocorTab'); // Sesuaikan ID tab form bocor kamu jika beda (misal: 'bocorFormTab')
+  
+  // Reset atau fokuskan ke form jika diperlukan
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
   
   </script> <!-- PENUTUP TAG SCRIPT PALING BAWAH -->
+
+  <!-- TOMBOL FLOATING LAPOR BOCOR CEAPAT -->
+<button type="button" 
+        class="btn btn-warning rounded-circle shadow-lg position-fixed d-flex align-items-center justify-content-center" 
+        style="bottom: 20px; right: 20px; width: 56px; height: 56px; z-index: 1050; border: 2px solid #fff;" 
+        onclick="openQuickBocorForm()" 
+        title="Lapor Bocor Cepat">
+  <i class="bi bi-droplet-fill text-dark fs-4"></i>
+</button>
 </body>
 </html>

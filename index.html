@@ -427,17 +427,16 @@
 
   <!-- KARTU STATISTIK DASHBOARD -->
 <div class="row g-2 mb-3">
-  <!-- Kartu Lapor Direct -->
-  <div class="col-6">
-    <div class="card p-3 shadow-sm border-0 bg-white">
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <div class="small text-muted fw-bold">Lapor Direct</div>
-          <h3 class="fw-bold mb-0 text-dark" id="statDirectReport">0</h3>
-        </div>
-        <div class="fs-4 text-primary"><i class="bi bi-megaphone-fill"></i></div>
-      </div>
+  <!-- KARTU BIRU LAPOR DIRECT -->
+<div class="card p-3 shadow-sm border-0 bg-white cursor-pointer" onclick="openDirectHistoryTab()">
+  <div class="d-flex justify-content-between align-items-center">
+    <div>
+      <div class="small text-muted fw-bold">Lapor Direct</div>
+      <h3 class="fw-bold mb-0 text-dark" id="statDirectReport">0</h3>
     </div>
+    <div class="fs-4 text-primary"><i class="bi bi-megaphone-fill"></i></div>
+  </div>
+</div>
   </div>
 
   <!-- Kartu Lapor Bocor (Kuning) -->
@@ -1517,17 +1516,27 @@ function updateDashboardStats(reports) {
 
   // FUNGSI UNTUK MEMBUKA TAB RIWAYAT LAPOR BOCOR DARI KARTU KUNING
 function openBocorHistoryTab() {
-  // Switch ke tab bocorHistoryTab
-  if (typeof switchTab === 'function') {
-    switchTab('bocorHistory'); // Jika aplikasi kamu pakai fungsi switchTab
-  } else {
-    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('show', 'active'));
-    const historyTab = document.getElementById('bocorHistoryTab');
-    if (historyTab) historyTab.classList.add('show', 'active');
+  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('show', 'active'));
+  const historyTab = document.getElementById('bocorHistoryTab');
+  if (historyTab) historyTab.classList.add('show', 'active');
+  loadBocorReports();
+}
+
+// 1. TARUH FUNGSI INI TEPAT DI BAWAH openBocorHistoryTab()
+function openDirectHistoryTab() {
+  // Sembunyikan semua tab yang aktif
+  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('show', 'active'));
+  
+  // Tampilkan tab utama (listTab)
+  const listTab = document.getElementById('listTab');
+  if (listTab) {
+    listTab.classList.add('show', 'active');
   }
 
-  // Load data dari sheet Laporan_Bocor
-  loadBocorReports();
+  // Reload data riwayat Lapor Direct
+  if (typeof loadReports === 'function') {
+    loadReports();
+  }
 }
   
   function renderReports() {

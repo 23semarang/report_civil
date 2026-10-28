@@ -425,28 +425,34 @@
     </div>
   </div>
 
-  <!-- 2. KARTU STATISTIK PASTEL -->
-  <div class="row g-2 mb-3">
-    <div class="col-6">
-      <div class="p-3 card-pastel-blue">
-        <div class="d-flex justify-content-between align-items-center mb-1">
-          <span class="fw-bold small" style="font-size: 0.75rem;">Lapor Direct</span>
-          <i class="bi bi-megaphone-fill fs-6"></i>
+  <!-- KARTU STATISTIK DASHBOARD -->
+<div class="row g-2 mb-3">
+  <!-- Kartu Lapor Direct -->
+  <div class="col-6">
+    <div class="card p-3 shadow-sm border-0 bg-white">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small text-muted fw-bold">Lapor Direct</div>
+          <h3 class="fw-bold mb-0 text-dark" id="statDirectReport">0</h3>
         </div>
-        <h4 class="fw-bold m-0" id="statDirectReport">0</h4>
+        <div class="fs-4 text-primary"><i class="bi bi-megaphone-fill"></i></div>
       </div>
     </div>
-    <!-- Kartu Kuning Lapor Bocor di Dashboard -->
-<div class="card bg-warning-subtle p-3 cursor-pointer" onclick="openBocorHistoryTab()">
-  <div class="d-flex justify-content-between align-items-center">
-    <div>
-      <div class="small text-muted fw-bold">Lapor Bocor</div>
-      <h3 class="fw-bold mb-0" id="statBocorReport">0</h3>
+  </div>
+
+  <!-- Kartu Lapor Bocor (Kuning) -->
+  <div class="col-6">
+    <div class="card p-3 shadow-sm border-0 bg-warning-subtle cursor-pointer" onclick="openBocorHistoryTab()">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small text-muted fw-bold">Lapor Bocor</div>
+          <h3 class="fw-bold mb-0 text-warning-emphasis" id="statBocorReport">0</h3>
+        </div>
+        <div class="fs-4 text-warning"><i class="bi bi-droplet-fill"></i></div>
+      </div>
     </div>
-    <div class="fs-1 text-warning"><i class="bi bi-droplet-fill"></i></div>
   </div>
 </div>
-  </div>
 
   <!-- 3. SIDEBAR MENUS (OFFCANVAS DRAWER) -->
   <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
@@ -694,18 +700,20 @@
       </button>
     </div>
     
-    <!-- 4. REPORT LIST & FILTER -->
-    <div id="listTab" class="tab-pane fade show active">
-      <div class="card p-2 mb-3 shadow-sm">
-        <div class="btn-group w-100 filter-btn-group" role="group">
-          <button type="button" class="btn btn-primary active" id="btnFilterAll" onclick="setFilter('ALL')">Semua</button>
-          <button type="button" class="btn btn-outline-danger" id="btnFilterReported" onclick="setFilter('REPORTED')">Reported</button>
-          <button type="button" class="btn btn-outline-warning text-dark" id="btnFilterProgress" onclick="setFilter('PROGRESS')">Progress</button>
-          <button type="button" class="btn btn-outline-success" id="btnFilterResolved" onclick="setFilter('RESOLVED')">Resolved</button>
-        </div>
-      </div>
-      <div id="reportsContainer">Memuat data...</div>
+    <!-- 5. TAB UTAMA: RIWAYAT LAPORAN DIRECT -->
+<div id="listTab" class="tab-pane fade show active">
+  <div class="card p-2 mb-3 shadow-sm border-0">
+    <div class="btn-group w-100 filter-btn-group" role="group">
+      <button type="button" class="btn btn-primary active" id="btnFilterAll" onclick="setFilter('ALL')">Semua</button>
+      <button type="button" class="btn btn-outline-danger" id="btnFilterReported" onclick="setFilter('REPORTED')">Reported</button>
+      <button type="button" class="btn btn-outline-warning text-dark" id="btnFilterProgress" onclick="setFilter('PROGRESS')">Progress</button>
+      <button type="button" class="btn btn-outline-success" id="btnFilterResolved" onclick="setFilter('RESOLVED')">Resolved</button>
     </div>
+  </div>
+  
+  <!-- DAFTAR RIWAYAT LAPORAN DIRECT -->
+  <div id="reportsContainer">Memuat data...</div>
+</div>
 
   </div> <!-- END TAB CONTENT -->
 </div>
@@ -1520,6 +1528,21 @@ function updateDashboardStats(reports) {
 
   if (elDirect) elDirect.innerText = directCount;
   if (elBocor) elBocor.innerText = bocorCount;
+}
+
+  // FUNGSI UNTUK MEMBUKA TAB RIWAYAT LAPOR BOCOR DARI KARTU KUNING
+function openBocorHistoryTab() {
+  // Switch ke tab bocorHistoryTab
+  if (typeof switchTab === 'function') {
+    switchTab('bocorHistory'); // Jika aplikasi kamu pakai fungsi switchTab
+  } else {
+    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('show', 'active'));
+    const historyTab = document.getElementById('bocorHistoryTab');
+    if (historyTab) historyTab.classList.add('show', 'active');
+  }
+
+  // Load data dari sheet Laporan_Bocor
+  loadBocorReports();
 }
   
   function renderReports() {

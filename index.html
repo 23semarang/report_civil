@@ -425,23 +425,25 @@
     </div>
   </div>
 
-  <!-- KARTU STATISTIK DASHBOARD -->
+  <!-- PEMBUNGKUS GRID DUA KARTU SEJAJAR -->
 <div class="row g-2 mb-3">
-  <!-- KARTU BIRU LAPOR DIRECT -->
-<div class="card p-3 shadow-sm border-0 bg-white cursor-pointer" onclick="openDirectHistoryTab()">
-  <div class="d-flex justify-content-between align-items-center">
-    <div>
-      <div class="small text-muted fw-bold">Lapor Direct</div>
-      <h3 class="fw-bold mb-0 text-dark" id="statDirectReport">0</h3>
+
+  <!-- KARTU 1: LAPOR DIRECT (KIRI) -->
+  <div class="col-6">
+    <div class="card p-3 shadow-sm border-0 bg-white cursor-pointer h-100" onclick="openDirectHistoryTab()">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="small text-muted fw-bold">Lapor Direct</div>
+          <h3 class="fw-bold mb-0 text-dark" id="statDirectReport">0</h3>
+        </div>
+        <div class="fs-4 text-primary"><i class="bi bi-megaphone-fill"></i></div>
+      </div>
     </div>
-    <div class="fs-4 text-primary"><i class="bi bi-megaphone-fill"></i></div>
-  </div>
-</div>
   </div>
 
-  <!-- Kartu Lapor Bocor (Kuning) -->
+  <!-- KARTU 2: LAPOR BOCOR (KANAN) -->
   <div class="col-6">
-    <div class="card p-3 shadow-sm border-0 bg-warning-subtle cursor-pointer" onclick="openBocorHistoryTab()">
+    <div class="card p-3 shadow-sm border-0 bg-warning-subtle cursor-pointer h-100" onclick="openBocorHistoryTab()">
       <div class="d-flex justify-content-between align-items-center">
         <div>
           <div class="small text-muted fw-bold">Lapor Bocor</div>
@@ -451,7 +453,8 @@
       </div>
     </div>
   </div>
-</div>
+
+</div> <!-- PENUTUP ROW -->
 
   <!-- 3. SIDEBAR MENUS (OFFCANVAS DRAWER) -->
   <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">

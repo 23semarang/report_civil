@@ -428,30 +428,30 @@
   <!-- PEMBUNGKUS GRID DUA KARTU SEJAJAR -->
 <div class="row g-2 mb-3">
 
-  <!-- KARTU 1: LAPOR DIRECT (WITH 3 STATS BREAKDOWN) -->
-  <div class="col-6">
-    <div class="card p-2 p-md-3 shadow-sm border-0 bg-white cursor-pointer h-100" onclick="openDirectHistoryTab()">
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <div class="small text-muted fw-bold">Lapor Direct</div>
-        <div class="fs-5 text-primary"><i class="bi bi-megaphone-fill"></i></div>
+  <!-- KARTU 1: LAPOR DIRECT (WITH 3 STATS BREAKDOWN EQUAL WIDTH) -->
+<div class="col-6">
+  <div class="card p-2 p-md-3 shadow-sm border-0 bg-white cursor-pointer h-100" onclick="openDirectHistoryTab()">
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <div class="small text-muted fw-bold">Lapor Direct</div>
+      <div class="fs-5 text-primary"><i class="bi bi-megaphone-fill"></i></div>
+    </div>
+    <!-- 3 ANGKA BREAKDOWN STATUS DENGAN LEBAR SAMA RATA (FLEX-FILL & W-100) -->
+    <div class="d-flex justify-content-between align-items-center text-center bg-light rounded p-1 mt-1 w-100">
+      <div class="flex-fill">
+        <span class="d-block text-danger fw-bold" style="font-size: 0.6rem;">REPORT</span>
+        <span class="fw-bold text-danger fs-6" id="statDirectReported">0</span>
       </div>
-      <!-- 3 ANGKA BREAKDOWN STATUS -->
-      <div class="d-flex justify-content-between align-items-center text-center bg-light rounded p-1 mt-1">
-        <div>
-          <span class="d-block text-danger fw-bold" style="font-size: 0.65rem;">REPORT</span>
-          <span class="fw-bold text-danger fs-6" id="statDirectReported">0</span>
-        </div>
-        <div class="border-start border-end px-1">
-          <span class="d-block text-warning fw-bold" style="font-size: 0.65rem;">PROG</span>
-          <span class="fw-bold text-warning-emphasis fs-6" id="statDirectProgress">0</span>
-        </div>
-        <div>
-          <span class="d-block text-success fw-bold" style="font-size: 0.65rem;">DONE</span>
-          <span class="fw-bold text-success fs-6" id="statDirectResolved">0</span>
-        </div>
+      <div class="flex-fill border-start border-end px-1">
+        <span class="d-block text-warning fw-bold" style="font-size: 0.6rem;">PROG</span>
+        <span class="fw-bold text-warning-emphasis fs-6" id="statDirectProgress">0</span>
+      </div>
+      <div class="flex-fill">
+        <span class="d-block text-success fw-bold" style="font-size: 0.6rem;">DONE</span>
+        <span class="fw-bold text-success fs-6" id="statDirectResolved">0</span>
       </div>
     </div>
   </div>
+</div>
 
   <!-- KARTU 2: LAPOR BOCOR (KANAN) -->
   <div class="col-6">
@@ -1310,18 +1310,20 @@ function loadChecklistItems() {
     }
   });
 
-  function setFilter(status) {
-    currentFilter = status;
-    document.querySelectorAll('.filter-btn-group .btn').forEach(btn => {
-      btn.classList.remove('active', 'btn-primary', 'btn-danger', 'btn-warning', 'btn-success');
-      btn.classList.add('btn-outline-secondary');
-    });
-    if (status === 'ALL') document.getElementById('btnFilterAll').className = 'btn btn-primary active';
-    else if (status === 'REPORTED') document.getElementById('btnFilterReported').className = 'btn btn-danger active';
-    else if (status === 'PROGRESS') document.getElementById('btnFilterProgress').className = 'btn btn-warning text-dark active';
-    else if (status === 'RESOLVED') document.getElementById('btnFilterResolved').className = 'btn btn-success active';
+  function setFilter(filterType) {
+  currentFilter = filterType;
+
+  // Sinkronkan nilai pilihan dropdown filter
+  const selectEl = document.getElementById("filterStatusSelect");
+  if (selectEl && selectEl.value !== filterType) {
+    selectEl.value = filterType;
+  }
+
+  // Langsung render ulang daftar laporan saat status filter diganti
+  if (typeof renderReports === 'function') {
     renderReports();
   }
+}
 
   document.getElementById("photoCamera").addEventListener("change", (e) => {
     if (e.target.files[0]) document.getElementById("photoStatus").innerText = "Foto kamera berhasil diambil!";
@@ -1525,18 +1527,32 @@ function loadChecklistItems() {
 function updateDashboardStats(reports) {
   if (!Array.isArray(reports)) return;
 
-  const directCount = reports.filter(r => 
-    !r.source && !r.severity && (r.type === 'DIRECT' || !r.type || r.issue)
-  ).length;
+  // Filter khusus laporan direct
+  const directReports = reports.filter(r => !r.source && !r.severity && (r.type === 'DIRECT' || !r.type || r.issue));
 
-  const bocorCount = reports.filter(r => 
-    r.source || r.severity || r.type === 'BOCOR' || (r.issue && r.issue.toLowerCase().includes('bocor'))
-  ).length;
+  // Hitung 3 status Lapor Direct
+  const reportedCount = directReports.filter(r => (r.status || 'REPORTED').toUpperCase() === 'REPORTED').length;
+  const progressCount = directReports.filter(r => {
+    const st = (r.status || '').toUpperCase();
+    return st === 'PROGRESS' || st === 'IN_PROGRESS';
+  }).length;
+  const resolvedCount = directReports.filter(r => {
+    const st = (r.status || '').toUpperCase();
+    return st === 'RESOLVED' || st === 'DONE';
+  }).length;
 
-  const elDirect = document.getElementById("statDirectReport");
+  // Tampilkan ke 3 angka kartu Lapor Direct
+  const elReported = document.getElementById("statDirectReported");
+  const elProgress = document.getElementById("statDirectProgress");
+  const elResolved = document.getElementById("statDirectResolved");
+
+  if (elReported) elReported.innerText = reportedCount;
+  if (elProgress) elProgress.innerText = progressCount;
+  if (elResolved) elResolved.innerText = resolvedCount;
+
+  // Hitung dan tampilkan Lapor Bocor
+  const bocorCount = reports.filter(r => r.source || r.severity || r.type === 'BOCOR' || (r.issue && r.issue.toLowerCase().includes('bocor'))).length;
   const elBocor = document.getElementById("statBocorReport");
-
-  if (elDirect) elDirect.innerText = directCount;
   if (elBocor) elBocor.innerText = bocorCount;
 }
 

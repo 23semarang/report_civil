@@ -1187,26 +1187,30 @@ function loadChecklistItems() {
   }
 
   function addSubFailItem(idx) {
-    const failList = document.getElementById(`fail_list_${idx}`);
-    const subIdx = failList.getElementsByClassName('fail-sub-item').length;
-    
-    const newItem = document.createElement('div');
-    newItem.className = 'fail-sub-item mb-2 p-2 bg-light rounded border';
-    newItem.innerHTML = `
-      <div class="d-flex justify-content-between align-items-center mb-1">
-        <label class="small fw-bold text-danger">Titik Kerusakan #${subIdx + 1}</label>
-        <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none" onclick="this.parentElement.parentElement.remove()">Hapus</button>
-      </div>
-      <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Selatan)">
-      <textarea class="form-control form-control-sm mb-2 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
+  const failList = document.getElementById(`fail_list_${idx}`);
+  const subIdx = failList.getElementsByClassName('fail-sub-item').length;
+  
+  const newItem = document.createElement('div');
+  newItem.className = 'fail-sub-item mb-2 p-2 bg-light rounded border';
+  newItem.innerHTML = `
+    <div class="d-flex justify-content-between align-items-center mb-1">
+      <label class="small fw-bold text-danger">Titik Kerusakan #${subIdx + 1}</label>
+      <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none" onclick="this.parentElement.parentElement.remove()">
+        <i class="bi bi-trash me-1"></i>Hapus
+      </button>
+    </div>
+    <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Selatan)">
+    <textarea class="form-control form-control-sm mb-2 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
 
-      <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="triggerSubCam('${idx}', ${subIdx})">📷 Ambil Foto Via Kamera HP</button>
-      <input type="file" class="d-none sub-cam-${idx}" accept="image/*" capture="environment" onchange="handleSubFileSelect(this, '${idx}', ${subIdx})">
-      <small class="text-muted d-block sub-status-${idx}" style="font-size:0.75rem;"></small>
-    `;
-    failList.appendChild(newItem);
-  }
-
+    <!-- TOMBOL KAMERA DENGAN BOOTSTRAP ICON MODERN -->
+    <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="triggerSubCam('${idx}', ${subIdx})">
+      <i class="bi bi-camera-fill me-1"></i> Ambil Foto
+    </button>
+    <input type="file" class="d-none sub-cam-${idx}" accept="image/*" capture="environment" onchange="handleSubFileSelect(this, '${idx}', ${subIdx})">
+    <small class="text-muted d-block sub-status-${idx}" style="font-size:0.75rem;"></small>
+  `;
+  failList.appendChild(newItem);
+}
   function triggerSubCam(itemIdx, subIdx) {
     const container = document.getElementById(`fail_list_${itemIdx}`).getElementsByClassName('fail-sub-item')[subIdx];
     container.querySelector(`.sub-cam-${itemIdx}`).click();
@@ -1455,7 +1459,7 @@ function loadChecklistItems() {
     e.preventDefault();
     if (!markedX || !markedY) { alert("Silakan berikan tanda titik lokasi pada denah layout!"); return; }
     const fileCam = document.getElementById("photoCamera").files[0];
-    if (!fileCam) { alert("Ambil foto bukti laporan via kamera HP!"); return; }
+    if (!fileCam) { alert("Ambil foto bukti laporan!"); return; }
 
     const btn = document.getElementById("btnSubmitReport");
     btn.disabled = true; btn.innerText = "Proses Watermark & Mengirim...";
@@ -1704,7 +1708,7 @@ async function loadBocorReports() {
   async function submitUpdateProgress() {
     const note = document.getElementById("progressNote").value;
     if (!note) { alert("Isi deskripsi progress perbaikan!"); return; }
-    if (!updateFile) { alert("Ambil foto bukti perbaikan via kamera HP!"); return; }
+    if (!updateFile) { alert("Ambil foto bukti perbaikan!"); return; }
 
     const btn = document.getElementById("btnSaveUpdate");
     btn.disabled = true;

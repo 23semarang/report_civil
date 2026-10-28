@@ -489,207 +489,192 @@
   </div>
   
 
-  <!-- TAB CONTENT WRAPPER JUGA MASIH MENGGUNAKAN FORM LAMA ANDA -->
-  <div class="tab-content">
-    
-    <!-- 1. TAB CHECKLIST INSPEKSI -->
-    <div id="checklistTab" class="tab-pane fade card p-3 shadow-sm">
-      <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Inspeksi Rutin Area & Sanitary</h5>
-      <form id="checklistForm">
-        <div class="row g-2 mb-2">
-          <div class="col-6">
-            <label class="form-label small fw-bold">Lantai</label>
-            <select id="chkFloor" class="form-select" required>
-              <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
-            </select>
-          </div>
-          <div class="col-6">
-            <label class="form-label small fw-bold">Zone</label>
-            <select id="chkZone" class="form-select" required>
-              <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="mb-2">
-          <label class="form-label small fw-bold">Kategori Area</label>
-          <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
-            <option value="Toilet Customer Public">Toilet Customer Public</option>
-            <option value="Toilet Priority / Difabel">Toilet Priority / Difabel</option>
-            <option value="Nursery / Laktasi Room">Nursery / Laktasi Room</option>
-            <option value="Public Corridor & Koridor Utama">Public Corridor & Koridor Utama</option>
-            <option value="Atrium & Event Area (Public Space)">Atrium & Event Area (Public Space)</option>
-            <option value="Service Corridor & Loading Area (Backside)">Service Corridor & Loading Area (Backside)</option>
-            <option value="Fasad Gedung & Drop-off Lobby">Fasad Gedung & Drop-off Lobby</option>
-            <option value="Rooftop & Struktur Gedung Outer">Rooftop & Struktur Gedung Outer</option>
-            <option value="Management Office (MO) Area">Management Office (MO) Area</option>
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Detail Nama Area/Tenant</label>
-          <input type="text" id="chkLocationDetail" class="form-control" placeholder="Contoh: Toilet Utama Dekat Atrium A" required>
-        </div>
-
-        <h6 class="mt-3 mb-2 text-primary fw-bold">Daftar Item Pemeriksaan:</h6>
-        <div id="checklistItemsContainer"></div>
-
-        <button type="submit" id="btnSubmitChecklist" class="btn btn-success w-100 mt-3">Simpan Hasil Inspeksi</button>
-      </form>
-    </div>
-
-    <!-- 2. CREATE REPORT FORM (DIRECT) -->
-    <div id="createTab" class="tab-pane fade card p-3 shadow-sm">
-      <h5 class="fw-bold text-primary mb-3"><i class="bi bi-megaphone me-2"></i>Lapor Kerusakan Direct</h5>
-      <form id="reportForm">
-        <div class="mb-2">
+  <!-- TAB CONTENT WRAPPER -->
+<div class="tab-content">
+  
+  <!-- 1. TAB CHECKLIST INSPEKSI -->
+  <div id="checklistTab" class="tab-pane fade card p-3 shadow-sm">
+    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Inspeksi Rutin Area & Sanitary</h5>
+    <form id="checklistForm">
+      <div class="row g-2 mb-2">
+        <div class="col-6">
           <label class="form-label small fw-bold">Lantai</label>
-          <select id="floor" class="form-select" onchange="updateFloorMap()" required>
+          <select id="chkFloor" class="form-select" required>
             <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
           </select>
         </div>
-
-        <div class="mb-3">
-          <label class="fw-bold text-primary small">Marking Titik Lokasi Pada Denah:</label>
-          <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kerusakan untuk menandai titik.</small>
-          
-          <div class="map-outer-wrapper" id="mapWrapper">
-            <div class="map-controls">
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomIn()"><i class="bi bi-zoom-in"></i></button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomOut()"><i class="bi bi-zoom-out"></i></button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="resetMapAndPin()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
-            </div>
-            <div class="map-container" id="mapContainer">
-              <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
-              <div id="mapPin" class="map-pin d-none"></div>
-            </div>
-          </div>
-          <small id="mapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
-        </div>
-
-        <div class="mb-2">
+        <div class="col-6">
           <label class="form-label small fw-bold">Zone</label>
-          <select id="zone" class="form-select" required>
+          <select id="chkZone" class="form-select" required>
             <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
           </select>
         </div>
-        <div class="mb-2">
-          <label class="form-label small fw-bold">Tipe Area</label>
-          <select id="area_type" class="form-select" required>
-            <option value="Public Area">Public Area</option>
-            <option value="Service Area">Service Area</option>
-          </select>
-        </div>
-        <div class="mb-2">
-          <label class="form-label small fw-bold">Detail Lokasi/Tenant</label>
-          <input type="text" id="location_detail" class="form-control" placeholder="Contoh: Depan MO / Atrium" required>
-        </div>
-        <div class="mb-2">
-          <label class="form-label small fw-bold">Detail Kerusakan</label>
-          <textarea id="issue" class="form-control" rows="2" required></textarea>
-        </div>
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Foto Bukti Kerusakan</label>
-          <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('photoCamera').click()"><i class="bi bi-camera me-1"></i> Buka Kamera HP</button>
-          <input type="file" id="photoCamera" class="d-none" accept="image/*" capture="environment">
-          <small id="photoStatus" class="text-muted d-block"></small>
-        </div>
-        <button type="submit" id="btnSubmitReport" class="btn btn-success w-100">Kirim Laporan</button>
-      </form>
-    </div>
-
-    <!-- 3. TAB FORM: LAPOR KEBOCORAN AIR (KHUSUS FORM INPUT) -->
-    <div id="bocorTab" class="tab-pane fade card p-3 shadow-sm">
-      <h5 class="fw-bold text-primary mb-3"><i class="bi bi-droplet-half me-2"></i>Laporan Kebocoran Air</h5>
-      <form id="bocorForm">
-        <div class="row g-2 mb-2">
-          <div class="col-6">
-            <label class="form-label small fw-bold">Lantai</label>
-            <select id="bocorFloor" class="form-select" onchange="updateBocorFloorMap()" required>
-              <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
-            </select>
-          </div>
-          <div class="col-6">
-            <label class="form-label small fw-bold">Sumber Bocor</label>
-            <select id="bocorSource" class="form-select" required>
-              <option value="Plafon / Ceiling">Plafon / Ceiling</option>
-              <option value="Fasad / Kaca Outer">Fasad / Kaca Outer</option>
-              <option value="Rooftop / Canopy">Rooftop / Canopy</option>
-              <option value="Pipa AC / Drainase">Pipa AC / Drainase</option>
-              <option value="Lantai / Dinding">Lantai / Dinding Merembes</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label class="fw-bold text-primary small">Marking Titik Kebocoran Pada Denah:</label>
-          <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kebocoran untuk menandai titik.</small>
-          
-          <div class="map-outer-wrapper" id="bocorMapWrapper">
-            <div class="map-controls">
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomIn()"><i class="bi bi-zoom-in"></i></button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomOut()"><i class="bi bi-zoom-out"></i></button>
-              <button type="button" class="btn btn-sm btn-light border" onclick="resetBocorMapAndPin()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
-            </div>
-            <div class="map-container" id="bocorMapContainer">
-              <img src="" id="bocorMapImage" class="map-image" alt="Denah Lantai Bocor">
-              <div id="bocorMapPin" class="map-pin map-pin-water d-none"></div>
-            </div>
-          </div>
-          <small id="bocorMapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Tingkat Keparahan / Debit Air</label>
-          <div class="d-flex gap-2">
-            <input type="radio" class="btn-check" name="debitAir" id="debit1" value="RINGAN" checked>
-            <label class="btn btn-outline-info btn-sm flex-fill" for="debit1"><i class="bi bi-droplet"></i> Tetesan</label>
-
-            <input type="radio" class="btn-check" name="debitAir" id="debit2" value="SEDANG">
-            <label class="btn btn-outline-warning btn-sm flex-fill" for="debit2"><i class="bi bi-cloud-rain"></i> Merembes</label>
-
-            <input type="radio" class="btn-check" name="debitAir" id="debit3" value="DARURAT">
-            <label class="btn btn-outline-danger btn-sm flex-fill" for="debit3"><i class="bi bi-tsunami"></i> Deras</label>
-          </div>
-        </div>
-
-        <div class="mb-2">
-          <label class="form-label small fw-bold">Detail Lokasi Kebocoran</label>
-          <input type="text" id="bocorLocation" class="form-control" placeholder="Contoh: Depan Tenant X / Koridor Barat" required>
-        </div>
-
-        <div class="mb-2">
-          <label class="form-label small fw-bold">Keterangan Tambahan</label>
-          <textarea id="bocorIssue" class="form-control" rows="2" placeholder="Penjelasan temuan titik rembesan/aliran air..." required></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label small fw-bold">Foto Dokumen Kebocoran</label>
-          <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('bocorPhotoCamera').click()"><i class="bi bi-camera me-1"></i> Ambil Foto Bocor</button>
-          <input type="file" id="bocorPhotoCamera" class="d-none" accept="image/*" capture="environment">
-          <small id="bocorPhotoStatus" class="text-muted d-block"></small>
-        </div>
-
-        <button type="submit" id="btnSubmitBocor" class="btn btn-primary w-100">Kirim Laporan Kebocoran</button>
-      </form>
-    </div> <!-- PENUTUP TAB FORM BOCOR -->
-
-    <!-- TAB BARU: KHUSUS RIWAYAT LAPOR BOCOR -->
-    <div id="bocorHistoryTab" class="tab-pane fade card p-3 shadow-sm">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold text-primary m-0">
-          <i class="bi bi-journal-text me-2"></i> Riwayat Laporan Kebocoran Air
-        </h5>
-        <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadBocorReports()">
-          <i class="bi bi-arrow-clockwise"></i> Refresh
-        </button>
       </div>
 
-      <!-- CONTAINER UNTUK MENAMPILKAN KARTU RIWAYAT -->
-      <div id="bocorReportsContainer">Memuat riwayat kebocoran...</div>
-    </div>
+      <div class="mb-2">
+        <label class="form-label small fw-bold">Kategori Area</label>
+        <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
+          <option value="Toilet Customer Public">Toilet Customer Public</option>
+          <option value="Toilet Priority / Difabel">Toilet Priority / Difabel</option>
+          <option value="Nursery / Laktasi Room">Nursery / Laktasi Room</option>
+          <option value="Public Corridor & Koridor Utama">Public Corridor & Koridor Utama</option>
+          <option value="Atrium & Event Area (Public Space)">Atrium & Event Area (Public Space)</option>
+          <option value="Service Corridor & Loading Area (Backside)">Service Corridor & Loading Area (Backside)</option>
+          <option value="Fasad Gedung & Drop-off Lobby">Fasad Gedung & Drop-off Lobby</option>
+          <option value="Rooftop & Struktur Gedung Outer">Rooftop & Struktur Gedung Outer</option>
+          <option value="Management Office (MO) Area">Management Office (MO) Area</option>
+        </select>
+      </div>
 
-    <!-- 4. TAB BARU: KHUSUS RIWAYAT LAPOR BOCOR (HARUS DI DALAM TAB-CONTENT) -->
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Detail Nama Area/Tenant</label>
+        <input type="text" id="chkLocationDetail" class="form-control" placeholder="Contoh: Toilet Utama Dekat Atrium A" required>
+      </div>
+
+      <h6 class="mt-3 mb-2 text-primary fw-bold">Daftar Item Pemeriksaan:</h6>
+      <div id="checklistItemsContainer"></div>
+
+      <button type="submit" id="btnSubmitChecklist" class="btn btn-success w-100 mt-3">Simpan Hasil Inspeksi</button>
+    </form>
+  </div>
+
+  <!-- 2. CREATE REPORT FORM (DIRECT) -->
+  <div id="createTab" class="tab-pane fade card p-3 shadow-sm">
+    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-megaphone me-2"></i>Lapor Kerusakan Direct</h5>
+    <form id="reportForm">
+      <div class="mb-2">
+        <label class="form-label small fw-bold">Lantai</label>
+        <select id="floor" class="form-select" onchange="updateFloorMap()" required>
+          <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="fw-bold text-primary small">Marking Titik Lokasi Pada Denah:</label>
+        <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kerusakan untuk menandai titik.</small>
+        
+        <div class="map-outer-wrapper" id="mapWrapper">
+          <div class="map-controls">
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomIn()"><i class="bi bi-zoom-in"></i></button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomOut()"><i class="bi bi-zoom-out"></i></button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="resetMapAndPin()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+          </div>
+          <div class="map-container" id="mapContainer">
+            <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
+            <div id="mapPin" class="map-pin d-none"></div>
+          </div>
+        </div>
+        <small id="mapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label small fw-bold">Zone</label>
+        <select id="zone" class="form-select" required>
+          <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label class="form-label small fw-bold">Tipe Area</label>
+        <select id="area_type" class="form-select" required>
+          <option value="Public Area">Public Area</option>
+          <option value="Service Area">Service Area</option>
+        </select>
+      </div>
+      <div class="mb-2">
+        <label class="form-label small fw-bold">Detail Lokasi/Tenant</label>
+        <input type="text" id="location_detail" class="form-control" placeholder="Contoh: Depan MO / Atrium" required>
+      </div>
+      <div class="mb-2">
+        <label class="form-label small fw-bold">Detail Kerusakan</label>
+        <textarea id="issue" class="form-control" rows="2" required></textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Foto Bukti Kerusakan</label>
+        <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('photoCamera').click()"><i class="bi bi-camera me-1"></i> Buka Kamera HP</button>
+        <input type="file" id="photoCamera" class="d-none" accept="image/*" capture="environment">
+        <small id="photoStatus" class="text-muted d-block"></small>
+      </div>
+      <button type="submit" id="btnSubmitReport" class="btn btn-success w-100">Kirim Laporan</button>
+    </form>
+  </div>
+
+  <!-- 3. TAB FORM: LAPOR KEBOCORAN AIR (KHUSUS FORM INPUT) -->
+  <div id="bocorTab" class="tab-pane fade card p-3 shadow-sm">
+    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-droplet-half me-2"></i>Laporan Kebocoran Air</h5>
+    <form id="bocorForm">
+      <div class="row g-2 mb-2">
+        <div class="col-6">
+          <label class="form-label small fw-bold">Lantai</label>
+          <select id="bocorFloor" class="form-select" onchange="updateBocorFloorMap()" required>
+            <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label class="form-label small fw-bold">Sumber Bocor</label>
+          <select id="bocorSource" class="form-select" required>
+            <option value="Plafon / Ceiling">Plafon / Ceiling</option>
+            <option value="Fasad / Kaca Outer">Fasad / Kaca Outer</option>
+            <option value="Rooftop / Canopy">Rooftop / Canopy</option>
+            <option value="Pipa AC / Drainase">Pipa AC / Drainase</option>
+            <option value="Lantai / Dinding">Lantai / Dinding Merembes</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="fw-bold text-primary small">Marking Titik Kebocoran Pada Denah:</label>
+        <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kebocoran untuk menandai titik.</small>
+        
+        <div class="map-outer-wrapper" id="bocorMapWrapper">
+          <div class="map-controls">
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomIn()"><i class="bi bi-zoom-in"></i></button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomOut()"><i class="bi bi-zoom-out"></i></button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="resetBocorMapAndPin()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+          </div>
+          <div class="map-container" id="bocorMapContainer">
+            <img src="" id="bocorMapImage" class="map-image" alt="Denah Lantai Bocor">
+            <div id="bocorMapPin" class="map-pin map-pin-water d-none"></div>
+          </div>
+        </div>
+        <small id="bocorMapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Tingkat Keparahan / Debit Air</label>
+        <div class="d-flex gap-2">
+          <input type="radio" class="btn-check" name="debitAir" id="debit1" value="RINGAN" checked>
+          <label class="btn btn-outline-info btn-sm flex-fill" for="debit1"><i class="bi bi-droplet"></i> Tetesan</label>
+
+          <input type="radio" class="btn-check" name="debitAir" id="debit2" value="SEDANG">
+          <label class="btn btn-outline-warning btn-sm flex-fill" for="debit2"><i class="bi bi-cloud-rain"></i> Merembes</label>
+
+          <input type="radio" class="btn-check" name="debitAir" id="debit3" value="DARURAT">
+          <label class="btn btn-outline-danger btn-sm flex-fill" for="debit3"><i class="bi bi-tsunami"></i> Deras</label>
+        </div>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label small fw-bold">Detail Lokasi Kebocoran</label>
+        <input type="text" id="bocorLocation" class="form-control" placeholder="Contoh: Depan Tenant X / Koridor Barat" required>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label small fw-bold">Keterangan Tambahan</label>
+        <textarea id="bocorIssue" class="form-control" rows="2" placeholder="Penjelasan temuan titik rembesan/aliran air..." required></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Foto Dokumen Kebocoran</label>
+        <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('bocorPhotoCamera').click()"><i class="bi bi-camera me-1"></i> Ambil Foto Bocor</button>
+        <input type="file" id="bocorPhotoCamera" class="d-none" accept="image/*" capture="environment">
+        <small id="bocorPhotoStatus" class="text-muted d-block"></small>
+      </div>
+
+      <button type="submit" id="btnSubmitBocor" class="btn btn-primary w-100">Kirim Laporan Kebocoran</button>
+    </form>
+  </div>
+
+  <!-- 4. TAB KHUSUS RIWAYAT LAPOR BOCOR (DIBUKA OLEH KARTU KUNING) -->
   <div id="bocorHistoryTab" class="tab-pane fade card p-3 shadow-sm">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="fw-bold text-primary m-0">
@@ -699,23 +684,23 @@
         <i class="bi bi-arrow-clockwise"></i> Refresh
       </button>
     </div>
-    
-    <!-- 5. TAB UTAMA: RIWAYAT LAPORAN DIRECT -->
-<div id="listTab" class="tab-pane fade show active">
-  <div class="card p-2 mb-3 shadow-sm border-0">
-    <div class="btn-group w-100 filter-btn-group" role="group">
-      <button type="button" class="btn btn-primary active" id="btnFilterAll" onclick="setFilter('ALL')">Semua</button>
-      <button type="button" class="btn btn-outline-danger" id="btnFilterReported" onclick="setFilter('REPORTED')">Reported</button>
-      <button type="button" class="btn btn-outline-warning text-dark" id="btnFilterProgress" onclick="setFilter('PROGRESS')">Progress</button>
-      <button type="button" class="btn btn-outline-success" id="btnFilterResolved" onclick="setFilter('RESOLVED')">Resolved</button>
-    </div>
+    <div id="bocorReportsContainer">Memuat riwayat kebocoran...</div>
   </div>
-  
-  <!-- DAFTAR RIWAYAT LAPORAN DIRECT -->
-  <div id="reportsContainer">Memuat data...</div>
-</div>
 
-  </div> <!-- END TAB CONTENT -->
+  <!-- 5. TAB UTAMA DEFAULT: RIWAYAT LAPORAN DIRECT -->
+  <div id="listTab" class="tab-pane fade show active">
+    <div class="card p-2 mb-3 shadow-sm border-0">
+      <div class="btn-group w-100 filter-btn-group" role="group">
+        <button type="button" class="btn btn-primary active" id="btnFilterAll" onclick="setFilter('ALL')">Semua</button>
+        <button type="button" class="btn btn-outline-danger" id="btnFilterReported" onclick="setFilter('REPORTED')">Reported</button>
+        <button type="button" class="btn btn-outline-warning text-dark" id="btnFilterProgress" onclick="setFilter('PROGRESS')">Progress</button>
+        <button type="button" class="btn btn-outline-success" id="btnFilterResolved" onclick="setFilter('RESOLVED')">Resolved</button>
+      </div>
+    </div>
+    <div id="reportsContainer">Memuat data...</div>
+  </div>
+
+</div> <!-- PENUTUP UTAMA TAB CONTENT -->
 </div>
 
 <!-- MODAL DENAH VIEW WITH ZOOM & PAN (ID DISESUAIKAN UNTUK VIEW DENAH) -->

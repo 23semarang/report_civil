@@ -1151,14 +1151,15 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
     items.forEach((item, idx) => {
       container.innerHTML += `
         <div class="chk-item-card p-3 mb-2">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="fw-bold small">${idx + 1}. ${item}</span>
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom">
+    <div class="fw-bold small pe-2">${item.name}</div>
+    <div class="btn-group" role="group">
             <div>
               <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" checked onchange="toggleFailDetail(${idx}, false)">
-              <label class="btn btn-sm btn-outline-success" for="pass_${idx}">PASS</label>
+              <label class="btn btn-sm btn-outline-success" for="pass_${idx}">NORMAL</label>
               
               <input type="radio" class="btn-check" name="chk_${idx}" id="fail_${idx}" value="FAIL" onchange="toggleFailDetail(${idx}, true)">
-              <label class="btn btn-sm btn-outline-danger" for="fail_${idx}">FAIL</label>
+              <label class="btn btn-sm btn-outline-danger" for="fail_${idx}">RUSAK</label>
             </div>
           </div>
 
@@ -1517,26 +1518,28 @@ function updateDashboardStats(reports) {
   if (elBocor) elBocor.innerText = bocorCount;
 }
 
-  // FUNGSI UNTUK MEMBUKA TAB RIWAYAT LAPOR BOCOR DARI KARTU KUNING
-function openBocorHistoryTab() {
-  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('show', 'active'));
-  const historyTab = document.getElementById('bocorHistoryTab');
-  if (historyTab) historyTab.classList.add('show', 'active');
-  loadBocorReports();
+  // FUNGSI UTAMA PERPINDAHAN TAB BERSIH
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-pane').forEach(el => {
+    el.classList.remove('show', 'active');
+  });
+  const targetTab = document.getElementById(tabId + 'Tab') || document.getElementById(tabId);
+  if (targetTab) {
+    targetTab.classList.add('show', 'active');
+  }
 }
 
-// 1. TARUH FUNGSI INI TEPAT DI BAWAH openBocorHistoryTab()
-function openDirectHistoryTab() {
-  // Sembunyikan semua tab yang aktif
-  document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('show', 'active'));
-  
-  // Tampilkan tab utama (listTab)
-  const listTab = document.getElementById('listTab');
-  if (listTab) {
-    listTab.classList.add('show', 'active');
+// FUNGSI KARTU KUNING (LAPOR BOCOR)
+function openBocorHistoryTab() {
+  switchTab('bocorHistoryTab');
+  if (typeof loadBocorReports === 'function') {
+    loadBocorReports();
   }
+}
 
-  // Reload data riwayat Lapor Direct
+// FUNGSI KARTU BIRU (LAPOR DIRECT)
+function openDirectHistoryTab() {
+  switchTab('listTab');
   if (typeof loadReports === 'function') {
     loadReports();
   }
@@ -1997,6 +2000,16 @@ function switchTabToBocor() {
     }
   }
 }
+
+  // TARUH DI BAGIAN DOMContentLoaded ATAU PALING BAWAH SCRIPT
+document.addEventListener("DOMContentLoaded", function () {
+  const sidebarButtons = document.querySelectorAll('#mainTab button[data-bs-toggle="pill"]');
+  sidebarButtons.forEach(btn => {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('show', 'active'));
+    });
+  });
+});
   
   </script> <!-- PENUTUP TAG SCRIPT PALING BAWAH -->
 </body>

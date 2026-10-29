@@ -1817,23 +1817,45 @@ async function loadBocorReports() {
   }
 
   function openMapModal(floor, x, y) {
-    initPanzoom();
-    viewMarkedX = parseFloat(x);
-    viewMarkedY = parseFloat(y);
+  viewMarkedX = parseFloat(x);
+  viewMarkedY = parseFloat(y);
 
-    const viewImg = document.getElementById("viewMapImage");
-    viewImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
-    
-    viewImg.onload = () => {
-      if (pzView) pzView.reset();
-      const viewPin = document.getElementById("viewMapPin");
+  const viewImg = document.getElementById("viewMapImage");
+  if (!viewImg) return;
+
+  // Set properti touch action agar bisa pinch-to-zoom di HP
+  viewImg.style.touchAction = "none";
+  viewImg.style.userSelect = "none";
+  viewImg.style.webkitUserDrag = "none";
+
+  viewImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+
+  viewImg.onload = () => {
+    // InisialisasiPanzoom tepat setelah gambar denah selesai ter-load
+    if (typeof initPanzoom === 'function') {
+      initPanzoom();
+    }
+    if (pzView && typeof pzView.reset === 'function') {
+      pzView.reset();
+    }
+
+    const viewPin = document.getElementById("viewMapPin");
+    if (viewPin) {
       viewPin.classList.remove("d-none");
       updateViewPinPosition();
-    };
+    }
+  };
 
-    document.getElementById("mapModalTitle").innerText = `Denah Kerusakan (${floor})`;
+  document.getElementById("mapModalTitle").innerText = `Denah Kerusakan (${floor})`;
+  
+  // Tampilkan modal Bootstrap
+  if (typeof mapModal !== 'undefined' && mapModal.show) {
     mapModal.show();
+  } else {
+    const mapModalEl = document.getElementById("mapModal");
+    if (mapModalEl) new bootstrap.Modal(mapModalEl).show();
   }
+}
   // Tambahkan 3 fungsi ini di bawah openMapModal
 function zoomInMap() {
   if (pzView) pzView.zoomIn();

@@ -948,6 +948,7 @@
   const container = document.getElementById("viewMapContainer");
   if (!container) return;
 
+  // Pastikan CSS transition dimatikan total agar Panzoom yang ambil alih penuh
   container.style.transition = "none";
   container.style.touchAction = "none";
 
@@ -960,17 +961,18 @@
       maxScale: 5,
       minScale: 1,
       contain: 'outside',
-      startScale: 1
+      startScale: 1,
+      animate: true, // Animasi smooth bawaan Panzoom
+      duration: 200  // Durasi animasi (ms)
     });
 
     container.parentElement.addEventListener('wheel', window.pzView.zoomWithWheel);
 
-    // KUNCI UTAMA: Bikin ukuran pin tetap konstan saat container di-zoom
+    // Bikin pin ukurannya tetap presisi & tidak ikut membesar
     container.addEventListener('panzoomchange', (event) => {
       const scale = event.detail.scale;
       const viewPin = document.getElementById("viewMapPin");
       if (viewPin) {
-        // Balikkan skala pin (1 / scale) agar ukurannya tidak membesar
         viewPin.style.transform = `translate(-50%, -50%) scale(${1 / scale})`;
       }
     });
@@ -1860,21 +1862,15 @@ async function loadBocorReports() {
   }
 }
   function zoomInMap() {
-  const container = document.getElementById("viewMapContainer");
-  if (container) container.style.transition = "none";
-  if (window.pzView) window.pzView.zoomIn();
+  if (window.pzView) window.pzView.zoomIn({ animate: true });
 }
 
 function zoomOutMap() {
-  const container = document.getElementById("viewMapContainer");
-  if (container) container.style.transition = "none";
-  if (window.pzView) window.pzView.zoomOut();
+  if (window.pzView) window.pzView.zoomOut({ animate: true });
 }
 
 function resetMapZoom() {
-  const container = document.getElementById("viewMapContainer");
-  if (container) container.style.transition = "transform 200ms ease-in-out";
-  if (window.pzView) window.pzView.reset();
+  if (window.pzView) window.pzView.reset({ animate: true });
 }
 
   function getGoogleThumbnailUrl(driveUrl) {

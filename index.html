@@ -2065,7 +2065,41 @@ function openQuickBocorForm() {
   // Reset atau fokuskan ke form jika diperlukan
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-  
+
+  // FUNGSI UNTUK MEMAKSA DENAH KELOAD DENGAN INSTAN
+function triggerMapReload() {
+  // Pemicu untuk Form Lapor Direct
+  const directFloorSelect = document.getElementById("directFloor") || document.querySelector("#directFormSelectFloor") || document.getElementById("floor");
+  if (directFloorSelect) {
+    directFloorSelect.dispatchEvent(new Event('change'));
+  }
+
+  // Pemicu untuk Form Lapor Bocor
+  const bocorFloorSelect = document.getElementById("bocorFloor") || document.getElementById("floorSelect");
+  if (bocorFloorSelect) {
+    bocorFloorSelect.dispatchEvent(new Event('change'));
+  }
+}
+
+// JALANKAN OTOMATIS TIAP KALI PENGGUNA PINDAH TAB / MENU
+document.addEventListener("DOMContentLoaded", function () {
+  // Pemicu saat tombol menu tab diklik
+  const allTabButtons = document.querySelectorAll('button[data-bs-toggle="pill"], button[data-bs-toggle="tab"], .nav-link');
+  allTabButtons.forEach(btn => {
+    btn.addEventListener('shown.bs.tab', function () {
+      setTimeout(triggerMapReload, 100); // Beri delay sedikit agar HTML tab selesai dirender sempurna
+    });
+  });
+});
+
+// DIPAKAI JUGA PADA FUNGSI SWITCHTAB MANUAL
+const originalSwitchTab = typeof switchTab === 'function' ? switchTab : null;
+if (originalSwitchTab) {
+  switchTab = function(tabId) {
+    originalSwitchTab(tabId);
+    setTimeout(triggerMapReload, 100);
+  };
+}
   </script> <!-- PENUTUP TAG SCRIPT PALING BAWAH -->
 
   <!-- TOMBOL FLOATING LAPOR BOCOR CEAPAT -->

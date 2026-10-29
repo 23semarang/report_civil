@@ -948,16 +948,13 @@
   const container = document.getElementById("viewMapContainer");
   if (!container) return;
 
-  // 1. MATIKAN TRANSITION CSS AGAR ZOOM/DRAG FLUID DAN BISA BERJALAN
   container.style.transition = "none";
   container.style.touchAction = "none";
 
-  // 2. Jika pzView sudah ada, hapus/reset instance lama
   if (window.pzView && typeof window.pzView.destroy === 'function') {
     window.pzView.destroy();
   }
 
-  // 3. Inisialisasi Ulang Panzoom pada Container Denah
   if (typeof Panzoom !== 'undefined') {
     window.pzView = Panzoom(container, {
       maxScale: 5,
@@ -966,8 +963,17 @@
       startScale: 1
     });
 
-    // Aktifkan zoom pakai Scroll Mouse / Touch Pinch
     container.parentElement.addEventListener('wheel', window.pzView.zoomWithWheel);
+
+    // KUNCI UTAMA: Bikin ukuran pin tetap konstan saat container di-zoom
+    container.addEventListener('panzoomchange', (event) => {
+      const scale = event.detail.scale;
+      const viewPin = document.getElementById("viewMapPin");
+      if (viewPin) {
+        // Balikkan skala pin (1 / scale) agar ukurannya tidak membesar
+        viewPin.style.transform = `translate(-50%, -50%) scale(${1 / scale})`;
+      }
+    });
   }
 }
 
@@ -1153,16 +1159,16 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
   }
 
   function updateViewPinPosition() {
-    const pin = document.getElementById("viewMapPin");
-    if (!viewMarkedX || !viewMarkedY || pin.classList.contains("d-none")) return;
+  const viewPin = document.getElementById("viewMapPin");
+  if (!viewPin) return;
 
-    pin.style.left = viewMarkedX + "%";
-    pin.style.top = viewMarkedY + "%";
+  viewPin.style.left = viewMarkedX + "%";
+  viewPin.style.top = viewMarkedY + "%";
 
-    const scale = pzView ? pzView.getScale() : 1;
-    const invScale = 1 / scale;
-    pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
-  }
+  // Ambil skala Panzoom saat ini (default 1 jika belum zoom)
+  const currentScale = window.pzView ? window.pzView.getScale() : 1;
+  viewPin.style.transform = `translate(-50%, -50%) scale(${1 / currentScale})`;
+}
 
   // 2. BACA KLIK LANGSUNG DARI ELEMEN GAMBAR (mapImage), BUKAN CONTAINER!
   let startX = 0, startY = 0;

@@ -572,7 +572,6 @@
   <label class="form-label small fw-bold">Kategori Area</label>
   <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
     <option value="">-- Pilih Kategori Area --</option>
-    <!-- Value diselaraskan presisi dengan key CHECKLIST_PRESETS -->
     <option value="Toilet Customer">Toilet Customer Public</option>
     <option value="Toilet Staff">Toilet Staff</option>
     <option value="Toilet Priority / Difabel">Toilet Priority / Difabel</option>
@@ -868,6 +867,64 @@
     "Rooftop": "Rooftop.jpg"
   };
 
+  // ==========================================
+// 1. DATA MAPPING AREA PER LANTAI & ZONE
+// ==========================================
+const AREA_BY_FLOOR_ZONE = {
+  "LG": { ... },
+  "L1": { ... },
+  "L2": { ... },
+  "L3": { ... },
+  "Rooftop": { ... }
+};
+
+// ==========================================
+// 2. FUNGSI UPDATE DROPDOWN AREA & AUTO-CATEGORY
+// ==========================================
+function updateAreaDropdown() {
+  const floor = document.getElementById("selectFloor")?.value;
+  const zone = document.getElementById("selectZone")?.value;
+  const areaSelect = document.getElementById("selectArea");
+
+  if (!areaSelect) return;
+
+  areaSelect.innerHTML = '<option value="">-- Pilih Detail Area --</option>';
+
+  if (floor && zone && AREA_BY_FLOOR_ZONE[floor] && AREA_BY_FLOOR_ZONE[floor][zone]) {
+    areaSelect.disabled = false;
+    AREA_BY_FLOOR_ZONE[floor][zone].forEach(item => {
+      const opt = document.createElement("option");
+      opt.value = item.name;
+      opt.setAttribute("data-category", item.category);
+      opt.textContent = item.name;
+      areaSelect.appendChild(opt);
+    });
+  } else {
+    areaSelect.disabled = true;
+  }
+}
+
+// Event listener saat DOM selesai dimuat
+document.addEventListener("DOMContentLoaded", function () {
+  // Listener perubahan Lantai & Zone
+  document.getElementById("selectFloor")?.addEventListener("change", updateAreaDropdown);
+  document.getElementById("selectZone")?.addEventListener("change", updateAreaDropdown);
+
+  // Listener saat Detail Area dipilih -> Otomatis set Kategori & render checklist
+  document.getElementById("selectArea")?.addEventListener("change", function () {
+    const selectedOption = this.options[this.selectedIndex];
+    const autoCategory = selectedOption.getAttribute("data-category");
+    const catSelect = document.getElementById("chkCategory");
+
+    if (autoCategory && catSelect) {
+      catSelect.value = autoCategory;
+      if (typeof loadChecklistItems === 'function') {
+        loadChecklistItems();
+      }
+    }
+  });
+});
+
   const CHECKLIST_PRESETS = {
   "Toilet Customer": [
     "Kloset Duduk (Flush, Eco Washer & Jet Shower)",
@@ -940,70 +997,70 @@
     "Dinding Keramik & Dinding",
     "Plafon & Exhaust Fan"
   ],
-    "Public Corridor & Koridor Utama": [
-      "Lantai HT / Granit Public (Nat & Popping)",
-      "Glass Railing Void Utama & Klem Stainless",
-      "Plafon Gypsum Public & Manhole Access",
-      "Pintu Emergency & Exit Signage",
-      "Kolom dan Dinding"
-    ],
-    "Atrium & Event Area (Public Space)": [
-      "Lantai Atrium",
-      "Kondisi Dinding Void Atrium Outer",
-      "Lampu Highlight High-Ceiling Atrium",
-      "Kolom dan Dinding"
-    ],
-    "Service Corridor & Loading Area": [
-      "Lantai Epoksi Lift Fire",
-      "Dinding Service Koridor & Corner Guard Protektor",
-      "Pintu Shaft Utility (Listrik/Plumbing) & Kunci",
-      "Loading Dock Ramp & Bumper Pad Loading"
-    ],
-    "Fasad Gedung": [
-      "Panel GRC & Sealant Fasad",
-      "Jendela Kaca Outer & Sealant Kaca",
-      "Pintu Kaca Utama Entrance (Floor Hinge, Engsel / Auto Door)"
-    ],
-    "Rooftop & Struktur Gedung Outer": [
-      "Waterproofing Dak Beton (Retak & Ponding)",
-      "Roof Drain & Scupper Drainage (Sumbatan)",
-      "Dudukan Rangka Baja Equipment & Anti-Karat",
-      "Dinding Parapet Beton"
-    ],
-    "Management Office (MO) Area": [
-      "Lantai Granit MO",
-      "Dinding MO",
-      "Plafond Gypsum & Manhole MO",
-      "Pintu Utama Office, Handle & Lockset",
-      "Area Toilet Internal MO & Pantry MO"
-    ],
-    "Gedung Parkir Motor": [
-      "Lantai Paving / Beton",
-      "Struktur Baja, Zinkchromate",
-      "Car Stopper",
-      "Ramp",
-      "Floor Drain, Gutter, Cover",
-      "Dinding Parapet / Railing"
-    ],
-    "Gedung Parkir Mobil": [
-      "Lantai Paving / Beton / Kanstin",
-      "Cover U Ditch",
-      "Struktur Baja, Zinkchromate",
-      "Car Stopper",
-      "Ramp",
-      "Floor Drain, Gutter, Cover FD",
-      "Dinding Parapet / Railing"
-    ],
-    "Area Parkir": [
-      "Paving",
-      "Cover U Ditch",
-      "Pedestal Lampu PJU",
-      "Car Stopper",
-      "Kanstin dan Island Taman",
-      "Floor Drain, Gutter, Cover FD",
-      "Dinding Parapet / Railing"
-    ]
-  };
+  "Public Corridor & Koridor Utama": [
+    "Lantai HT / Granit Public (Nat & Popping)",
+    "Glass Railing Void Utama & Klem Stainless",
+    "Plafon Gypsum Public & Manhole Access",
+    "Pintu Emergency & Exit Signage",
+    "Kolom dan Dinding"
+  ],
+  "Atrium & Event Area (Public Space)": [
+    "Lantai Atrium",
+    "Kondisi Dinding Void Atrium Outer",
+    "Lampu Highlight High-Ceiling Atrium",
+    "Kolom dan Dinding"
+  ],
+  "Service Corridor & Loading Area": [
+    "Lantai Epoksi Lift Fire",
+    "Dinding Service Koridor & Corner Guard Protektor",
+    "Pintu Shaft Utility (Listrik/Plumbing) & Kunci",
+    "Loading Dock Ramp & Bumper Pad Loading"
+  ],
+  "Fasad Gedung": [
+    "Panel GRC & Sealant Fasad",
+    "Jendela Kaca Outer & Sealant Kaca",
+    "Pintu Kaca Utama Entrance (Floor Hinge, Engsel / Auto Door)"
+  ],
+  "Rooftop & Struktur Gedung Outer": [
+    "Waterproofing Dak Beton (Retak & Ponding)",
+    "Roof Drain & Scupper Drainage (Sumbatan)",
+    "Dudukan Rangka Baja Equipment & Anti-Karat",
+    "Dinding Parapet Beton"
+  ],
+  "Management Office (MO) Area": [
+    "Lantai Granit MO",
+    "Dinding MO",
+    "Plafond Gypsum & Manhole MO",
+    "Pintu Utama Office, Handle & Lockset",
+    "Area Toilet Internal MO & Pantry MO"
+  ],
+  "Gedung Parkir Motor": [
+    "Lantai Paving / Beton",
+    "Struktur Baja, Zinkchromate",
+    "Car Stopper",
+    "Ramp",
+    "Floor Drain, Gutter, Cover",
+    "Dinding Parapet / Railing"
+  ],
+  "Gedung Parkir Mobil": [
+    "Lantai Paving / Beton / Kanstin",
+    "Cover U Ditch",
+    "Struktur Baja, Zinkchromate",
+    "Car Stopper",
+    "Ramp",
+    "Floor Drain, Gutter, Cover FD",
+    "Dinding Parapet / Railing"
+  ],
+  "Area Parkir": [
+    "Paving",
+    "Cover U Ditch",
+    "Pedestal Lampu PJU",
+    "Car Stopper",
+    "Kanstin dan Island Taman",
+    "Floor Drain, Gutter, Cover FD",
+    "Dinding Parapet / Railing"
+  ]
+};
 
   let currentUser = JSON.parse(localStorage.getItem("user_civil")) || null;
   let selectedFile = null;

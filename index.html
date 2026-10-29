@@ -1832,6 +1832,8 @@ function openMapModal(floor, x, y) {
 
   viewImg.onload = () => {
     const container = document.getElementById("viewMapContainer");
+    const wrapper = document.getElementById("viewMapWrapper") || container?.parentElement;
+
     if (container && typeof Panzoom !== 'undefined') {
       container.style.transition = "none";
       container.style.touchAction = "none";
@@ -1847,6 +1849,15 @@ function openMapModal(floor, x, y) {
         animate: true,
         duration: 200
       });
+
+      // KUNCI UTAMA: Aktifkan Zoom pake Wheel Mouse pada Wrapper
+      if (wrapper) {
+        wrapper.removeEventListener('wheel', window.pzView.zoomWithWheel);
+        wrapper.addEventListener('wheel', (e) => {
+          e.preventDefault(); // Mencegah halaman utama ikut ter-scroll
+          window.pzView.zoomWithWheel(e);
+        }, { passive: false });
+      }
 
       // Sesuaikan skala pin tiap kali di-zoom/pan
       container.removeEventListener('panzoomchange', updateViewPinPosition);

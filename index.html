@@ -948,6 +948,10 @@
   const container = document.getElementById("viewMapContainer");
   if (!container) return;
 
+  // Pastikan CSS transition dimatikan total agar Panzoom yang ambil alih penuh
+  container.style.transition = "none";
+  container.style.touchAction = "none";
+
   if (window.pzView && typeof window.pzView.destroy === 'function') {
     window.pzView.destroy();
   }
@@ -957,15 +961,14 @@
       maxScale: 5,
       minScale: 1,
       contain: 'outside',
-      startScale: 1
+      startScale: 1,
+      animate: true, // Animasi smooth bawaan Panzoom
+      duration: 200  // Durasi animasi (ms)
     });
 
-    // Matikan transisi saat user mulai geser/pan manual agar gerakan tangan responsif
-    container.addEventListener('panzoomstart', () => {
-      container.style.transition = "none";
-    });
+    container.parentElement.addEventListener('wheel', window.pzView.zoomWithWheel);
 
-    // Menjaga ukuran pin tetap konsisten & presisi
+    // Bikin pin ukurannya tetap presisi & tidak ikut membesar
     container.addEventListener('panzoomchange', (event) => {
       const scale = event.detail.scale;
       const viewPin = document.getElementById("viewMapPin");
@@ -1858,38 +1861,16 @@ async function loadBocorReports() {
     if (mapModalEl) new bootstrap.Modal(mapModalEl).show();
   }
 }
-  // FUNGSI ZOOM IN DENGAN ANIMASI HALUS
-function zoomInMap() {
-  const container = document.getElementById("viewMapContainer");
-  if (container) {
-    // Aktifkan animasi transisi halus khusus untuk tombol
-    container.style.transition = "transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)";
-  }
-  if (window.pzView) {
-    window.pzView.zoomIn();
-  }
+  function zoomInMap() {
+  if (window.pzView) window.pzView.zoomIn({ animate: true });
 }
 
-// FUNGSI ZOOM OUT DENGAN ANIMASI HALUS
 function zoomOutMap() {
-  const container = document.getElementById("viewMapContainer");
-  if (container) {
-    container.style.transition = "transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)";
-  }
-  if (window.pzView) {
-    window.pzView.zoomOut();
-  }
+  if (window.pzView) window.pzView.zoomOut({ animate: true });
 }
 
-// FUNGSI RESET DENGAN ANIMASI HALUS
 function resetMapZoom() {
-  const container = document.getElementById("viewMapContainer");
-  if (container) {
-    container.style.transition = "transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)";
-  }
-  if (window.pzView) {
-    window.pzView.reset();
-  }
+  if (window.pzView) window.pzView.reset({ animate: true });
 }
 
   function getGoogleThumbnailUrl(driveUrl) {

@@ -589,9 +589,11 @@
 
   <!-- DETAIL NAMA AREA / TENANT -->
   <div class="mb-3">
-    <label class="form-label small fw-bold">Detail Nama Area/Tenant</label>
-    <input type="text" id="chkLocationDetail" class="form-control" placeholder="Contoh: Toilet Utama Dekat Atrium A">
-  </div>
+  <label class="form-label fw-bold">Detail Nama Area / Ruangan</label>
+  <select id="selectArea" class="form-select" disabled>
+    <option value="">-- Pilih Ruangan --</option>
+  </select>
+</div>
 
   <!-- DAFTAR ITEM PEMERIKSAAN -->
   <h6 class="mt-3 mb-2 text-primary fw-bold">Daftar Item Pemeriksaan:</h6>
@@ -1338,8 +1340,20 @@ function loadChecklistItems() {
 // 5. SYSTEM INITIALIZATION & PANZOOM LAPOR BOCOR
 // ==========================================
 document.addEventListener("DOMContentLoaded", function () {
+  // --- TAMBAHKAN DUA EVENT LISTENER INI ---
+  const selectFloor = document.getElementById("selectFloor") || document.getElementById("floor");
+  const selectZone = document.getElementById("selectZone");
+
+  if (selectFloor) {
+    selectFloor.addEventListener("change", updateAreaOptions);
+  }
+  if (selectZone) {
+    selectZone.addEventListener("change", updateAreaOptions);
+  }
+  // ----------------------------------------
+
   const areaSelect = document.getElementById("selectArea");
-  
+
   if (areaSelect) {
     areaSelect.addEventListener("change", function () {
       const selectedOption = this.options[this.selectedIndex];

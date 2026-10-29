@@ -554,21 +554,40 @@
     <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Checklist Civil & Sanitary</h5>
     <form id="checklistForm">
       <div class="row g-2 mb-2">
-        <div class="col-6">
-          <label class="form-label small fw-bold">Lantai</label>
-          <select id="chkFloor" class="form-select" required>
-            <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
-          </select>
-        </div>
-        <div class="col-6">
-          <label class="form-label small fw-bold">Zone</label>
-          <select id="chkZone" class="form-select" required>
-            <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
-          </select>
-        </div>
-      </div>
+  <div class="col-6">
+    <label class="form-label small fw-bold">Lantai</label>
+    <select id="selectFloor" class="form-select" onchange="updateAreaDropdown()">
+      <option value="">-- Lantai --</option>
+      <option value="LG">LG</option>
+      <option value="L1">L1</option>
+      <option value="L2">L2</option>
+      <option value="L3">L3</option>
+      <option value="Rooftop">Rooftop</option>
+    </select>
+  </div>
+  <div class="col-6">
+    <label class="form-label small fw-bold">Zone</label>
+    <select id="selectZone" class="form-select" onchange="updateAreaDropdown()">
+      <option value="">-- Zone --</option>
+      <option value="All Zone">All Zone</option>
+      <option value="Zone A">Zone A</option>
+      <option value="Zone B">Zone B</option>
+      <option value="Zone C">Zone C</option>
+      <option value="Zone D">Zone D</option>
+    </select>
+  </div>
+</div>
 
-      <div class="mb-2">
+<!-- DROPDOWN DETAIL AREA YANG DIFILTER LANTAI & ZONE -->
+<div class="mb-2">
+  <label class="form-label small fw-bold">Detail Nama Area</label>
+  <select id="selectArea" class="form-select" disabled>
+    <option value="">-- Pilih Lantai & Zone Terlebih Dahulu --</option>
+  </select>
+</div>
+
+<!-- KATEGORI AREA (AKAN OTOMATIS TERPILIH SAAT DETAIL AREA DIPILIH) -->
+<div class="mb-2">
   <label class="form-label small fw-bold">Kategori Area</label>
   <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
     <option value="">-- Pilih Kategori Area --</option>
@@ -585,9 +604,6 @@
     <option value="Fasad Gedung">Fasad Gedung & Drop-off Lobby</option>
     <option value="Rooftop & Struktur Gedung Outer">Rooftop & Struktur Gedung Outer</option>
     <option value="Management Office (MO) Area">Management Office (MO) Area</option>
-    <option value="Gedung Parkir Motor">Gedung Parkir Motor</option>
-    <option value="Gedung Parkir Mobil">Gedung Parkir Mobil</option>
-    <option value="Area Parkir">Area Parkir Outdoor</option>
   </select>
 </div>
 
@@ -1068,23 +1084,22 @@ function updateAreaDropdown() {
 
 // Event listener saat DOM selesai dimuat
 document.addEventListener("DOMContentLoaded", function () {
-  // Listener perubahan Lantai & Zone
-  document.getElementById("selectFloor")?.addEventListener("change", updateAreaDropdown);
-  document.getElementById("selectZone")?.addEventListener("change", updateAreaDropdown);
+  const areaSelect = document.getElementById("selectArea");
+  
+  if (areaSelect) {
+    areaSelect.addEventListener("change", function () {
+      const selectedOption = this.options[this.selectedIndex];
+      const autoCategory = selectedOption.getAttribute("data-category");
+      const catSelect = document.getElementById("chkCategory");
 
-  // Listener saat Detail Area dipilih -> Otomatis set Kategori & render checklist
-  document.getElementById("selectArea")?.addEventListener("change", function () {
-    const selectedOption = this.options[this.selectedIndex];
-    const autoCategory = selectedOption.getAttribute("data-category");
-    const catSelect = document.getElementById("chkCategory");
-
-    if (autoCategory && catSelect) {
-      catSelect.value = autoCategory;
-      if (typeof loadChecklistItems === 'function') {
-        loadChecklistItems();
+      if (autoCategory && catSelect) {
+        catSelect.value = autoCategory;
+        if (typeof loadChecklistItems === 'function') {
+          loadChecklistItems();
+        }
       }
-    }
-  });
+    });
+  }
 });
 
   const CHECKLIST_PRESETS = {

@@ -579,7 +579,7 @@
     </div>
   </div>
 
-  <!-- CUKUP 1 DROPDOWN KATEGORI AREA INI SAJA -->
+  <!-- KATEGORI AREA (CUKUP SATU SAJA) -->
   <div class="mb-2">
     <label class="form-label small fw-bold">Kategori Area</label>
     <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" disabled required>
@@ -590,7 +590,7 @@
   <!-- DETAIL NAMA AREA / TENANT -->
   <div class="mb-3">
     <label class="form-label small fw-bold">Detail Nama Area/Tenant</label>
-    <input type="text" id="chkAreaDetail" class="form-control" placeholder="Contoh: Toilet Utama Dekat Atrium A">
+    <input type="text" id="chkLocationDetail" class="form-control" placeholder="Contoh: Toilet Utama Dekat Atrium A">
   </div>
 
   <!-- DAFTAR ITEM PEMERIKSAAN -->
@@ -601,39 +601,6 @@
 
   <button type="submit" class="btn btn-success w-100 mt-3" id="btnSubmitChecklist">Simpan Hasil Inspeksi</button>
 </form>
-
-<!-- KATEGORI AREA (AKAN OTOMATIS TERPILIH SAAT DETAIL AREA DIPILIH) -->
-<div class="mb-2">
-  <label class="form-label small fw-bold">Kategori Area</label>
-  <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
-    <option value="">-- Pilih Kategori Area --</option>
-    <option value="Toilet Customer">Toilet Customer Public</option>
-    <option value="Toilet Staff">Toilet Staff</option>
-    <option value="Toilet Priority / Difabel">Toilet Priority / Difabel</option>
-    <option value="Toilet Family">Toilet Family</option>
-    <option value="Nursery / Laktasi Room">Nursery / Laktasi Room</option>
-    <option value="Toilet Musala & Wudhu">Toilet Musala & Wudhu</option>
-    <option value="Janitor & Service Area">Janitor & Service Area</option>
-    <option value="Public Corridor & Koridor Utama">Public Corridor & Koridor Utama</option>
-    <option value="Atrium & Event Area (Public Space)">Atrium & Event Area (Public Space)</option>
-    <option value="Service Corridor & Loading Area">Service Corridor & Loading Area (Backside)</option>
-    <option value="Fasad Gedung">Fasad Gedung & Drop-off Lobby</option>
-    <option value="Rooftop & Struktur Gedung Outer">Rooftop & Struktur Gedung Outer</option>
-    <option value="Management Office (MO) Area">Management Office (MO) Area</option>
-  </select>
-</div>
-
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Detail Nama Area/Tenant</label>
-        <input type="text" id="chkLocationDetail" class="form-control" placeholder="Contoh: Toilet Utama Dekat Atrium A" required>
-      </div>
-
-      <h6 class="mt-3 mb-2 text-primary fw-bold">Daftar Item Pemeriksaan:</h6>
-      <div id="checklistItemsContainer"></div>
-
-      <button type="submit" id="btnSubmitChecklist" class="btn btn-success w-100 mt-3">Simpan Hasil Inspeksi</button>
-    </form>
-  </div>
 
   <!-- 2. CREATE REPORT FORM (DIRECT) -->
   <div id="createTab" class="tab-pane fade card p-3 shadow-sm">

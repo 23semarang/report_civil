@@ -948,7 +948,6 @@
   const container = document.getElementById("viewMapContainer");
   if (!container) return;
 
-  // Pastikan CSS transition dimatikan agar tidak bentrok dengan JS Panzoom
   container.style.transition = "none";
   container.style.touchAction = "none";
 
@@ -957,24 +956,21 @@
   }
 
   if (typeof Panzoom !== 'undefined') {
-    // Inisialisasi dengan opsi animasi transisi bawaan
     window.pzView = Panzoom(container, {
       maxScale: 5,
       minScale: 1,
       contain: 'outside',
-      startScale: 1,
-      animate: true,       // Aktifkan transisi animasi
-      duration: 250,       // Durasi transisi (250ms / 0.25 detik)
-      easing: 'ease-in-out' // Efek pergerakan mulus
+      startScale: 1
     });
 
     container.parentElement.addEventListener('wheel', window.pzView.zoomWithWheel);
 
-    // Tetap jaga ukuran pin presisi saat di-zoom
+    // KUNCI UTAMA: Bikin ukuran pin tetap konstan saat container di-zoom
     container.addEventListener('panzoomchange', (event) => {
       const scale = event.detail.scale;
       const viewPin = document.getElementById("viewMapPin");
       if (viewPin) {
+        // Balikkan skala pin (1 / scale) agar ukurannya tidak membesar
         viewPin.style.transform = `translate(-50%, -50%) scale(${1 / scale})`;
       }
     });
@@ -1050,58 +1046,17 @@
 // ==========================================
 // KODE DENAH INTERAKTIF LAPOR BOCOR
 // ==========================================
-// ==========================================
-// KODE DENAH INTERAKTIF LAPOR BOCOR (FIX TOTAL)
-// ==========================================
 let pzBocor = null;
 let bocorMarkingX = null;
 let bocorMarkingY = null;
 
-function initBocorPanzoom() {
-  const container = document.getElementById("bocorMapContainer");
-  if (!container || typeof Panzoom === 'undefined') return;
-
-  // Hapus instance lama biar ga bentrok/stuck
-  if (pzBocor && typeof pzBocor.destroy === 'function') {
-    pzBocor.destroy();
-    pzBocor = null;
-  }
-
-  container.style.transition = "none";
-  container.style.touchAction = "none";
-
-  // Inisialisasi Panzoom bawaan
-  pzBocor = Panzoom(container, {
-    maxScale: 5,
-    minScale: 1,
-    contain: 'outside',
-    animate: true,
-    duration: 200
-  });
-
-  const wrapper = document.getElementById("bocorMapWrapper") || container.parentElement;
-  if (wrapper) {
-    wrapper.removeEventListener('wheel', pzBocor.zoomWithWheel);
-    wrapper.addEventListener('wheel', pzBocor.zoomWithWheel);
-  }
-
-  // Event sync posisi & skala pin pas di-zoom / di-drag
-  container.removeEventListener('panzoomchange', updateBocorPinPosition);
-  container.addEventListener('panzoomchange', updateBocorPinPosition);
-}
-
 function updateBocorFloorMap() {
-  const floorEl = document.getElementById("bocorFloor");
-  if (!floorEl) return;
-  
-  const floor = floorEl.value;
+  const floor = document.getElementById("bocorFloor").value;
   const mapImg = document.getElementById("bocorMapImage");
-
   if (mapImg && typeof FLOOR_MAPS !== 'undefined') {
     mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
     mapImg.onload = () => {
-      initBocorPanzoom();
-      if (pzBocor) pzBocor.reset({ animate: true, duration: 200 });
+      if (pzBocor) pzBocor.reset();
       updateBocorPinPosition();
     };
   }
@@ -1109,7 +1064,7 @@ function updateBocorFloorMap() {
 }
 
 function resetBocorMapAndPin() {
-  if (pzBocor) pzBocor.reset({ animate: true, duration: 200 });
+  if (pzBocor) pzBocor.reset();
   bocorMarkingX = null;
   bocorMarkingY = null;
   const pin = document.getElementById("bocorMapPin");
@@ -1125,77 +1080,138 @@ function updateBocorPinPosition() {
   const pin = document.getElementById("bocorMapPin");
   if (!bocorMarkingX || !bocorMarkingY || !pin || pin.classList.contains("d-none")) return;
   
+  // Ambil skala zoom saat ini
   const scale = pzBocor ? pzBocor.getScale() : 1;
-  const invScale = 1 / scale;
+  const invScale = 1 / scale; // Kebalikan skala agar ukuran pixel tetap sama
   
   pin.style.left = bocorMarkingX + "%";
   pin.style.top = bocorMarkingY + "%";
   pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
 }
 
-// FUNGSI TOMBOL ZOOM (+ / - / RESET) ONCLICK
-function zoomInBocor() {
-  if (pzBocor) pzBocor.zoomIn({ animate: true, duration: 200 });
-}
-
-function zoomOutBocor() {
-  if (pzBocor) pzBocor.zoomOut({ animate: true, duration: 200 });
-}
-
-// BACA KLIK PIN PRESISI DARI GAMBAR DENAH
-let startBocorX = 0, startBocorY = 0;
-document.addEventListener("DOMContentLoaded", function () {
-  const bocorMapImg = document.getElementById("bocorMapImage");
-
-  if (bocorMapImg) {
-    bocorMapImg.addEventListener('pointerdown', (e) => { 
-      startBocorX = e.clientX; 
-      startBocorY = e.clientY; 
+document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function () {
+  updateBocorFloorMap();
+  const container = document.getElementById("bocorMapContainer");
+  const wrapper = document.getElementById("bocorMapWrapper");
+  
+  if (container && !pzBocor && typeof Panzoom !== 'undefined') {
+    // 1. Inisialisasi Panzoom pada container
+    pzBocor = Panzoom(container, {
+      maxScale: 5,
+      minScale: 1,
+      contain: 'outside'
     });
 
-    bocorMapImg.addEventListener('pointerup', (e) => {
-      const diffX = Math.abs(e.clientX - startBocorX);
-      const diffY = Math.abs(e.clientY - startBocorY);
+    // 2. Pasang Listener Zoom & Pan TEPAT pada elemen container
+    if (wrapper) {
+      wrapper.addEventListener('wheel', pzBocor.zoomWithWheel);
+    }
+    
+    // Kunci skala pin saat zoom in/out dan pan/geser
+    container.addEventListener('panzoomchange', updateBocorPinPosition);
+    container.addEventListener('panzoomzoom', updateBocorPinPosition);
+    container.addEventListener('panzoompan', updateBocorPinPosition);
 
-      // Hanya jalan kalau KLIK MURNI (< 6px, bukan pas lagi ngedrag/pan denah)
-      if (diffX < 6 && diffY < 6) {
-        const rect = bocorMapImg.getBoundingClientRect();
+    // 3. Listener Klik Marking Pin Bocor
+    container.addEventListener('click', function (e) {
+      const img = document.getElementById("bocorMapImage");
+      if (!img) return;
 
+      const rect = img.getBoundingClientRect();
+
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      if (clickX < 0 || clickX > rect.width || clickY < 0 || clickY > rect.height) return;
+
+      bocorMarkingX = (clickX / rect.width) * 100;
+      bocorMarkingY = (clickY / rect.height) * 100;
+
+      const pin = document.getElementById("bocorMapPin");
+      if (pin) {
+        // Pastikan class pin biru aktif
+        pin.className = "map-pin map-pin-water";
+        updateBocorPinPosition();
+      }
+
+      const status = document.getElementById("bocorMapStatus");
+      if (status) {
+        status.innerText = `✓ Titik lokasi marked (${bocorMarkingX.toFixed(1)}%, ${bocorMarkingY.toFixed(1)}%)`;
+        status.className = "text-success small mt-1 d-block fw-bold";
+      }
+    });
+  }
+});
+  
+ // 1. KUNCI POSISI PIN DENGAN SKALA KEBALIKAN (BIAR TIDAK MEMBESAR DAN PRESISI)
+  function updatePinPosition() {
+    const pin = document.getElementById("mapPin");
+    if (!markedX || !markedY || pin.classList.contains("d-none")) return;
+
+    // Set posisi persentase murni pada denah
+    pin.style.left = markedX + "%";
+    pin.style.top = markedY + "%";
+
+    // Balikkan skala zoom agar ukuran pin tetap 20px dan titik tengahnya pas di kursor
+    const scale = pzCreate ? pzCreate.getScale() : 1;
+    const invScale = 1 / scale;
+    pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
+  }
+
+  function updateViewPinPosition() {
+  const viewPin = document.getElementById("viewMapPin");
+  if (!viewPin) return;
+
+  viewPin.style.left = viewMarkedX + "%";
+  viewPin.style.top = viewMarkedY + "%";
+
+  // Ambil skala Panzoom saat ini (default 1 jika belum zoom)
+  const currentScale = window.pzView ? window.pzView.getScale() : 1;
+  viewPin.style.transform = `translate(-50%, -50%) scale(${1 / currentScale})`;
+}
+
+  // 2. BACA KLIK LANGSUNG DARI ELEMEN GAMBAR (mapImage), BUKAN CONTAINER!
+  let startX = 0, startY = 0;
+  const mapImg = document.getElementById("mapImage");
+
+  if (mapImg) {
+    mapImg.addEventListener('pointerdown', (e) => { 
+      startX = e.clientX; 
+      startY = e.clientY; 
+    });
+
+    mapImg.addEventListener('pointerup', (e) => {
+      const diffX = Math.abs(e.clientX - startX);
+      const diffY = Math.abs(e.clientY - startY);
+
+      // Hanya proses jika klik murni (bukan drag/pan)
+      if (diffX < 8 && diffY < 8) {
+        // Ambil posisi & ukuran visual gambar saat ini di layar
+        const rect = mapImg.getBoundingClientRect();
+
+        // Hitung posisi klik relatif terhadap gambar denah itu sendiri
         const clickX = e.clientX - rect.left;
         const clickY = e.clientY - rect.top;
 
+        // Hitung persentase murni piksel denah
         const xPercent = (clickX / rect.width) * 100;
         const yPercent = (clickY / rect.height) * 100;
 
         if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
-          bocorMarkingX = xPercent.toFixed(2);
-          bocorMarkingY = yPercent.toFixed(2);
+          markedX = xPercent.toFixed(2);
+          markedY = yPercent.toFixed(2);
 
-          const pin = document.getElementById("bocorMapPin");
-          if (pin) {
-            pin.className = "map-pin map-pin-water";
-            pin.classList.remove("d-none");
-            updateBocorPinPosition();
-          }
+          const pin = document.getElementById("mapPin");
+          pin.classList.remove("d-none");
 
-          const status = document.getElementById("bocorMapStatus");
-          if (status) {
-            status.innerText = `✓ Titik lokasi marked (${bocorMarkingX}%, ${bocorMarkingY}%)`;
-            status.className = "text-success small mt-1 d-block fw-bold";
-          }
+          updatePinPosition();
+
+          document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
+          document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";
         }
       }
     });
   }
-
-  // Init otomatis awal
-  initBocorPanzoom();
-});
-
-// Event listener ganti tab
-document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function () {
-  updateBocorFloorMap();
-});
 function loadChecklistItems() {
   const cat = document.getElementById("chkCategory").value;
   const items = CHECKLIST_PRESETS[cat] || [];
@@ -1844,21 +1860,21 @@ async function loadBocorReports() {
   }
 }
   function zoomInMap() {
-  if (window.pzView) {
-    window.pzView.zoomIn({ animate: true, duration: 250 });
-  }
+  const container = document.getElementById("viewMapContainer");
+  if (container) container.style.transition = "none";
+  if (window.pzView) window.pzView.zoomIn();
 }
 
 function zoomOutMap() {
-  if (window.pzView) {
-    window.pzView.zoomOut({ animate: true, duration: 250 });
-  }
+  const container = document.getElementById("viewMapContainer");
+  if (container) container.style.transition = "none";
+  if (window.pzView) window.pzView.zoomOut();
 }
 
 function resetMapZoom() {
-  if (window.pzView) {
-    window.pzView.reset({ animate: true, duration: 250 });
-  }
+  const container = document.getElementById("viewMapContainer");
+  if (container) container.style.transition = "transform 200ms ease-in-out";
+  if (window.pzView) window.pzView.reset();
 }
 
   function getGoogleThumbnailUrl(driveUrl) {

@@ -551,7 +551,7 @@
   
   <!-- 1. TAB CHECKLIST INSPEKSI -->
   <div id="checklistTab" class="tab-pane fade card p-3 shadow-sm">
-    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Inspeksi Rutin Area & Sanitary</h5>
+    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Checklist Civil & Sanitary</h5>
     <form id="checklistForm">
       <div class="row g-2 mb-2">
         <div class="col-6">
@@ -860,66 +860,139 @@
   };
 
   const CHECKLIST_PRESETS = {
-    "Toilet Customer Public": [
-      "Kloset Duduk / Jongkok (Flush & Bidet)",
-      "Urinoir & Flush Sensor",
-      "Kran Wastafel & Sensor Air",
-      "Cermin & Meja Wastafel",
-      "Partisi Cubicle & Handle Pintu",
-      "Lantai HT & Slope Drainage",
-      "Plafon & Exhaust Fan"
-    ],
-    "Toilet Priority / Difabel": [
-      "Kloset Difabel & Flush Button",
-      "Grab Bar (Pegangan Tangan Besi)",
-      "Tombol Emergency Call / Alarm",
-      "Akses Ramp & Pintu Sliding",
-      "Wastafel Rendah & Kran"
-    ],
-    "Nursery / Laktasi Room": [
-      "Baby Changing Station (Meja Popok)",
-      "Kursi Sofa Laktasi",
-      "Wastafel Air Warm/Cold",
-      "Kebersihan Dinding & Kebocoran Plafon"
-    ],
+  "Toilet Customer": [
+    "Kloset Duduk (Flush, Eco Washer & Jet Shower)",
+    "Urinal & Concealed Flush Sensor",
+    "Partisi Urinal (Sekat)",
+    "Wastafel & Keran Sensor Air (Touchless)",
+    "Sifon / Leher Angsa & Fleksibel Wastafel",
+    "Cermin & Meja Wastafel",
+    "Partisi Cubicle, Engsel & Handle Pintu",
+    "Gantungan Baju (Robe Hook)",
+    "Lantai Granit, Smart Drain & Floor Drain",
+    "Dinding Keramik & Dinding Wastafel",
+    "Plafon & Exhaust Fan"
+  ],
+  "Toilet Staff": [
+    "Kloset Duduk (Flush & Eco Washer)",
+    "Urinal & Flush Manual",
+    "Partisi Urinal (Sekat)",
+    "Wastafel & Keran Lever",
+    "Sifon / Leher Angsa & Fleksibel Wastafel",
+    "Cermin & Meja Wastafel",
+    "Partisi Cubicle & Handle Pintu",
+    "Lantai Granit & Floor Drain",
+    "Dinding Keramik & Dinding Wastafel",
+    "Plafon & Exhaust Fan"
+  ],
+  "Toilet Priority / Difabel": [
+    "Kloset Siphonic Flush & Jet Shower Difabel",
+    "Grab Bar L-Shape 45° & Handrail Lavatory",
+    "Wastafel & Keran Manual",
+    "Sifon / Leher Angsa, Pop-Up & Fleksibel Wastafel",
+    "Akses Ramp & Pintu Sliding / Handle",
+    "Lantai Granit & Floor Drain",
+    "Dinding Keramik & Dinding Wastafel",
+    "Plafon & Exhaust Fan"
+  ],
+  "Toilet Family": [
+    "Kloset Duduk & Eco Washer",
+    "Urinal & Sensor Flush",
+    "Wastafel & Keran Sensor (Touchless)",
+    "Baby Changing Station (Meja Popok)",
+    "Wall Toddler Set (Kursi Balita)",
+    "Lantai Granit & Smart Drain / Floor Drain",
+    "Dinding Keramik & Dinding Wastafel",
+    "Plafon & Exhaust Fan"
+  ],
+  "Nursery / Laktasi Room": [
+    "Baby Changing Station (Meja Popok)",
+    "Wall Toddler Set (Kursi Balita)",
+    "Wastafel & Keran Single Lever",
+    "Kursi Sofa Laktasi",
+    "Lantai Granit & Smart Drain / Floor Drain",
+    "Dinding Keramik & Dinding Wastafel",
+    "Plafon & Exhaust Fan"
+  ],
+  "Toilet Musala & Wudhu": [
+    "Kloset Siphonic Flush & Jet Shower Difabel",
+    "Sifon / Leher Angsa, Pop-Up & Fleksibel Wastafel",
+    "Keran Wudhu (Lever Handle Tap)",
+    "Floor Drain & Drainase Area Wudhu",
+    "Gantungan Baju (Robe Hook)",
+    "Lantai Granit & Floor Drain",
+    "Dinding Keramik & Dinding Wastafel",
+    "Plafon & Exhaust Fan"
+  ],
+  "Janitor & Service Area": [
+    "Janitor Sink & Keran Tembok (Lever Handle)",
+    "Floor Drain Janitor",
+    "Lantai Granit & Floor Drain",
+    "Dinding Keramik & Dinding",
+    "Plafon & Exhaust Fan"
+  ],
     "Public Corridor & Koridor Utama": [
       "Lantai HT / Granit Public (Nat & Popping)",
       "Glass Railing Void Utama & Klem Stainless",
-      "Plat Bordes & Comb Escalator",
       "Plafon Gypsum Public & Manhole Access",
-      "Pintu Emergency & Exit Signage"
+      "Pintu Emergency & Exit Signage",
+      "Kolom dan Dinding"
     ],
     "Atrium & Event Area (Public Space)": [
-      "Lantai Atrium (Alun-Alun / Dauntown)",
-      "Floor Outlet Box / Stopkontak Lantai Atrium",
+      "Lantai Atrium",
       "Kondisi Dinding Void Atrium Outer",
-      "Lampu Highlight High-Ceiling Atrium"
+      "Lampu Highlight High-Ceiling Atrium",
+      "Kolom dan Dinding
     ],
-    "Service Corridor & Loading Area (Backside)": [
-      "Lantai Epoksi / Concrete Floor Service Koridor",
-      "Dinding Service Koridor & Bump Guard Protektor",
+    "Service Corridor & Loading Area": [
+      "Lantai Epoksi Lift Fire",
+      "Dinding Service Koridor & Corner Guard Protektor",
       "Pintu Shaft Utility (Listrik/Plumbing) & Kunci",
-      "Penerangan Koridor Service & Jalur Evakuasi",
       "Loading Dock Ramp & Bumper Pad Loading"
     ],
-    "Fasad Gedung & Drop-off Lobby": [
-      "Canopy Glass / ACP Entrance Lobby",
-      "Panel Cladding GRC / ACP & Sealant Fasad",
+    "Fasad Gedung": [
+      "Panel GRC & Sealant Fasad",
       "Jendela Kaca Outer & Sealant Kaca",
-      "Pintu Kaca Utama Entrance (Floor Hinge / Auto Door)"
+      "Pintu Kaca Utama Entrance (Floor Hinge, Engsel / Auto Door)"
     ],
     "Rooftop & Struktur Gedung Outer": [
       "Waterproofing Dak Beton (Retak & Ponding)",
       "Roof Drain & Scupper Drainage (Sumbatan)",
       "Dudukan Rangka Baja Equipment & Anti-Karat",
-      "Dinding Parapet Beton & Guardrail Proteksi"
+      "Dinding Parapet Beton"
     ],
     "Management Office (MO) Area": [
-      "Lantai Carpet / Vinyl / HT MO",
-      "Partisi Dinding / Gypsum / Glass Partition MO",
-      "Plafond Gypsum & Akses Lampu MO",
+      "Lantai Granit MO",
+      "Dinding MO",
+      "Plafond Gypsum & Manhole MO",
       "Pintu Utama Office, Handle & Lockset",
       "Area Toilet Internal MO & Pantry MO"
+    ]
+    "Gedung Parkir Motor": [
+      "Lantai Paving / Beton",
+      "Struktur Baja, Zinkchromate",
+      "Car Stopper",
+      "Ramp",
+      "Floor Drain, Gutter, Cover",
+      "Dinding Parapet / Railing"
+    ]
+    "Gedung Parkir Mobil": [
+      "Lantai Paving / Beton / Kanstin",
+      "Cover U Ditch",
+      "Struktur Baja, Zinkchromate",
+      "Car Stopper",
+      "Ramp",
+      "Floor Drain, Gutter, Cover FD",
+      "Dinding Parapet / Railing"
+    ]
+    "Area Parkir": [
+      "Paving",
+      "Cover U Ditch",
+      "Pedestal Lampu PJU",
+      "Car Stopper",
+      "Kanstin dan Island Taman",
+      "Floor Drain, Gutter, Cover FD",
+      "Dinding Parapet / Railing"
     ]
   };
 

@@ -556,7 +556,7 @@
       <div class="row g-2 mb-2">
   <div class="col-6">
     <label class="form-label small fw-bold">Lantai</label>
-    <select id="selectFloor" class="form-select" onchange="updateAreaDropdown()">
+    <select id="selectFloor" class="form-select" onchange="updateCategoryOptions()">
       <option value="">-- Lantai --</option>
       <option value="LG">LG</option>
       <option value="L1">L1</option>
@@ -567,7 +567,7 @@
   </div>
   <div class="col-6">
     <label class="form-label small fw-bold">Zone</label>
-    <select id="selectZone" class="form-select" onchange="updateAreaDropdown()">
+    <select id="selectZone" class="form-select" onchange="updateCategoryOptions()">
       <option value="">-- Zone --</option>
       <option value="All Zone">All Zone</option>
       <option value="Zone A">Zone A</option>
@@ -578,10 +578,10 @@
   </div>
 </div>
 
-<!-- DROPDOWN DETAIL AREA YANG DIFILTER LANTAI & ZONE -->
+<!-- KATEGORI AREA (TERFILTER OTOMATIS) -->
 <div class="mb-2">
-  <label class="form-label small fw-bold">Detail Nama Area</label>
-  <select id="selectArea" class="form-select" disabled>
+  <label class="form-label small fw-bold">Kategori Area</label>
+  <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" disabled required>
     <option value="">-- Pilih Lantai & Zone Terlebih Dahulu --</option>
   </select>
 </div>
@@ -1059,27 +1059,39 @@ const AREA_BY_FLOOR_ZONE = {
 // ==========================================
 // 2. FUNGSI UPDATE DROPDOWN AREA & AUTO-CATEGORY
 // ==========================================
-function updateAreaDropdown() {
+function updateCategoryOptions() {
   const floor = document.getElementById("selectFloor")?.value;
   const zone = document.getElementById("selectZone")?.value;
-  const areaSelect = document.getElementById("selectArea");
+  const catSelect = document.getElementById("chkCategory");
 
-  if (!areaSelect) return;
+  if (!catSelect) return;
 
-  areaSelect.innerHTML = '<option value="">-- Pilih Detail Area --</option>';
+  // Kosongkan opsi kategori
+  catSelect.innerHTML = '<option value="">-- Pilih Kategori Area --</option>';
 
   if (floor && zone && AREA_BY_FLOOR_ZONE[floor] && AREA_BY_FLOOR_ZONE[floor][zone]) {
-    areaSelect.disabled = false;
-    AREA_BY_FLOOR_ZONE[floor][zone].forEach(item => {
+    const areaList = AREA_BY_FLOOR_ZONE[floor][zone];
+    
+    // Ambil daftar kategori unik yang ada di Lantai & Zone ini
+    const availableCategories = [...new Set(areaList.map(item => item.category))];
+
+    // Masukkan kategori yang relevan saja ke dropdown
+    availableCategories.forEach(catKey => {
       const opt = document.createElement("option");
-      opt.value = item.name;
-      opt.setAttribute("data-category", item.category);
-      opt.textContent = item.name;
-      areaSelect.appendChild(opt);
+      opt.value = catKey;
+      // Ambil teks label dari CHECKLIST_PRESETS atau nama key-nya
+      opt.textContent = catKey; 
+      catSelect.appendChild(opt);
     });
+
+    catSelect.disabled = false;
   } else {
-    areaSelect.disabled = true;
+    catSelect.disabled = true;
   }
+
+  // Reset checklist container saat lantai/zone berubah
+  const container = document.getElementById("checklistItemsContainer");
+  if (container) container.innerHTML = '<div class="text-muted small italic p-2">Pilih kategori area untuk melihat item pemeriksaan.</div>';
 }
 
 // Event listener saat DOM selesai dimuat

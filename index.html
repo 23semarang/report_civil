@@ -528,10 +528,14 @@
           </button>
         </li>
         <li class="nav-item">
-          <button class="nav-link w-100 text-start" id="tab-direct" data-bs-toggle="pill" data-bs-target="#createTab" data-bs-dismiss="offcanvas">
-            <i class="bi bi-plus-circle-fill me-2 text-primary"></i> Lapor Direct
-          </button>
-        </li>
+  <button class="nav-link w-100 text-start disabled text-muted opacity-50" 
+          id="tab-direct" 
+          type="button"
+          disabled
+          style="pointer-events: none; cursor: not-allowed;">
+    <i class="bi bi-plus-circle-fill me-2 text-muted"></i> Lapor Direct
+  </button>
+</li>
         <li class="nav-item">
           <button class="nav-link w-100 text-start text-warning" id="tab-bocor" data-bs-toggle="pill" data-bs-target="#bocorTab" data-bs-dismiss="offcanvas">
             <i class="bi bi-droplet-fill me-2 text-warning"></i> Lapor Kebocoran Air

@@ -553,38 +553,54 @@
   <div id="checklistTab" class="tab-pane fade card p-3 shadow-sm">
     <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Checklist Civil & Sanitary</h5>
     <form id="checklistForm">
-      <div class="row g-2 mb-2">
-  <div class="col-6">
-    <label class="form-label small fw-bold">Lantai</label>
-    <select id="selectFloor" class="form-select" onchange="updateCategoryOptions()">
-      <option value="">-- Lantai --</option>
-      <option value="LG">LG</option>
-      <option value="L1">L1</option>
-      <option value="L2">L2</option>
-      <option value="L3">L3</option>
-      <option value="Rooftop">Rooftop</option>
-    </select>
+  <!-- DROPDOWN LANTAI & ZONE -->
+  <div class="row g-2 mb-2">
+    <div class="col-6">
+      <label class="form-label small fw-bold">Lantai</label>
+      <select id="selectFloor" class="form-select" onchange="updateCategoryOptions()">
+        <option value="">-- Lantai --</option>
+        <option value="LG">LG</option>
+        <option value="L1">L1</option>
+        <option value="L2">L2</option>
+        <option value="L3">L3</option>
+        <option value="Rooftop">Rooftop</option>
+      </select>
+    </div>
+    <div class="col-6">
+      <label class="form-label small fw-bold">Zone</label>
+      <select id="selectZone" class="form-select" onchange="updateCategoryOptions()">
+        <option value="">-- Zone --</option>
+        <option value="All Zone">All Zone</option>
+        <option value="Zone A">Zone A</option>
+        <option value="Zone B">Zone B</option>
+        <option value="Zone C">Zone C</option>
+        <option value="Zone D">Zone D</option>
+      </select>
+    </div>
   </div>
-  <div class="col-6">
-    <label class="form-label small fw-bold">Zone</label>
-    <select id="selectZone" class="form-select" onchange="updateCategoryOptions()">
-      <option value="">-- Zone --</option>
-      <option value="All Zone">All Zone</option>
-      <option value="Zone A">Zone A</option>
-      <option value="Zone B">Zone B</option>
-      <option value="Zone C">Zone C</option>
-      <option value="Zone D">Zone D</option>
-    </select>
-  </div>
-</div>
 
-<!-- KATEGORI AREA (TERFILTER OTOMATIS) -->
-<div class="mb-2">
-  <label class="form-label small fw-bold">Kategori Area</label>
-  <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" disabled required>
-    <option value="">-- Pilih Lantai & Zone Terlebih Dahulu --</option>
-  </select>
-</div>
+  <!-- CUKUP 1 DROPDOWN KATEGORI AREA INI SAJA -->
+  <div class="mb-2">
+    <label class="form-label small fw-bold">Kategori Area</label>
+    <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" disabled required>
+      <option value="">-- Pilih Lantai & Zone Terlebih Dahulu --</option>
+    </select>
+  </div>
+
+  <!-- DETAIL NAMA AREA / TENANT -->
+  <div class="mb-3">
+    <label class="form-label small fw-bold">Detail Nama Area/Tenant</label>
+    <input type="text" id="chkAreaDetail" class="form-control" placeholder="Contoh: Toilet Utama Dekat Atrium A">
+  </div>
+
+  <!-- DAFTAR ITEM PEMERIKSAAN -->
+  <h6 class="mt-3 mb-2 text-primary fw-bold">Daftar Item Pemeriksaan:</h6>
+  <div id="checklistItemsContainer">
+    <div class="text-muted small italic p-2">Pilih lantai, zone, dan kategori area untuk melihat item pemeriksaan.</div>
+  </div>
+
+  <button type="submit" class="btn btn-success w-100 mt-3" id="btnSubmitChecklist">Simpan Hasil Inspeksi</button>
+</form>
 
 <!-- KATEGORI AREA (AKAN OTOMATIS TERPILIH SAAT DETAIL AREA DIPILIH) -->
 <div class="mb-2">

@@ -18,7 +18,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
 
   <style>
-    /* Style Dasar Tombol Debit Air (Default Abu-Abu) */
+    /* Style Tombol Debit Air */
 .btn-debit-info, .btn-debit-warning, .btn-debit-danger {
   color: #6c757d !important;
   border: 1px solid #dee2e6 !important;
@@ -27,13 +27,11 @@
   transition: all 0.2s ease-in-out;
 }
 
-/* Saat Hover (Sebelum Diklik) */
 .btn-debit-info:hover, .btn-debit-warning:hover, .btn-debit-danger:hover {
   background-color: #e9ecef !important;
   color: #495057 !important;
 }
 
-/* Saat KESELECT (Radio Checked) -> Berubah Warna Spesifik */
 .btn-check:checked + .btn-debit-info {
   background-color: #0dcaf0 !important;
   border-color: #0dcaf0 !important;
@@ -53,6 +51,13 @@
   border-color: #dc3545 !important;
   color: #fff !important;
   font-weight: bold;
+}
+
+/* KODE TAMBAHAN UNTUK MEMASTIKAN DENAH BISA DI-ZOOM & DI-DRAG KEMBALI */
+#mapContainer, #bocorMapContainer, .map-wrapper, #mapImage, .svg-map-container {
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
 }
     /* STICKY HEADER DENGAN TRANSISI HIDE NAMA AKUN */
 .sticky-header {
@@ -2111,7 +2116,21 @@ function openQuickBocorForm() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-  // FUNGSI UNTUK MEMAKSA DENAH KELOAD DENGAN INSTAN
+  // FUNGSI RE-INISIALISASI TOUCH & ZOOM DENAH
+function reinitMapZoom() {
+  const mapImages = document.querySelectorAll("#mapImage, #bocorMapImage, .floor-plan-img, img[src*='denah'], img[src*='floor']");
+  mapImages.forEach(img => {
+    img.style.touchAction = "none";
+    img.style.userSelect = "none";
+    img.style.webkitUserDrag = "none";
+  });
+
+  if (window.panzoomInstance && typeof window.panzoomInstance.reset === 'function') {
+    window.panzoomInstance.reset();
+  }
+}
+
+// FUNGSI UNTUK MEMAKSA DENAH KELOAD DENGAN INSTAN
 function triggerMapReload() {
   // Pemicu untuk Form Lapor Direct
   const directFloorSelect = document.getElementById("directFloor") || document.querySelector("#directFormSelectFloor") || document.getElementById("floor");
@@ -2124,6 +2143,9 @@ function triggerMapReload() {
   if (bocorFloorSelect) {
     bocorFloorSelect.dispatchEvent(new Event('change'));
   }
+
+  // Panggil re-inisialisasi zoom setelah event change dipicu
+  setTimeout(reinitMapZoom, 150);
 }
 
 // JALANKAN OTOMATIS TIAP KALI PENGGUNA PINDAH TAB / MENU

@@ -871,11 +871,173 @@
 // 1. DATA MAPPING AREA PER LANTAI & ZONE
 // ==========================================
 const AREA_BY_FLOOR_ZONE = {
-  "LG": { ... },
-  "L1": { ... },
-  "L2": { ... },
-  "L3": { ... },
-  "Rooftop": { ... }
+  "LG": {
+    "All Zone": [
+      { name: "Atrium", category: "Atrium & Event Area (Public Space)" }
+    ],
+    "Zone A": [
+      { name: "Service Area", category: "Service Corridor & Loading Area" },
+      { name: "Tangga Darurat", category: "Public Corridor & Koridor Utama" },
+      { name: "Lift Service", category: "Service Corridor & Loading Area" },
+      { name: "Loading Dock", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Service", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Publik", category: "Public Corridor & Koridor Utama" }
+    ],
+    "Zone B": [
+      { name: "Service Area", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Service", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Publik", category: "Public Corridor & Koridor Utama" },
+      { name: "Tangga Darurat", category: "Public Corridor & Koridor Utama" },
+      { name: "Lobby", category: "Fasad Gedung" }
+    ],
+    "Zone C": [
+      { name: "Lift Customer", category: "Public Corridor & Koridor Utama" },
+      { name: "Toilet Customer", category: "Toilet Customer" },
+      { name: "Toilet Priority", category: "Toilet Priority / Difabel" },
+      { name: "Janitor", category: "Janitor & Service Area" },
+      { name: "Management Office", category: "Management Office (MO) Area" },
+      { name: "Tangga Darurat", category: "Public Corridor & Koridor Utama" },
+      { name: "Lobby", category: "Fasad Gedung" },
+      { name: "Koridor Publik", category: "Public Corridor & Koridor Utama" }
+    ],
+    "Zone D": [
+      { name: "Mushola", category: "Toilet Musala & Wudhu" },
+      { name: "Toilet Customer", category: "Toilet Customer" },
+      { name: "Service Area", category: "Service Corridor & Loading Area" },
+      { name: "Lobby", category: "Fasad Gedung" },
+      { name: "Toilet Priority", category: "Toilet Priority / Difabel" },
+      { name: "Janitor", category: "Janitor & Service Area" },
+      { name: "Koridor Publik", category: "Public Corridor & Koridor Utama" }
+    ]
+  },
+  "L1": {
+    "All Zone": [
+      { name: "Forest", category: "Atrium & Event Area (Public Space)" },
+      { name: "Pintu Masuk Forest", category: "Fasad Gedung" },
+      { name: "Tribun", category: "Atrium & Event Area (Public Space)" },
+      { name: "Kolam", category: "Atrium & Event Area (Public Space)" },
+      { name: "Wooden Deck", category: "Atrium & Event Area (Public Space)" },
+      { name: "Lantai Batu Alam", category: "Atrium & Event Area (Public Space)" }
+    ],
+    "Zone A": [
+      { name: "Tangga Darurat", category: "Public Corridor & Koridor Utama" },
+      { name: "Loading Event", category: "Service Corridor & Loading Area" },
+      { name: "Service Area", category: "Service Corridor & Loading Area" },
+      { name: "Lift Service", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Service", category: "Service Corridor & Loading Area" },
+      { name: "Toilet Customer", category: "Toilet Customer" },
+      { name: "Toilet Priority", category: "Toilet Priority / Difabel" },
+      { name: "Toilet Family", category: "Toilet Family" },
+      { name: "Janitor", category: "Janitor & Service Area" },
+      { name: "Atrium", category: "Atrium & Event Area (Public Space)" },
+      { name: "Koridor Publik", category: "Public Corridor & Koridor Utama" }
+    ],
+    "Zone B": [
+      { name: "Service Area", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Service", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Publik", category: "Public Corridor & Koridor Utama" }
+    ],
+    "Zone C": [
+      { name: "Toilet Staff", category: "Toilet Staff" },
+      { name: "Janitor", category: "Janitor & Service Area" },
+      { name: "Koridor Service", category: "Service Corridor & Loading Area" },
+      { name: "Tangga Darurat", category: "Public Corridor & Koridor Utama" },
+      { name: "Lift Customer", category: "Public Corridor & Koridor Utama" },
+      { name: "Smoking Area", category: "Public Corridor & Koridor Utama" }
+    ],
+    "Zone D": [
+      { name: "Tangga Darurat", category: "Public Corridor & Koridor Utama" },
+      { name: "Toilet Customer", category: "Toilet Customer" },
+      { name: "Toilet Priority", category: "Toilet Priority / Difabel" },
+      { name: "Service Area", category: "Service Corridor & Loading Area" },
+      { name: "Janitor", category: "Janitor & Service Area" }
+    ]
+  },
+  "L2": {
+    "Zone A": [
+      { name: "Tangga Darurat", category: "Public Corridor & Koridor Utama" },
+      { name: "Service Area", category: "Service Corridor & Loading Area" },
+      { name: "Lift Service", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Service", category: "Service Corridor & Loading Area" },
+      { name: "Toilet Customer", category: "Toilet Customer" },
+      { name: "Toilet Priority", category: "Toilet Priority / Difabel" },
+      { name: "Toilet Family", category: "Toilet Family" },
+      { name: "Janitor", category: "Janitor & Service Area" },
+      { name: "Koridor Publik", category: "Public Corridor & Koridor Utama" }
+    ],
+    "Zone B": [
+      { name: "Service Area", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Service", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Publik", category: "Public Corridor & Koridor Utama" },
+      { name: "Lobby", category: "Fasad Gedung" }
+    ],
+    "Zone C": [
+      { name: "Mushola", category: "Toilet Musala & Wudhu" },
+      { name: "Toilet Staff", category: "Toilet Staff" },
+      { name: "Janitor", category: "Janitor & Service Area" },
+      { name: "Koridor Service", category: "Service Corridor & Loading Area" },
+      { name: "Tangga Darurat", category: "Public Corridor & Koridor Utama" },
+      { name: "Lift Customer", category: "Public Corridor & Koridor Utama" },
+      { name: "Smoking Area", category: "Public Corridor & Koridor Utama" }
+    ],
+    "Zone D": [
+      { name: "Tangga Darurat", category: "Public Corridor & Koridor Utama" },
+      { name: "Toilet Customer", category: "Toilet Customer" },
+      { name: "Toilet Priority", category: "Toilet Priority / Difabel" },
+      { name: "Service Area", category: "Service Corridor & Loading Area" },
+      { name: "Janitor", category: "Janitor & Service Area" }
+    ]
+  },
+  "L3": {
+    "Zone A": [
+      { name: "Tangga Darurat", category: "Public Corridor & Koridor Utama" },
+      { name: "Service Area", category: "Service Corridor & Loading Area" },
+      { name: "Lift Service", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Service", category: "Service Corridor & Loading Area" },
+      { name: "Toilet Customer", category: "Toilet Customer" },
+      { name: "Toilet Priority", category: "Toilet Priority / Difabel" },
+      { name: "Toilet Family", category: "Toilet Family" },
+      { name: "Janitor", category: "Janitor & Service Area" },
+      { name: "Koridor Publik", category: "Public Corridor & Koridor Utama" }
+    ],
+    "Zone B": [
+      { name: "Service Area", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Service", category: "Service Corridor & Loading Area" },
+      { name: "Koridor Publik", category: "Public Corridor & Koridor Utama" }
+    ],
+    "Zone C": [
+      { name: "Toilet Staff", category: "Toilet Staff" },
+      { name: "Janitor", category: "Janitor & Service Area" },
+      { name: "Koridor Service", category: "Service Corridor & Loading Area" },
+      { name: "Tangga Darurat", category: "Public Corridor & Koridor Utama" },
+      { name: "Lift Customer", category: "Public Corridor & Koridor Utama" },
+      { name: "Smoking Area", category: "Public Corridor & Koridor Utama" }
+    ],
+    "Zone D": [
+      { name: "Tangga Darurat", category: "Public Corridor & Koridor Utama" },
+      { name: "Toilet Customer", category: "Toilet Customer" },
+      { name: "Toilet Priority", category: "Toilet Priority / Difabel" },
+      { name: "Service Area", category: "Service Corridor & Loading Area" },
+      { name: "Janitor", category: "Janitor & Service Area" }
+    ]
+  },
+  "Rooftop": {
+    "Zone A": [
+      { name: "Mushola", category: "Toilet Musala & Wudhu" },
+      { name: "Lift Service", category: "Service Corridor & Loading Area" },
+      { name: "Toilet Mushola", category: "Toilet Musala & Wudhu" },
+      { name: "Wudhu", category: "Toilet Musala & Wudhu" }
+    ],
+    "Zone B": [
+      { name: "Dak Beton", category: "Rooftop & Struktur Gedung Outer" }
+    ],
+    "Zone C": [
+      { name: "Dak Beton", category: "Rooftop & Struktur Gedung Outer" }
+    ],
+    "Zone D": [
+      { name: "Dak Beton", category: "Rooftop & Struktur Gedung Outer" }
+    ]
+  }
 };
 
 // ==========================================

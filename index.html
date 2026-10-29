@@ -18,6 +18,42 @@
   <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
 
   <style>
+    /* Style Dasar Tombol Debit Air (Default Abu-Abu) */
+.btn-debit-info, .btn-debit-warning, .btn-debit-danger {
+  color: #6c757d !important;
+  border: 1px solid #dee2e6 !important;
+  background-color: #f8f9fa !important;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Saat Hover (Sebelum Diklik) */
+.btn-debit-info:hover, .btn-debit-warning:hover, .btn-debit-danger:hover {
+  background-color: #e9ecef !important;
+  color: #495057 !important;
+}
+
+/* Saat KESELECT (Radio Checked) -> Berubah Warna Spesifik */
+.btn-check:checked + .btn-debit-info {
+  background-color: #0dcaf0 !important;
+  border-color: #0dcaf0 !important;
+  color: #fff !important;
+  font-weight: bold;
+}
+
+.btn-check:checked + .btn-debit-warning {
+  background-color: #ffc107 !important;
+  border-color: #ffc107 !important;
+  color: #212529 !important;
+  font-weight: bold;
+}
+
+.btn-check:checked + .btn-debit-danger {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: #fff !important;
+  font-weight: bold;
+}
     /* STICKY HEADER DENGAN TRANSISI HIDE NAMA AKUN */
 .sticky-header {
   position: sticky;
@@ -654,18 +690,27 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label small fw-bold">Tingkat Keparahan / Debit Air</label>
-        <div class="d-flex gap-2">
-          <input type="radio" class="btn-check" name="debitAir" id="debit1" value="RINGAN" checked>
-          <label class="btn btn-outline-info btn-sm flex-fill" for="debit1"><i class="bi bi-droplet"></i> Tetesan</label>
+  <label class="form-label small fw-bold">Tingkat Keparahan / Debit Air</label>
+  <div class="d-flex gap-2">
+    <!-- OP Tetesan (Cyan bila dipilih) -->
+    <input type="radio" class="btn-check" name="debitAir" id="debit1" value="RINGAN" autocomplete="off">
+    <label class="btn btn-debit-info btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" for="debit1">
+      <i class="bi bi-droplet"></i> <span>Tetesan</span>
+    </label>
 
-          <input type="radio" class="btn-check" name="debitAir" id="debit2" value="SEDANG">
-          <label class="btn btn-outline-warning btn-sm flex-fill" for="debit2"><i class="bi bi-cloud-rain"></i> Merembes</label>
+    <!-- OP Merembes (Kuning bila dipilih) -->
+    <input type="radio" class="btn-check" name="debitAir" id="debit2" value="SEDANG" autocomplete="off">
+    <label class="btn btn-debit-warning btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" for="debit2">
+      <i class="bi bi-cloud-rain"></i> <span>Merembes</span>
+    </label>
 
-          <input type="radio" class="btn-check" name="debitAir" id="debit3" value="DARURAT">
-          <label class="btn btn-outline-danger btn-sm flex-fill" for="debit3"><i class="bi bi-tsunami"></i> Deras</label>
-        </div>
-      </div>
+    <!-- OP Deras (Merah bila dipilih) -->
+    <input type="radio" class="btn-check" name="debitAir" id="debit3" value="DARURAT" autocomplete="off">
+    <label class="btn btn-debit-danger btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" for="debit3">
+      <i class="bi bi-tsunami"></i> <span>Deras</span>
+    </label>
+  </div>
+</div>
 
       <div class="mb-2">
         <label class="form-label small fw-bold">Detail Lokasi Kebocoran</label>

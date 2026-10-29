@@ -282,13 +282,11 @@
       touch-action: none;
       user-select: none;
     }
-    .map-container { 
-      position: relative; 
-      width: 100%; 
-      height: 100%; 
-      cursor: grab; 
-      touch-action: none;
-    }
+    #viewMapContainer, .map-container {
+  transition: none !important; /* Mencegah Panzoom terkunci oleh CSS transition */
+  touch-action: none !important;
+  user-select: none !important;
+}
     .map-image { 
       width: 100%;
       height: 100%;
@@ -947,32 +945,31 @@
   if (currentUser) showApp();
 
   function initPanzoom() {
-    if (mapContainer && !pzCreate) {
-      pzCreate = Panzoom(mapContainer, { 
-        maxScale: 6, 
-        minScale: 1, 
-        contain: 'outside', 
-        cursor: 'grab' 
-      });
+  const container = document.getElementById("viewMapContainer");
+  if (!container) return;
 
-      // LISTEN EVENT ZOOM & WHEEL UNTUK DENAH LAPOR DIRECT
-      mapContainer.addEventListener('panzoomchange', updatePinPosition);
-      document.getElementById('mapWrapper').addEventListener('wheel', pzCreate.zoomWithWheel);
-    }
+  // 1. MATIKAN TRANSITION CSS AGAR ZOOM/DRAG FLUID DAN BISA BERJALAN
+  container.style.transition = "none";
+  container.style.touchAction = "none";
 
-    if (viewMapContainer && !pzView) {
-      pzView = Panzoom(viewMapContainer, { 
-        maxScale: 6, 
-        minScale: 1, 
-        contain: 'inside', 
-        cursor: 'grab' 
-      });
-
-      // LISTEN EVENT ZOOM & WHEEL UNTUK MODAL VIEW DENAH
-      viewMapContainer.addEventListener('panzoomchange', updateViewPinPosition);
-      document.getElementById('viewMapWrapper').addEventListener('wheel', pzView.zoomWithWheel);
-    }
+  // 2. Jika pzView sudah ada, hapus/reset instance lama
+  if (window.pzView && typeof window.pzView.destroy === 'function') {
+    window.pzView.destroy();
   }
+
+  // 3. Inisialisasi Ulang Panzoom pada Container Denah
+  if (typeof Panzoom !== 'undefined') {
+    window.pzView = Panzoom(container, {
+      maxScale: 5,
+      minScale: 1,
+      contain: 'outside',
+      startScale: 1
+    });
+
+    // Aktifkan zoom pakai Scroll Mouse / Touch Pinch
+    container.parentElement.addEventListener('wheel', window.pzView.zoomWithWheel);
+  }
+}
 
   function showAuthCard(cardId) {
     document.getElementById("loginCard").classList.add("d-none");
@@ -1856,17 +1853,22 @@ async function loadBocorReports() {
     if (mapModalEl) new bootstrap.Modal(mapModalEl).show();
   }
 }
-  // Tambahkan 3 fungsi ini di bawah openMapModal
-function zoomInMap() {
-  if (pzView) pzView.zoomIn();
+  function zoomInMap() {
+  const container = document.getElementById("viewMapContainer");
+  if (container) container.style.transition = "none";
+  if (window.pzView) window.pzView.zoomIn();
 }
 
 function zoomOutMap() {
-  if (pzView) pzView.zoomOut();
+  const container = document.getElementById("viewMapContainer");
+  if (container) container.style.transition = "none";
+  if (window.pzView) window.pzView.zoomOut();
 }
 
 function resetMapZoom() {
-  if (pzView) pzView.reset();
+  const container = document.getElementById("viewMapContainer");
+  if (container) container.style.transition = "transform 200ms ease-in-out";
+  if (window.pzView) window.pzView.reset();
 }
 
   function getGoogleThumbnailUrl(driveUrl) {

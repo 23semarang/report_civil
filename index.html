@@ -569,19 +569,28 @@
       </div>
 
       <div class="mb-2">
-        <label class="form-label small fw-bold">Kategori Area</label>
-        <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
-          <option value="Toilet Customer Public">Toilet Customer Public</option>
-          <option value="Toilet Priority / Difabel">Toilet Priority / Difabel</option>
-          <option value="Nursery / Laktasi Room">Nursery / Laktasi Room</option>
-          <option value="Public Corridor & Koridor Utama">Public Corridor & Koridor Utama</option>
-          <option value="Atrium & Event Area (Public Space)">Atrium & Event Area (Public Space)</option>
-          <option value="Service Corridor & Loading Area (Backside)">Service Corridor & Loading Area (Backside)</option>
-          <option value="Fasad Gedung & Drop-off Lobby">Fasad Gedung & Drop-off Lobby</option>
-          <option value="Rooftop & Struktur Gedung Outer">Rooftop & Struktur Gedung Outer</option>
-          <option value="Management Office (MO) Area">Management Office (MO) Area</option>
-        </select>
-      </div>
+  <label class="form-label small fw-bold">Kategori Area</label>
+  <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
+    <option value="">-- Pilih Kategori Area --</option>
+    <!-- Value diselaraskan presisi dengan key CHECKLIST_PRESETS -->
+    <option value="Toilet Customer">Toilet Customer Public</option>
+    <option value="Toilet Staff">Toilet Staff</option>
+    <option value="Toilet Priority / Difabel">Toilet Priority / Difabel</option>
+    <option value="Toilet Family">Toilet Family</option>
+    <option value="Nursery / Laktasi Room">Nursery / Laktasi Room</option>
+    <option value="Toilet Musala & Wudhu">Toilet Musala & Wudhu</option>
+    <option value="Janitor & Service Area">Janitor & Service Area</option>
+    <option value="Public Corridor & Koridor Utama">Public Corridor & Koridor Utama</option>
+    <option value="Atrium & Event Area (Public Space)">Atrium & Event Area (Public Space)</option>
+    <option value="Service Corridor & Loading Area">Service Corridor & Loading Area (Backside)</option>
+    <option value="Fasad Gedung">Fasad Gedung & Drop-off Lobby</option>
+    <option value="Rooftop & Struktur Gedung Outer">Rooftop & Struktur Gedung Outer</option>
+    <option value="Management Office (MO) Area">Management Office (MO) Area</option>
+    <option value="Gedung Parkir Motor">Gedung Parkir Motor</option>
+    <option value="Gedung Parkir Mobil">Gedung Parkir Mobil</option>
+    <option value="Area Parkir">Area Parkir Outdoor</option>
+  </select>
+</div>
 
       <div class="mb-3">
         <label class="form-label small fw-bold">Detail Nama Area/Tenant</label>
@@ -1276,8 +1285,12 @@ function loadChecklistItems() {
   const container = document.getElementById("checklistItemsContainer");
   container.innerHTML = "";
 
+  if (items.length === 0) {
+    container.innerHTML = `<div class="text-muted small italic p-2">Pilih kategori area di atas untuk menampilkan daftar item pemeriksaan.</div>`;
+    return;
+  }
+
   items.forEach((item, idx) => {
-    // Ambil teks item (apabila string langsung atau objek)
     const itemName = typeof item === 'string' ? item : (item.name || item.title || item);
 
     container.innerHTML += `

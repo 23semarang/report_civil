@@ -18,6 +18,47 @@
   <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
 
   <style>
+    /* Style Tombol Debit Air */
+.btn-debit-info, .btn-debit-warning, .btn-debit-danger {
+  color: #6c757d !important;
+  border: 1px solid #dee2e6 !important;
+  background-color: #f8f9fa !important;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-debit-info:hover, .btn-debit-warning:hover, .btn-debit-danger:hover {
+  background-color: #e9ecef !important;
+  color: #495057 !important;
+}
+
+.btn-check:checked + .btn-debit-info {
+  background-color: #0dcaf0 !important;
+  border-color: #0dcaf0 !important;
+  color: #fff !important;
+  font-weight: bold;
+}
+
+.btn-check:checked + .btn-debit-warning {
+  background-color: #ffc107 !important;
+  border-color: #ffc107 !important;
+  color: #212529 !important;
+  font-weight: bold;
+}
+
+.btn-check:checked + .btn-debit-danger {
+  background-color: #dc3545 !important;
+  border-color: #dc3545 !important;
+  color: #fff !important;
+  font-weight: bold;
+}
+
+/* KODE TAMBAHAN UNTUK MEMASTIKAN DENAH BISA DI-ZOOM & DI-DRAG KEMBALI */
+#mapContainer, #bocorMapContainer, .map-wrapper, #mapImage, .svg-map-container {
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-drag: none !important;
+}
     /* STICKY HEADER DENGAN TRANSISI HIDE NAMA AKUN */
 .sticky-header {
   position: sticky;
@@ -241,13 +282,11 @@
       touch-action: none;
       user-select: none;
     }
-    .map-container { 
-      position: relative; 
-      width: 100%; 
-      height: 100%; 
-      cursor: grab; 
-      touch-action: none;
-    }
+    #viewMapContainer, .map-container {
+  transition: none !important; /* Mencegah Panzoom terkunci oleh CSS transition */
+  touch-action: none !important;
+  user-select: none !important;
+}
     .map-image { 
       width: 100%;
       height: 100%;
@@ -654,18 +693,27 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label small fw-bold">Tingkat Keparahan / Debit Air</label>
-        <div class="d-flex gap-2">
-          <input type="radio" class="btn-check" name="debitAir" id="debit1" value="RINGAN" checked>
-          <label class="btn btn-outline-info btn-sm flex-fill" for="debit1"><i class="bi bi-droplet"></i> Tetesan</label>
+  <label class="form-label small fw-bold">Tingkat Keparahan / Debit Air</label>
+  <div class="d-flex gap-2">
+    <!-- OP Tetesan (Cyan bila dipilih) -->
+    <input type="radio" class="btn-check" name="debitAir" id="debit1" value="RINGAN" autocomplete="off">
+    <label class="btn btn-debit-info btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" for="debit1">
+      <i class="bi bi-droplet"></i> <span>Tetesan</span>
+    </label>
 
-          <input type="radio" class="btn-check" name="debitAir" id="debit2" value="SEDANG">
-          <label class="btn btn-outline-warning btn-sm flex-fill" for="debit2"><i class="bi bi-cloud-rain"></i> Merembes</label>
+    <!-- OP Merembes (Kuning bila dipilih) -->
+    <input type="radio" class="btn-check" name="debitAir" id="debit2" value="SEDANG" autocomplete="off">
+    <label class="btn btn-debit-warning btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" for="debit2">
+      <i class="bi bi-cloud-rain"></i> <span>Merembes</span>
+    </label>
 
-          <input type="radio" class="btn-check" name="debitAir" id="debit3" value="DARURAT">
-          <label class="btn btn-outline-danger btn-sm flex-fill" for="debit3"><i class="bi bi-tsunami"></i> Deras</label>
-        </div>
-      </div>
+    <!-- OP Deras (Merah bila dipilih) -->
+    <input type="radio" class="btn-check" name="debitAir" id="debit3" value="DARURAT" autocomplete="off">
+    <label class="btn btn-debit-danger btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" for="debit3">
+      <i class="bi bi-tsunami"></i> <span>Deras</span>
+    </label>
+  </div>
+</div>
 
       <div class="mb-2">
         <label class="form-label small fw-bold">Detail Lokasi Kebocoran</label>
@@ -897,32 +945,39 @@
   if (currentUser) showApp();
 
   function initPanzoom() {
-    if (mapContainer && !pzCreate) {
-      pzCreate = Panzoom(mapContainer, { 
-        maxScale: 6, 
-        minScale: 1, 
-        contain: 'outside', 
-        cursor: 'grab' 
-      });
+  const container = document.getElementById("viewMapContainer");
+  if (!container) return;
 
-      // LISTEN EVENT ZOOM & WHEEL UNTUK DENAH LAPOR DIRECT
-      mapContainer.addEventListener('panzoomchange', updatePinPosition);
-      document.getElementById('mapWrapper').addEventListener('wheel', pzCreate.zoomWithWheel);
-    }
+  // Pastikan CSS transition dimatikan total agar Panzoom yang ambil alih penuh
+  container.style.transition = "none";
+  container.style.touchAction = "none";
 
-    if (viewMapContainer && !pzView) {
-      pzView = Panzoom(viewMapContainer, { 
-        maxScale: 6, 
-        minScale: 1, 
-        contain: 'inside', 
-        cursor: 'grab' 
-      });
-
-      // LISTEN EVENT ZOOM & WHEEL UNTUK MODAL VIEW DENAH
-      viewMapContainer.addEventListener('panzoomchange', updateViewPinPosition);
-      document.getElementById('viewMapWrapper').addEventListener('wheel', pzView.zoomWithWheel);
-    }
+  if (window.pzView && typeof window.pzView.destroy === 'function') {
+    window.pzView.destroy();
   }
+
+  if (typeof Panzoom !== 'undefined') {
+    window.pzView = Panzoom(container, {
+      maxScale: 5,
+      minScale: 1,
+      contain: 'outside',
+      startScale: 1,
+      animate: true, // Animasi smooth bawaan Panzoom
+      duration: 200  // Durasi animasi (ms)
+    });
+
+    container.parentElement.addEventListener('wheel', window.pzView.zoomWithWheel);
+
+    // Bikin pin ukurannya tetap presisi & tidak ikut membesar
+    container.addEventListener('panzoomchange', (event) => {
+      const scale = event.detail.scale;
+      const viewPin = document.getElementById("viewMapPin");
+      if (viewPin) {
+        viewPin.style.transform = `translate(-50%, -50%) scale(${1 / scale})`;
+      }
+    });
+  }
+}
 
   function showAuthCard(cardId) {
     document.getElementById("loginCard").classList.add("d-none");
@@ -1106,16 +1161,16 @@ document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function 
   }
 
   function updateViewPinPosition() {
-    const pin = document.getElementById("viewMapPin");
-    if (!viewMarkedX || !viewMarkedY || pin.classList.contains("d-none")) return;
+  const viewPin = document.getElementById("viewMapPin");
+  if (!viewPin) return;
 
-    pin.style.left = viewMarkedX + "%";
-    pin.style.top = viewMarkedY + "%";
+  viewPin.style.left = viewMarkedX + "%";
+  viewPin.style.top = viewMarkedY + "%";
 
-    const scale = pzView ? pzView.getScale() : 1;
-    const invScale = 1 / scale;
-    pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
-  }
+  // Ambil skala Panzoom saat ini (default 1 jika belum zoom)
+  const currentScale = window.pzView ? window.pzView.getScale() : 1;
+  viewPin.style.transform = `translate(-50%, -50%) scale(${1 / currentScale})`;
+}
 
   // 2. BACA KLIK LANGSUNG DARI ELEMEN GAMBAR (mapImage), BUKAN CONTAINER!
   let startX = 0, startY = 0;
@@ -1767,34 +1822,55 @@ async function loadBocorReports() {
   }
 
   function openMapModal(floor, x, y) {
-    initPanzoom();
-    viewMarkedX = parseFloat(x);
-    viewMarkedY = parseFloat(y);
+  viewMarkedX = parseFloat(x);
+  viewMarkedY = parseFloat(y);
 
-    const viewImg = document.getElementById("viewMapImage");
-    viewImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
-    
-    viewImg.onload = () => {
-      if (pzView) pzView.reset();
-      const viewPin = document.getElementById("viewMapPin");
+  const viewImg = document.getElementById("viewMapImage");
+  if (!viewImg) return;
+
+  // Set properti touch action agar bisa pinch-to-zoom di HP
+  viewImg.style.touchAction = "none";
+  viewImg.style.userSelect = "none";
+  viewImg.style.webkitUserDrag = "none";
+
+  viewImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+
+  viewImg.onload = () => {
+    // InisialisasiPanzoom tepat setelah gambar denah selesai ter-load
+    if (typeof initPanzoom === 'function') {
+      initPanzoom();
+    }
+    if (pzView && typeof pzView.reset === 'function') {
+      pzView.reset();
+    }
+
+    const viewPin = document.getElementById("viewMapPin");
+    if (viewPin) {
       viewPin.classList.remove("d-none");
       updateViewPinPosition();
-    };
+    }
+  };
 
-    document.getElementById("mapModalTitle").innerText = `Denah Kerusakan (${floor})`;
+  document.getElementById("mapModalTitle").innerText = `Denah Kerusakan (${floor})`;
+  
+  // Tampilkan modal Bootstrap
+  if (typeof mapModal !== 'undefined' && mapModal.show) {
     mapModal.show();
+  } else {
+    const mapModalEl = document.getElementById("mapModal");
+    if (mapModalEl) new bootstrap.Modal(mapModalEl).show();
   }
-  // Tambahkan 3 fungsi ini di bawah openMapModal
-function zoomInMap() {
-  if (pzView) pzView.zoomIn();
+}
+  function zoomInMap() {
+  if (window.pzView) window.pzView.zoomIn({ animate: true });
 }
 
 function zoomOutMap() {
-  if (pzView) pzView.zoomOut();
+  if (window.pzView) window.pzView.zoomOut({ animate: true });
 }
 
 function resetMapZoom() {
-  if (pzView) pzView.reset();
+  if (window.pzView) window.pzView.reset({ animate: true });
 }
 
   function getGoogleThumbnailUrl(driveUrl) {
@@ -2066,7 +2142,21 @@ function openQuickBocorForm() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-  // FUNGSI UNTUK MEMAKSA DENAH KELOAD DENGAN INSTAN
+  // FUNGSI RE-INISIALISASI TOUCH & ZOOM DENAH
+function reinitMapZoom() {
+  const mapImages = document.querySelectorAll("#mapImage, #bocorMapImage, .floor-plan-img, img[src*='denah'], img[src*='floor']");
+  mapImages.forEach(img => {
+    img.style.touchAction = "none";
+    img.style.userSelect = "none";
+    img.style.webkitUserDrag = "none";
+  });
+
+  if (window.panzoomInstance && typeof window.panzoomInstance.reset === 'function') {
+    window.panzoomInstance.reset();
+  }
+}
+
+// FUNGSI UNTUK MEMAKSA DENAH KELOAD DENGAN INSTAN
 function triggerMapReload() {
   // Pemicu untuk Form Lapor Direct
   const directFloorSelect = document.getElementById("directFloor") || document.querySelector("#directFormSelectFloor") || document.getElementById("floor");
@@ -2079,6 +2169,9 @@ function triggerMapReload() {
   if (bocorFloorSelect) {
     bocorFloorSelect.dispatchEvent(new Event('change'));
   }
+
+  // Panggil re-inisialisasi zoom setelah event change dipicu
+  setTimeout(reinitMapZoom, 150);
 }
 
 // JALANKAN OTOMATIS TIAP KALI PENGGUNA PINDAH TAB / MENU

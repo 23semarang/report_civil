@@ -1766,48 +1766,64 @@ async function loadBocorReports() {
   // 3. Ambil data riwayat dari spreadsheet
   loadBocorReports();
 }
-  
-  function openUpdateModal(id, targetStatus, locationDetail) {
-    activeUpdateData = { id, targetStatus, locationDetail };
-    updateFile = null;
-    document.getElementById("progressNote").value = "";
-    document.getElementById("updatePhotoStatus").innerText = "";
-    document.getElementById("updateModalTitle").innerText = targetStatus === "PROGRESS" ? "Update Ke Status PROGRESS" : "Update Ke Status RESOLVED";
-    updateModal.show();
-  }
 
-  async function submitUpdateProgress() {
-    const note = document.getElementById("progressNote").value;
-    if (!note) { alert("Isi deskripsi progress perbaikan!"); return; }
-    if (!updateFile) { alert("Ambil foto bukti perbaikan!"); return; }
+function openUpdateModal(id, targetStatus, locationDetail) {
+  activeUpdateData = { id, targetStatus, locationDetail };
+  updateFile = null;
+  document.getElementById("progressNote").value = "";
+  document.getElementById("updatePhotoStatus").innerText = "";
+  document.getElementById("updateModalTitle").innerText = targetStatus === "PROGRESS" ? "Update Ke Status PROGRESS" : "Update Ke Status RESOLVED";
+  updateModal.show();
+}
 
-    const btn = document.getElementById("btnSaveUpdate");
-    btn.disabled = true;
+async function submitUpdateProgress() {
+  const note = document.getElementById("progressNote").value;
+  if (!note) { alert("Isi deskripsi progress perbaikan!"); return; }
+  if (!updateFile) { alert("Ambil foto bukti perbaikan!"); return; }
 
-    const watermarkedBase64 = await applyWatermark(updateFile, currentUser.username, activeUpdateData.targetStatus, activeUpdateData.locationDetail);
+  const btn = document.getElementById("btnSaveUpdate");
+  btn.disabled = true;
 
-    const res = await fetchAPI({
-      action: "updateProgress",
-      report_id: activeUpdateData.id,
-      new_status: activeUpdateData.targetStatus,
-      progress_note: note,
-      photo: watermarkedBase64
-    });
+  const watermarkedBase64 = await applyWatermark(updateFile, currentUser.username, activeUpdateData.targetStatus, activeUpdateData.locationDetail);
 
-    alert(res.message);
-    btn.disabled = false;
-    updateModal.hide();
-    loadReports();
-  }
+  const res = await fetchAPI({
+    action: "updateProgress",
+    report_id: activeUpdateData.id,
+    new_status: activeUpdateData.targetStatus,
+    progress_note: note,
+    photo: watermarkedBase64
+  });
 
-  function openMapModal(floor, x, y) {
+  alert(res.message);
+  btn.disabled = false;
+  updateModal.hide();
+  loadReports();
+}
+
+// ==========================================
+// FUNGSI PEMBANTU PIN MODAL RIWAYAT
+// ==========================================
+function updateViewPinPosition() {
+  const viewPin = document.getElementById("viewMapPin");
+  if (!viewPin || typeof viewMarkedX === 'undefined' || typeof viewMarkedY === 'undefined') return;
+
+  // Set posisi persentase presisi
+  viewPin.style.left = viewMarkedX + "%";
+  viewPin.style.top = viewMarkedY + "%";
+
+  // Kebalikan skala zoom Panzoom agar ukuran pin tetap konstan
+  const currentScale = window.pzView ? window.pzView.getScale() : 1;
+  viewPin.style.transform = `translate(-50%, -50%) scale(${1 / currentScale})`;
+}
+
+function openMapModal(floor, x, y) {
   viewMarkedX = parseFloat(x);
   viewMarkedY = parseFloat(y);
 
   const viewImg = document.getElementById("viewMapImage");
   if (!viewImg) return;
 
-  // Set properti touch action agar bisa pinch-to-zoom di HP
+  // Set properti touch action agar tidak bentrok gestur di HP
   viewImg.style.touchAction = "none";
   viewImg.style.userSelect = "none";
   viewImg.style.webkitUserDrag = "none";
@@ -1815,13 +1831,29 @@ async function loadBocorReports() {
   viewImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
 
   viewImg.onload = () => {
-    // InisialisasiPanzoom tepat setelah gambar denah selesai ter-load
-    if (typeof initPanzoom === 'function') {
-      initPanzoom();
+    const container = document.getElementById("viewMapContainer");
+    if (container && typeof Panzoom !== 'undefined') {
+      container.style.transition = "none";
+      container.style.touchAction = "none";
+
+      if (window.pzView && typeof window.pzView.destroy === 'function') {
+        window.pzView.destroy();
+      }
+
+      window.pzView = Panzoom(container, {
+        maxScale: 5,
+        minScale: 1,
+        contain: 'outside',
+        animate: true,
+        duration: 200
+      });
+
+      // Sesuaikan skala pin tiap kali di-zoom/pan
+      container.removeEventListener('panzoomchange', updateViewPinPosition);
+      container.addEventListener('panzoomchange', updateViewPinPosition);
     }
-    if (pzView && typeof pzView.reset === 'function') {
-      pzView.reset();
-    }
+
+    if (window.pzView) window.pzView.reset({ animate: true, duration: 200 });
 
     const viewPin = document.getElementById("viewMapPin");
     if (viewPin) {
@@ -1830,8 +1862,9 @@ async function loadBocorReports() {
     }
   };
 
-  document.getElementById("mapModalTitle").innerText = `Denah Kerusakan (${floor})`;
-  
+  const titleEl = document.getElementById("mapModalTitle");
+  if (titleEl) titleEl.innerText = `Denah Kerusakan (${floor})`;
+
   // Tampilkan modal Bootstrap
   if (typeof mapModal !== 'undefined' && mapModal.show) {
     mapModal.show();
@@ -1840,16 +1873,17 @@ async function loadBocorReports() {
     if (mapModalEl) new bootstrap.Modal(mapModalEl).show();
   }
 }
-  function zoomInMap() {
-  if (window.pzView) window.pzView.zoomIn({ animate: true });
+
+function zoomInMap() {
+  if (window.pzView) window.pzView.zoomIn({ animate: true, duration: 200 });
 }
 
 function zoomOutMap() {
-  if (window.pzView) window.pzView.zoomOut({ animate: true });
+  if (window.pzView) window.pzView.zoomOut({ animate: true, duration: 200 });
 }
 
 function resetMapZoom() {
-  if (window.pzView) window.pzView.reset({ animate: true });
+  if (window.pzView) window.pzView.reset({ animate: true, duration: 200 });
 }
 
   function getGoogleThumbnailUrl(driveUrl) {

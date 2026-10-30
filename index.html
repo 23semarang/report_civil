@@ -528,14 +528,10 @@
           </button>
         </li>
         <li class="nav-item">
-  <button class="nav-link w-100 text-start disabled text-muted opacity-50" 
-          id="tab-direct" 
-          type="button"
-          disabled
-          style="pointer-events: none; cursor: not-allowed;">
-    <i class="bi bi-plus-circle-fill me-2 text-muted"></i> Lapor Direct
-  </button>
-</li>
+          <button class="nav-link w-100 text-start" id="tab-direct" data-bs-toggle="pill" data-bs-target="#createTab" data-bs-dismiss="offcanvas">
+            <i class="bi bi-plus-circle-fill me-2 text-primary"></i> Lapor Direct
+          </button>
+        </li>
         <li class="nav-item">
           <button class="nav-link w-100 text-start text-warning" id="tab-bocor" data-bs-toggle="pill" data-bs-target="#bocorTab" data-bs-dismiss="offcanvas">
             <i class="bi bi-droplet-fill me-2 text-warning"></i> Lapor Kebocoran Air
@@ -551,58 +547,49 @@
   
   <!-- 1. TAB CHECKLIST INSPEKSI -->
   <div id="checklistTab" class="tab-pane fade card p-3 shadow-sm">
-    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Checklist Civil & Sanitary</h5>
+    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Inspeksi Rutin Area & Sanitary</h5>
     <form id="checklistForm">
-  <!-- DROPDOWN LANTAI & ZONE -->
-  <div class="row g-2 mb-2">
-    <div class="col-6">
-      <label class="form-label small fw-bold">Lantai</label>
-      <select id="selectFloor" class="form-select" onchange="updateCategoryOptions()">
-        <option value="">-- Lantai --</option>
-        <option value="LG">LG</option>
-        <option value="L1">L1</option>
-        <option value="L2">L2</option>
-        <option value="L3">L3</option>
-        <option value="Rooftop">Rooftop</option>
-      </select>
-    </div>
-    <div class="col-6">
-      <label class="form-label small fw-bold">Zone</label>
-      <select id="selectZone" class="form-select" onchange="updateCategoryOptions()">
-        <option value="">-- Zone --</option>
-        <option value="All Zone">All Zone</option>
-        <option value="Zone A">Zone A</option>
-        <option value="Zone B">Zone B</option>
-        <option value="Zone C">Zone C</option>
-        <option value="Zone D">Zone D</option>
-      </select>
-    </div>
+      <div class="row g-2 mb-2">
+        <div class="col-6">
+          <label class="form-label small fw-bold">Lantai</label>
+          <select id="chkFloor" class="form-select" required>
+            <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
+          </select>
+        </div>
+        <div class="col-6">
+          <label class="form-label small fw-bold">Zone</label>
+          <select id="chkZone" class="form-select" required>
+            <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mb-2">
+        <label class="form-label small fw-bold">Kategori Area</label>
+        <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
+          <option value="Toilet Customer Public">Toilet Customer Public</option>
+          <option value="Toilet Priority / Difabel">Toilet Priority / Difabel</option>
+          <option value="Nursery / Laktasi Room">Nursery / Laktasi Room</option>
+          <option value="Public Corridor & Koridor Utama">Public Corridor & Koridor Utama</option>
+          <option value="Atrium & Event Area (Public Space)">Atrium & Event Area (Public Space)</option>
+          <option value="Service Corridor & Loading Area (Backside)">Service Corridor & Loading Area (Backside)</option>
+          <option value="Fasad Gedung & Drop-off Lobby">Fasad Gedung & Drop-off Lobby</option>
+          <option value="Rooftop & Struktur Gedung Outer">Rooftop & Struktur Gedung Outer</option>
+          <option value="Management Office (MO) Area">Management Office (MO) Area</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Detail Nama Area/Tenant</label>
+        <input type="text" id="chkLocationDetail" class="form-control" placeholder="Contoh: Toilet Utama Dekat Atrium A" required>
+      </div>
+
+      <h6 class="mt-3 mb-2 text-primary fw-bold">Daftar Item Pemeriksaan:</h6>
+      <div id="checklistItemsContainer"></div>
+
+      <button type="submit" id="btnSubmitChecklist" class="btn btn-success w-100 mt-3">Simpan Hasil Inspeksi</button>
+    </form>
   </div>
-
-  <!-- KATEGORI AREA (CUKUP SATU SAJA) -->
-  <div class="mb-2">
-    <label class="form-label small fw-bold">Kategori Area</label>
-    <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" disabled required>
-      <option value="">-- Pilih Lantai & Zone Terlebih Dahulu --</option>
-    </select>
-  </div>
-
-  <!-- DETAIL NAMA AREA / TENANT -->
-  <div class="mb-3">
-  <label class="form-label fw-bold">Detail Nama Area / Ruangan</label>
-  <select id="selectArea" class="form-select" disabled>
-    <option value="">-- Pilih Ruangan --</option>
-  </select>
-</div>
-
-  <!-- DAFTAR ITEM PEMERIKSAAN -->
-  <h6 class="mt-3 mb-2 text-primary fw-bold">Daftar Item Pemeriksaan:</h6>
-  <div id="checklistItemsContainer">
-    <div class="text-muted small italic p-2">Pilih lantai, zone, dan kategori area untuk melihat item pemeriksaan.</div>
-  </div>
-
-  <button type="submit" class="btn btn-success w-100 mt-3" id="btnSubmitChecklist">Simpan Hasil Inspeksi</button>
-</form>
 
   <!-- 2. CREATE REPORT FORM (DIRECT) -->
   <div id="createTab" class="tab-pane fade card p-3 shadow-sm">
@@ -868,557 +855,100 @@
     "Rooftop": "Rooftop.jpg"
   };
 
-  // ==========================================
-// 1. DATA MAPPING AREA PER LANTAI & ZONE
-// ==========================================
-const AREA_BY_FLOOR_ZONE = {
-  "LG": {
-    "All Zone": [
-      { name: "GEDUNG PARKIR MOTOR", category: "Fasad & Outer Area" },
-      { name: "GEDUNG PARKIR MOBIL", category: "Fasad & Outer Area" },
-      { name: "AREA PARKIR BARAT", category: "Fasad & Outer Area" },
-      { name: "AREA PARKIR TIMUR", category: "Fasad & Outer Area" },
-      { name: "AREA PARKIR STAFF", category: "Fasad & Outer Area" }
+  const CHECKLIST_PRESETS = {
+    "Toilet Customer Public": [
+      "Kloset Duduk / Jongkok (Flush & Bidet)",
+      "Urinoir & Flush Sensor",
+      "Kran Wastafel & Sensor Air",
+      "Cermin & Meja Wastafel",
+      "Partisi Cubicle & Handle Pintu",
+      "Lantai HT & Slope Drainage",
+      "Plafon & Exhaust Fan"
     ],
-    "Zone A": [
-      { name: "CORRIDOR GENSET WEST", category: "Akses & Sirkulasi" },
-      { name: "CORRIDOR GENSET EAST", category: "Akses & Sirkulasi" },
-      { name: "SANAYA LOBBY", category: "Akses & Sirkulasi" },
-      { name: "CLINIC ROOM", category: "Fasilitas Staff & BOH" },
-      { name: "LAWANG LOBBY", category: "Akses & Sirkulasi" },
-      { name: "RUANG TRAFO", category: "Ruang Teknis & Utility" },
-      { name: "RUANG PANEL DAN GENSET", category: "Ruang Teknis & Utility" },
-      { name: "TOILET DIFABEL RUANG CLINIC", category: "Sanitary Area" },
-      { name: "TANGGA 7", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 9", category: "Akses & Sirkulasi" },
-      { name: "R. TRAINING", category: "Fasilitas Staff & BOH" },
-      { name: "WAREHOUSE (LOG & GA)", category: "Gudang / Storage Area" },
-      { name: "CHILLER ROOM SELATAN", category: "Ruang Teknis & Utility" },
-      { name: "WASTE ROOM", category: "Ruang Teknis & Utility" },
-      { name: "B3 ROOM", category: "Ruang Teknis & Utility" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "GREASE TRAP", category: "Ruang Teknis & Utility" },
-      { name: "RUANG CHILLER UTARA", category: "Ruang Teknis & Utility" },
-      { name: "KORIDOR LIFT FIRE", category: "Akses & Sirkulasi" },
-      { name: "KORIDOR SERVICE", category: "Akses & Sirkulasi" },
-      { name: "KANTOR DAN GUDANG LOGISTIK", category: "Gudang / Storage Area" },
-      { name: "RUANG VENDOR", category: "Fasilitas Staff & BOH" },
-      { name: "TANGGA 10", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 8", category: "Akses & Sirkulasi" }
+    "Toilet Priority / Difabel": [
+      "Kloset Difabel & Flush Button",
+      "Grab Bar (Pegangan Tangan Besi)",
+      "Tombol Emergency Call / Alarm",
+      "Akses Ramp & Pintu Sliding",
+      "Wastafel Rendah & Kran"
     ],
-    "Zone B": [
-      { name: "RUANG BM, MCFA, SERVER", category: "Fasilitas Staff & BOH" },
-      { name: "HOUSEKEEPING", category: "Fasilitas Staff & BOH" },
-      { name: "RUANG SECURITY DAN CCTV", category: "Fasilitas Staff & BOH" },
-      { name: "R. PANEL", category: "Ruang Teknis & Utility" },
-      { name: "RUANG LANDSCAPE DAN PEST CONTROL", category: "Fasilitas Staff & BOH" },
-      { name: "TANGGA 6", category: "Akses & Sirkulasi" },
-      { name: "SMOKE LOBBY 6", category: "Akses & Sirkulasi" },
-      { name: "GREASE TRAP", category: "Ruang Teknis & Utility" },
-      { name: "RUANG POMPA, GWT, STP", category: "Ruang Teknis & Utility" },
-      { name: "KORIDOR BOH", category: "Akses & Sirkulasi" },
-      { name: "TOILET BOH", category: "Sanitary Area" }
+    "Nursery / Laktasi Room": [
+      "Baby Changing Station (Meja Popok)",
+      "Kursi Sofa Laktasi",
+      "Wastafel Air Warm/Cold",
+      "Kebersihan Dinding & Kebocoran Plafon"
     ],
-    "Zone C": [
-      { name: "RUANG MEETING MO", category: "Management Office (MO)" },
-      { name: "LOBBY, SERVER, STORAGE DAN KANTOR MO", category: "Management Office (MO)" },
-      { name: "TOILET MO", category: "Sanitary Area" },
-      { name: "TOILET CUSTOMER", category: "Sanitary Area" },
-      { name: "RUANG KANTIN", category: "Fasilitas Staff & BOH" },
-      { name: "TOILET DIFABEL", category: "Sanitary Area" },
-      { name: "JANITOR", category: "Sanitary Area" },
-      { name: "TANGGA 1", category: "Akses & Sirkulasi" },
-      { name: "MUSHOLLA", category: "Sanitary Area" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "GREASE TRAP", category: "Ruang Teknis & Utility" },
-      { name: "KORIDOR PUBLIK", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 2", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 3", category: "Akses & Sirkulasi" },
-      { name: "GARDU PLN", category: "Ruang Teknis & Utility" }
+    "Public Corridor & Koridor Utama": [
+      "Lantai HT / Granit Public (Nat & Popping)",
+      "Glass Railing Void Utama & Klem Stainless",
+      "Plat Bordes & Comb Escalator",
+      "Plafon Gypsum Public & Manhole Access",
+      "Pintu Emergency & Exit Signage"
     ],
-    "Zone D": [
-      { name: "TANGGA 5", category: "Akses & Sirkulasi" },
-      { name: "ALUN-ALUN LOBBY", category: "Akses & Sirkulasi" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "GREASE TRAP DAN SWP", category: "Ruang Teknis & Utility" },
-      { name: "TOILET DIFABLE", category: "Sanitary Area" },
-      { name: "JANITOR", category: "Sanitary Area" },
-      { name: "TANGGA 4", category: "Akses & Sirkulasi" }
+    "Atrium & Event Area (Public Space)": [
+      "Lantai Atrium (Alun-Alun / Dauntown)",
+      "Floor Outlet Box / Stopkontak Lantai Atrium",
+      "Kondisi Dinding Void Atrium Outer",
+      "Lampu Highlight High-Ceiling Atrium"
+    ],
+    "Service Corridor & Loading Area (Backside)": [
+      "Lantai Epoksi / Concrete Floor Service Koridor",
+      "Dinding Service Koridor & Bump Guard Protektor",
+      "Pintu Shaft Utility (Listrik/Plumbing) & Kunci",
+      "Penerangan Koridor Service & Jalur Evakuasi",
+      "Loading Dock Ramp & Bumper Pad Loading"
+    ],
+    "Fasad Gedung & Drop-off Lobby": [
+      "Canopy Glass / ACP Entrance Lobby",
+      "Panel Cladding GRC / ACP & Sealant Fasad",
+      "Jendela Kaca Outer & Sealant Kaca",
+      "Pintu Kaca Utama Entrance (Floor Hinge / Auto Door)"
+    ],
+    "Rooftop & Struktur Gedung Outer": [
+      "Waterproofing Dak Beton (Retak & Ponding)",
+      "Roof Drain & Scupper Drainage (Sumbatan)",
+      "Dudukan Rangka Baja Equipment & Anti-Karat",
+      "Dinding Parapet Beton & Guardrail Proteksi"
+    ],
+    "Management Office (MO) Area": [
+      "Lantai Carpet / Vinyl / HT MO",
+      "Partisi Dinding / Gypsum / Glass Partition MO",
+      "Plafond Gypsum & Akses Lampu MO",
+      "Pintu Utama Office, Handle & Lockset",
+      "Area Toilet Internal MO & Pantry MO"
     ]
-  },
-  "L1": {
-    "All Zone": [
-      { name: "FOREST (KOLAM IKAN, TAMAN, WOODEN DECK, BATU ALAM)", category: "Akses & Sirkulasi" }
-    ],
-    "Zone A": [
-      { name: "VOID AREA ZONE A", category: "Akses & Sirkulasi" },
-      { name: "NURSERY ROOM", category: "Sanitary Area" },
-      { name: "L1-03-SR", category: "Gudang / Storage Area" },
-      { name: "TANGGA 7", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 9", category: "Akses & Sirkulasi" },
-      { name: "L1-06-SR", category: "Gudang / Storage Area" },
-      { name: "L1-07-SR", category: "Gudang / Storage Area" },
-      { name: "L1-08-SR", category: "Gudang / Storage Area" },
-      { name: "L1-09-SR", category: "Gudang / Storage Area" },
-      { name: "TOILET DIFABLE", category: "Sanitary Area" },
-      { name: "TOILET FAMILY", category: "Sanitary Area" },
-      { name: "RUANG JANITOR", category: "Sanitary Area" },
-      { name: "GUDANG MARKETING L1-01 SR", category: "Gudang / Storage Area" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "KORIDOR SERVICE", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 8", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 10", category: "Akses & Sirkulasi" },
-      { name: "L1-02 SR", category: "Gudang / Storage Area" }
-    ],
-    "Zone B": [
-      { name: "VOID AREA ZONE B", category: "Akses & Sirkulasi" },
-      { name: "L1-10 SR", category: "Gudang / Storage Area" },
-      { name: "TANGGA 6", category: "Akses & Sirkulasi" },
-      { name: "L1-13 SR", category: "Gudang / Storage Area" },
-      { name: "L1-11 SR", category: "Gudang / Storage Area" },
-      { name: "CONNECTING GEDUNG PARKIR", category: "Akses & Sirkulasi" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "RAM I & II", category: "Fasad & Outer Area" },
-      { name: "L1-12 SR", category: "Gudang / Storage Area" }
-    ],
-    "Zone C": [
-      { name: "VOID AREA ZONE C", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 1", category: "Akses & Sirkulasi" },
-      { name: "L1-05-SR", category: "Gudang / Storage Area" },
-      { name: "JEMBATAN", category: "Akses & Sirkulasi" },
-      { name: "L1-15 SR", category: "Gudang / Storage Area" },
-      { name: "L1-14 SR", category: "Gudang / Storage Area" },
-      { name: "L1-04 SR", category: "Gudang / Storage Area" },
-      { name: "RUANG JANITOR", category: "Sanitary Area" },
-      { name: "SMOKING AREA", category: "Fasilitas Staff & BOH" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "TANGGA 2", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 3", category: "Akses & Sirkulasi" }
-    ],
-    "Zone D": [
-      { name: "VOID AREA ZONE D", category: "Akses & Sirkulasi" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "TOILET DIFABLE", category: "Sanitary Area" },
-      { name: "RUANG JANITOR", category: "Sanitary Area" },
-      { name: "TANGGA 5", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 4", category: "Akses & Sirkulasi" },
-      { name: "TOILET CUSTOMER", category: "Sanitary Area" }
-    ]
-  },
-  "L2": {
-    "Zone A": [
-      { name: "VOID AREA ZONE A", category: "Akses & Sirkulasi" },
-      { name: "NURSERY ROOM", category: "Sanitary Area" },
-      { name: "L2-01-SR", category: "Gudang / Storage Area" },
-      { name: "L2-02-SR", category: "Gudang / Storage Area" },
-      { name: "L2-03-SR", category: "Gudang / Storage Area" },
-      { name: "TOILET DIFABEL", category: "Sanitary Area" },
-      { name: "TOILET FAMILY", category: "Sanitary Area" },
-      { name: "TANGGA 7", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 9", category: "Akses & Sirkulasi" },
-      { name: "JANITOR", category: "Sanitary Area" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "KORIDOR SERVICE", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 8", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 10", category: "Akses & Sirkulasi" }
-    ],
-    "Zone B": [
-      { name: "VOID AREA ZONE B", category: "Akses & Sirkulasi" },
-      { name: "L2-05-SR", category: "Gudang / Storage Area" },
-      { name: "L2-08 SR", category: "Gudang / Storage Area" },
-      { name: "L2-10 SR", category: "Gudang / Storage Area" },
-      { name: "L2-09-SR", category: "Gudang / Storage Area" },
-      { name: "TANGGA 6", category: "Akses & Sirkulasi" },
-      { name: "LOBBY PENDHAPA", category: "Akses & Sirkulasi" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "CONNECTING GEDUNG PARKIR", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 1", category: "Akses & Sirkulasi" }
-    ],
-    "Zone C": [
-      { name: "VOID AREA ZONE C", category: "Akses & Sirkulasi" },
-      { name: "TERAS SELATAN", category: "Akses & Sirkulasi" },
-      { name: "TERAS UTARA", category: "Akses & Sirkulasi" },
-      { name: "JANITOR", category: "Sanitary Area" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "KORIDOR SERVICE", category: "Akses & Sirkulasi" },
-      { name: "MUSHOLLA", category: "Sanitary Area" },
-      { name: "TANGGA 3", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 2", category: "Akses & Sirkulasi" },
-      { name: "L2-05 SR", category: "Gudang / Storage Area" },
-      { name: "L2-04 SR", category: "Gudang / Storage Area" }
-    ],
-    "Zone D": [
-      { name: "VOID AREA ZONE D", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 5", category: "Akses & Sirkulasi" },
-      { name: "TERAS (SAMPING OPTIK)", category: "Akses & Sirkulasi" },
-      { name: "JANITOR", category: "Sanitary Area" },
-      { name: "DIFABLE", category: "Sanitary Area" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "TANGGA 4", category: "Akses & Sirkulasi" }
-    ]
-  },
-  "L3": {
-    "Zone A": [
-      { name: "VOID AREA ZONE A", category: "Akses & Sirkulasi" },
-      { name: "TOILET DIFABEL", category: "Sanitary Area" },
-      { name: "TOILET FAMILY", category: "Sanitary Area" },
-      { name: "TANGGA 7", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 9", category: "Akses & Sirkulasi" },
-      { name: "R. PANEL A", category: "Ruang Teknis & Utility" },
-      { name: "KORIDOR SERVICE", category: "Akses & Sirkulasi" },
-      { name: "NURSERY ROOM", category: "Sanitary Area" },
-      { name: "JANITOR", category: "Sanitary Area" },
-      { name: "L3-01 SR", category: "Gudang / Storage Area" },
-      { name: "L3-02 SR", category: "Gudang / Storage Area" },
-      { name: "L3-03 SR", category: "Gudang / Storage Area" },
-      { name: "TANGGA 8", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 10", category: "Akses & Sirkulasi" }
-    ],
-    "Zone B": [
-      { name: "VOID AREA ZONE B", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 6", category: "Akses & Sirkulasi" },
-      { name: "L3-08 SR", category: "Gudang / Storage Area" },
-      { name: "L3-09 SR", category: "Gudang / Storage Area" },
-      { name: "L3-10 SR", category: "Gudang / Storage Area" },
-      { name: "L3-11 SR", category: "Gudang / Storage Area" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "SR-03 L3", category: "Gudang / Storage Area" },
-      { name: "TANGGA 1", category: "Akses & Sirkulasi" }
-    ],
-    "Zone C": [
-      { name: "VOID AREA ZONE C", category: "Akses & Sirkulasi" },
-      { name: "L3-04 SR", category: "Gudang / Storage Area" },
-      { name: "L3-05 SR", category: "Gudang / Storage Area" },
-      { name: "L3-07 SR", category: "Gudang / Storage Area" },
-      { name: "L3-06 SR", category: "Gudang / Storage Area" },
-      { name: "TERAS", category: "Akses & Sirkulasi" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "JANITOR", category: "Sanitary Area" },
-      { name: "TANGGA 3", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 2", category: "Akses & Sirkulasi" }
-    ],
-    "Zone D": [
-      { name: "VOID AREA ZONE D", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 5", category: "Akses & Sirkulasi" },
-      { name: "RUANG PANEL", category: "Ruang Teknis & Utility" },
-      { name: "TOILET DIFABLE", category: "Sanitary Area" },
-      { name: "JANITOR", category: "Sanitary Area" },
-      { name: "TANGGA 4", category: "Akses & Sirkulasi" }
-    ]
-  },
-  "Rooftop": {
-    "Zone A": [
-      { name: "TANGGA 7", category: "Akses & Sirkulasi" },
-      { name: "L4-10 R.FAN A2 KECIL", category: "Fasad & Outer Area" },
-      { name: "L4-10 R.FAN A2 BESAR", category: "Fasad & Outer Area" },
-      { name: "L4-11 R.AHU 1 KECIL", category: "Fasad & Outer Area" },
-      { name: "L4-11 R.AHU 1 BESAR", category: "Fasad & Outer Area" },
-      { name: "L4-12 R.FAN A", category: "Fasad & Outer Area" },
-      { name: "L4-14 R. PANEL", category: "Ruang Teknis & Utility" },
-      { name: "KOR. LIFT FIRE", category: "Akses & Sirkulasi" },
-      { name: "TOILET MUSHOLA", category: "Sanitary Area" },
-      { name: "TANGGA 8", category: "Akses & Sirkulasi" },
-      { name: "TANGGA 10", category: "Akses & Sirkulasi" },
-      { name: "EXHAUS", category: "Fasad & Outer Area" }
-    ],
-    "Zone B": [
-      { name: "TANGGA 6", category: "Akses & Sirkulasi" },
-      { name: "L4-8 R.FAN B", category: "Fasad & Outer Area" },
-      { name: "L4-9 R.AHU 3", category: "Fasad & Outer Area" },
-      { name: "L4-13 R. PANEL COOLING TOWER", category: "Fasad & Outer Area" },
-      { name: "TANGGA 1", category: "Akses & Sirkulasi" }
-    ],
-    "Zone C": [
-      { name: "L4-1 R.AHU 2 KECIL", category: "Fasad & Outer Area" },
-      { name: "L4-1 R.AHU 2 BESAR", category: "Fasad & Outer Area" },
-      { name: "L4-2 R.AHU 6", category: "Fasad & Outer Area" },
-      { name: "L4-3 R.FAN C", category: "Fasad & Outer Area" },
-      { name: "TANGGA 2", category: "Akses & Sirkulasi" },
-      { name: "HT", category: "Fasad & Outer Area" }
-    ],
-    "Zone D": [
-      { name: "L4-4 R.FAN D KECIL", category: "Fasad & Outer Area" },
-      { name: "L4-4 R.FAN D BESAR", category: "Fasad & Outer Area" },
-      { name: "L4-5 R.AHU 5", category: "Fasad & Outer Area" },
-      { name: "L4-6 R.FAN D1 KECIL", category: "Fasad & Outer Area" },
-      { name: "L4-6 R.FAN D1 BESAR", category: "Fasad & Outer Area" },
-      { name: "L4-7 R.AHU 4", category: "Fasad & Outer Area" }
-    ]
-  }
-};
+  };
 
-// ==========================================
-// 2. PRESET CHECKLIST ITEM PER KATEGORI AREA
-// ==========================================
-const CHECKLIST_PRESETS = {
-  "Sanitary Area": [
-    "Kloset Duduk (Flush, Eco Washer & Jet Shower)",
-    "Kloset Siphonic Flush & Jet Shower Difabel",
-    "Urinal & Concealed / Manual Sensor Flush",
-    "Partisi Urinal (Sekat)",
-    "Wastafel & Keran Sensor Air / Touchless / Manual",
-    "Sifon / Leher Angsa, Pop-Up & Fleksibel Wastafel",
-    "Cermin & Meja Wastafel",
-    "Partisi Cubicle, Engsel & Handle Pintu Toilet",
-    "Grab Bar L-Shape 45° & Handrail Lavatory",
-    "Baby Changing Station (Meja Popok) & Wall Toddler Set",
-    "Keran Wudhu & Drainase Area Wudhu / Musala",
-    "Janitor Sink & Keran Tembok (Lever Handle)",
-    "Gantungan Baju (Robe Hook)",
-    "Lantai Granit, Smart Drain & Floor Drain Toilet",
-    "Exhaust Fan & Ceiling Diffuser Toilet"
-  ],
-  "Akses & Sirkulasi": [
-    "Lantai HT / Granit Public (Nat & Popping)",
-    "Glass Railing Void Utama & Klem Stainless",
-    "Plafon Gypsum Public & Manhole Access",
-    "Pintu Emergency & Exit Signage",
-    "Kolom dan Dinding Public Area",
-    "Lantai Atrium & Void Area"
-  ],
-  "Fasilitas Staff & BOH": [
-    "Dinding Keramik & Dinding Ruangan BOH",
-    "Partisi Cubicle, Engsel & Handle Pintu Staff",
-    "Lantai Granit / Epoksi BOH",
-    "Plafon & Exhaust Fan BOH",
-    "Smoking Area & Fasilitas Istirahat Staff"
-  ],
-  "Ruang Teknis & Utility": [
-    "Lantai Epoksi & Kebersihan Ruang Teknis",
-    "Dinding Service Koridor & Corner Guard Protektor",
-    "Pintu Shaft Utility (Listrik/Plumbing) & Lockset",
-    "Plafon & Exhaust Fan / Buangan Udara Teknis"
-  ],
-  "Gudang / Storage Area": [
-    "Lantai Beton / HT / Epoksi Gudang",
-    "Pintu Storage, Handle & Lockset",
-    "Dinding & Cat Ruang Storage",
-    "Plafon Gypsum / Manhole Access Gudang",
-    "Pencahayaan & Kebersihan Area Storage"
-  ],
-  "Management Office (MO)": [
-    "Lantai Granit / HT Management Office",
-    "Dinding & Cat Ruang Kantor MO",
-    "Plafond Gypsum & Manhole MO",
-    "Pintu Utama Office, Handle & Lockset",
-    "Pantry MO & Dinding Kitchen"
-  ],
-  "Fasad & Outer Area": [
-    "Panel GRC & Sealant Fasad Gedung",
-    "Jendela Kaca Outer & Sealant Kaca Fasad",
-    "Pintu Kaca Utama Entrance (Floor Hinge, Engsel / Auto Door)",
-    "Waterproofing Dak Beton Rooftop (Retak & Ponding)",
-    "Roof Drain & Scupper Drainage Rooftop (Sumbatan)",
-    "Dudukan Rangka Baja Equipment & Anti-Karat",
-    "Dinding Parapet Beton, Chiller & Cooling Tower Platform",
-    "Area Parkir (Paving / Beton / Kanstin)",
-    "Cover U Ditch, Floor Drain & Gutter Parkir",
-    "Struktur Baja & Zinkchromate Parkir",
-    "Car Stopper, Ramp & Dinding Parapet / Railing Parkir"
-  ]
-};
+  let currentUser = JSON.parse(localStorage.getItem("user_civil")) || null;
+  let selectedFile = null;
+  let updateFile = null;
+  let activeUpdateData = null;
+  let allReports = [];
+  let currentFilter = "ALL";
+  let targetResetUsername = "";
+  let markedX = null;
+  let markedY = null;
+  let viewMarkedX = null;
+  let viewMarkedY = null;
 
-// ==========================================
-// 3. VARIABLE GLOBAL & SYSTEM STATES
-// ==========================================
-let currentUser = JSON.parse(localStorage.getItem("user_civil")) || null;
-let selectedFile = null;
-let updateFile = null;
-let activeUpdateData = null;
-let allReports = [];
-let currentFilter = "ALL";
-let targetResetUsername = "";
-let markedX = null;
-let markedY = null;
-let viewMarkedX = null;
-let viewMarkedY = null;
+  let pzCreate = null;
+  let pzView = null;
 
-let pzCreate = null;
-let pzView = null;
-let pzBocor = null;
-let bocorMarkingX = null;
-let bocorMarkingY = null;
+  const mapContainer = document.getElementById('mapContainer');
+  const viewMapContainer = document.getElementById('viewMapContainer');
 
-// ==========================================
-// 4. FUNGSI HANDLER UTAMA FORM & CHECKLIST
-// ==========================================
-function updateAreaOptions() {
-  const floor = document.getElementById("selectFloor")?.value || document.getElementById("floor")?.value;
-  const zone = document.getElementById("selectZone")?.value;
-  const areaSelect = document.getElementById("selectArea");
+  const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+  const updateModal = new bootstrap.Modal(document.getElementById('updateModal'));
+  const mapModal = new bootstrap.Modal(document.getElementById('mapModal'));
+  const fullImageEl = document.getElementById('fullImage');
 
-  if (!areaSelect) return;
-
-  areaSelect.innerHTML = '<option value="">-- Pilih Ruangan --</option>';
-
-  if (floor && zone && AREA_BY_FLOOR_ZONE[floor] && AREA_BY_FLOOR_ZONE[floor][zone]) {
-    const areaList = AREA_BY_FLOOR_ZONE[floor][zone];
-
-    areaList.forEach(item => {
-      const opt = document.createElement("option");
-      opt.value = item.name;
-      opt.textContent = item.name;
-      opt.setAttribute("data-category", item.category);
-      areaSelect.appendChild(opt);
-    });
-
-    areaSelect.disabled = false;
-  } else {
-    areaSelect.disabled = true;
-  }
-
-  updateCategoryOptions();
-}
-
-function updateCategoryOptions() {
-  const floor = document.getElementById("selectFloor")?.value || document.getElementById("floor")?.value;
-  const zone = document.getElementById("selectZone")?.value;
-  const catSelect = document.getElementById("chkCategory");
-
-  if (!catSelect) return;
-
-  catSelect.innerHTML = '<option value="">-- Pilih Kategori Area --</option>';
-
-  if (floor && zone && AREA_BY_FLOOR_ZONE[floor] && AREA_BY_FLOOR_ZONE[floor][zone]) {
-    const areaList = AREA_BY_FLOOR_ZONE[floor][zone];
-    const availableCategories = [...new Set(areaList.map(item => item.category))];
-
-    availableCategories.forEach(catKey => {
-      const opt = document.createElement("option");
-      opt.value = catKey;
-      opt.textContent = catKey;
-      catSelect.appendChild(opt);
-    });
-
-    catSelect.disabled = false;
-  } else {
-    catSelect.disabled = true;
-  }
-
-  const container = document.getElementById("checklistItemsContainer");
-  if (container) {
-    container.innerHTML = '<div class="text-muted small italic p-2">Pilih kategori area untuk melihat item pemeriksaan.</div>';
-  }
-}
-
-function loadChecklistItems() {
-  const catSelect = document.getElementById("chkCategory");
-  const container = document.getElementById("checklistItemsContainer");
-
-  if (!catSelect || !container) return;
-
-  const selectedCategory = catSelect.value;
-  container.innerHTML = "";
-
-  if (!selectedCategory || !CHECKLIST_PRESETS[selectedCategory]) {
-    container.innerHTML = '<div class="text-muted small italic p-2">Pilih kategori area untuk melihat item pemeriksaan.</div>';
-    return;
-  }
-
-  const items = CHECKLIST_PRESETS[selectedCategory];
-
-  items.forEach((itemText, index) => {
-    const row = document.createElement("div");
-    row.className = "checklist-row border-bottom py-2 d-flex flex-column gap-1";
-    row.innerHTML = `
-      <div class="fw-bold text-dark small">${index + 1}. ${itemText}</div>
-      <div class="d-flex align-items-center gap-3 my-1">
-        <label class="form-check-label text-success small">
-          <input type="radio" class="form-check-input" name="chk_status_${index}" value="Normal" checked> Normal
-        </label>
-        <label class="form-check-label text-danger small">
-          <input type="radio" class="form-check-input" name="chk_status_${index}" value="Rusak"> Rusak
-        </label>
-      </div>
-      <input type="text" class="form-control form-control-sm" name="chk_notes_${index}" placeholder="Catatan kerusakan (opsional)...">
-    `;
-    container.appendChild(row);
-  });
-}
-
-// ==========================================
-// 5. SYSTEM INITIALIZATION & PANZOOM LAPOR BOCOR
-// ==========================================
-document.addEventListener("DOMContentLoaded", function () {
-  // --- TAMBAHKAN DUA EVENT LISTENER INI ---
-  const selectFloor = document.getElementById("selectFloor") || document.getElementById("floor");
-  const selectZone = document.getElementById("selectZone");
-
-  if (selectFloor) {
-    selectFloor.addEventListener("change", updateAreaOptions);
-  }
-  if (selectZone) {
-    selectZone.addEventListener("change", updateAreaOptions);
-  }
-  // ----------------------------------------
-
-  const areaSelect = document.getElementById("selectArea");
-
-  if (areaSelect) {
-    areaSelect.addEventListener("change", function () {
-      const selectedOption = this.options[this.selectedIndex];
-      const autoCategory = selectedOption.getAttribute("data-category");
-      const catSelect = document.getElementById("chkCategory");
-
-      if (autoCategory && catSelect) {
-        catSelect.value = autoCategory;
-        loadChecklistItems();
-      }
-    });
-  }
-
-  const bocorMapImg = document.getElementById("bocorMapImage");
-
-  if (bocorMapImg) {
-    let startBocorX = 0, startBocorY = 0;
-
-    bocorMapImg.addEventListener('pointerdown', (e) => { 
-      startBocorX = e.clientX; 
-      startBocorY = e.clientY; 
-    });
-
-    bocorMapImg.addEventListener('pointerup', (e) => {
-      const diffX = Math.abs(e.clientX - startBocorX);
-      const diffY = Math.abs(e.clientY - startBocorY);
-
-      if (diffX < 6 && diffY < 6) {
-        const rect = bocorMapImg.getBoundingClientRect();
-
-        const clickX = e.clientX - rect.left;
-        const clickY = e.clientY - rect.top;
-
-        const xPercent = (clickX / rect.width) * 100;
-        const yPercent = (clickY / rect.height) * 100;
-
-        if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
-          bocorMarkingX = xPercent.toFixed(2);
-          bocorMarkingY = yPercent.toFixed(2);
-
-          const pin = document.getElementById("bocorMapPin");
-          if (pin) {
-            pin.className = "map-pin map-pin-water";
-            pin.classList.remove("d-none");
-            updateBocorPinPosition();
-          }
-
-          const status = document.getElementById("bocorMapStatus");
-          if (status) {
-            status.innerText = `✓ Titik lokasi marked (${bocorMarkingX}%, ${bocorMarkingY}%)`;
-            status.className = "text-success small mt-1 d-block fw-bold";
-          }
-        }
-      }
-    });
-  }
-
-  initBocorPanzoom();
   if (currentUser) showApp();
-});
 
-function initPanzoom() {
+  function initPanzoom() {
   const container = document.getElementById("viewMapContainer");
   if (!container) return;
 
+  // Pastikan CSS transition dimatikan agar tidak bentrok dengan JS Panzoom
   container.style.transition = "none";
   container.style.touchAction = "none";
 
@@ -1427,17 +957,20 @@ function initPanzoom() {
   }
 
   if (typeof Panzoom !== 'undefined') {
+    // Inisialisasi dengan opsi animasi transisi bawaan
     window.pzView = Panzoom(container, {
       maxScale: 5,
       minScale: 1,
       contain: 'outside',
       startScale: 1,
-      animate: true,
-      duration: 200
+      animate: true,       // Aktifkan transisi animasi
+      duration: 250,       // Durasi transisi (250ms / 0.25 detik)
+      easing: 'ease-in-out' // Efek pergerakan mulus
     });
 
     container.parentElement.addEventListener('wheel', window.pzView.zoomWithWheel);
 
+    // Tetap jaga ukuran pin presisi saat di-zoom
     container.addEventListener('panzoomchange', (event) => {
       const scale = event.detail.scale;
       const viewPin = document.getElementById("viewMapPin");
@@ -1448,48 +981,86 @@ function initPanzoom() {
   }
 }
 
-function initBocorPanzoom() {
-  const container = document.getElementById("bocorMapContainer");
-  if (!container || typeof Panzoom === 'undefined') return;
-
-  if (pzBocor && typeof pzBocor.destroy === 'function') {
-    pzBocor.destroy();
-    pzBocor = null;
+  function showAuthCard(cardId) {
+    document.getElementById("loginCard").classList.add("d-none");
+    document.getElementById("registerCard").classList.add("d-none");
+    document.getElementById("forgotCard").classList.add("d-none");
+    document.getElementById("verifyOTPCard").classList.add("d-none");
+    document.getElementById(cardId).classList.remove("d-none");
   }
 
-  container.style.transition = "none";
-  container.style.touchAction = "none";
-
-  pzBocor = Panzoom(container, {
-    maxScale: 5,
-    minScale: 1,
-    contain: 'outside',
-    animate: true,
-    duration: 200
-  });
-
-  const wrapper = document.getElementById("bocorMapWrapper") || container.parentElement;
-  if (wrapper) {
-    wrapper.removeEventListener('wheel', pzBocor.zoomWithWheel);
-    wrapper.addEventListener('wheel', pzBocor.zoomWithWheel);
+  function showApp() {
+    document.getElementById("authContainer").classList.add("d-none");
+    document.getElementById("appSection").classList.remove("d-none");
+    document.getElementById("userGreeting").innerText = `Halo, ${currentUser.fullname || currentUser.username}`;
+    initPanzoom();
+    loadReports();
   }
 
-  container.removeEventListener('panzoomchange', updateBocorPinPosition);
-  container.addEventListener('panzoomchange', updateBocorPinPosition);
-}
+  function logout() {
+    localStorage.removeItem("user_civil");
+    currentUser = null;
+    document.getElementById("appSection").classList.add("d-none");
+    document.getElementById("authContainer").classList.remove("d-none");
+    showAuthCard("loginCard");
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+    document.getElementById("listTab").classList.add("d-none");
+    document.getElementById("createTab").classList.add("d-none");
+    document.getElementById("checklistTab").classList.add("d-none");
+
+    if (tab === 'checklist') {
+      document.getElementById("checklistTab").classList.remove("d-none");
+      document.getElementById("tabChecklist").classList.add("active");
+      loadChecklistItems();
+    } else if (tab === 'create') {
+      document.getElementById("createTab").classList.remove("d-none");
+      document.getElementById("tabCreate").classList.add("active");
+      initPanzoom();
+      updateFloorMap();
+    } else {
+      document.getElementById("listTab").classList.remove("d-none");
+      document.getElementById("tabList").classList.add("active");
+      loadReports();
+    }
+  }
+
+  function updateFloorMap() {
+    const floor = document.getElementById("floor").value;
+    const mapImg = document.getElementById("mapImage");
+    mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+    
+    mapImg.onload = () => {
+      if (pzCreate) pzCreate.reset();
+      updatePinPosition();
+    };
+
+    resetMapAndPin();
+  }
+
+  function resetMapAndPin() {
+    if (pzCreate) pzCreate.reset();
+    markedX = null; markedY = null;
+    document.getElementById("mapPin").classList.add("d-none");
+    document.getElementById("mapStatus").className = "text-danger small mt-1 d-block";
+    document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
+  }
+// ==========================================
+// KODE DENAH INTERAKTIF LAPOR BOCOR
+// ==========================================
+let pzBocor = null;
+let bocorMarkingX = null;
+let bocorMarkingY = null;
 
 function updateBocorFloorMap() {
-  const floorEl = document.getElementById("bocorFloor");
-  if (!floorEl) return;
-  
-  const floor = floorEl.value;
+  const floor = document.getElementById("bocorFloor").value;
   const mapImg = document.getElementById("bocorMapImage");
-
   if (mapImg && typeof FLOOR_MAPS !== 'undefined') {
     mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
     mapImg.onload = () => {
-      initBocorPanzoom();
-      if (pzBocor) pzBocor.reset({ animate: true, duration: 200 });
+      if (pzBocor) pzBocor.reset();
       updateBocorPinPosition();
     };
   }
@@ -1497,7 +1068,7 @@ function updateBocorFloorMap() {
 }
 
 function resetBocorMapAndPin() {
-  if (pzBocor) pzBocor.reset({ animate: true, duration: 200 });
+  if (pzBocor) pzBocor.reset();
   bocorMarkingX = null;
   bocorMarkingY = null;
   const pin = document.getElementById("bocorMapPin");
@@ -1513,118 +1084,146 @@ function updateBocorPinPosition() {
   const pin = document.getElementById("bocorMapPin");
   if (!bocorMarkingX || !bocorMarkingY || !pin || pin.classList.contains("d-none")) return;
   
+  // Ambil skala zoom saat ini
   const scale = pzBocor ? pzBocor.getScale() : 1;
-  const invScale = 1 / scale;
+  const invScale = 1 / scale; // Kebalikan skala agar ukuran pixel tetap sama
   
   pin.style.left = bocorMarkingX + "%";
   pin.style.top = bocorMarkingY + "%";
   pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
 }
 
-function zoomInBocor() {
-  if (pzBocor) pzBocor.zoomIn({ animate: true, duration: 200 });
-}
-
-function zoomOutBocor() {
-  if (pzBocor) pzBocor.zoomOut({ animate: true, duration: 200 });
-}
-
-function showAuthCard(cardId) {
-  document.getElementById("loginCard").classList.add("d-none");
-  document.getElementById("registerCard").classList.add("d-none");
-  document.getElementById("forgotCard").classList.add("d-none");
-  document.getElementById("verifyOTPCard").classList.add("d-none");
-  document.getElementById(cardId).classList.remove("d-none");
-}
-
-function showApp() {
-  document.getElementById("authContainer").classList.add("d-none");
-  document.getElementById("appSection").classList.remove("d-none");
-  document.getElementById("userGreeting").innerText = `Halo, ${currentUser.fullname || currentUser.username}`;
-  initPanzoom();
-  if (typeof loadReports === 'function') loadReports();
-}
-
-function logout() {
-  localStorage.removeItem("user_civil");
-  currentUser = null;
-  document.getElementById("appSection").classList.add("d-none");
-  document.getElementById("authContainer").classList.remove("d-none");
-  showAuthCard("loginCard");
-}
-
-function switchTab(tab) {
-  document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-  document.getElementById("listTab")?.classList.add("d-none");
-  document.getElementById("createTab")?.classList.add("d-none");
-  document.getElementById("checklistTab")?.classList.add("d-none");
-
-  if (tab === 'checklist') {
-    document.getElementById("checklistTab")?.classList.remove("d-none");
-    document.getElementById("tabChecklist")?.classList.add("active");
-    loadChecklistItems();
-  } else if (tab === 'create') {
-    document.getElementById("createTab")?.classList.remove("d-none");
-    document.getElementById("tabCreate")?.classList.add("active");
-    initPanzoom();
-    updateFloorMap();
-  } else {
-    document.getElementById("listTab")?.classList.remove("d-none");
-    document.getElementById("tabList")?.classList.add("active");
-    if (typeof loadReports === 'function') loadReports();
-  }
-}
-
-function updateFloorMap() {
-  const floor = document.getElementById("floor")?.value || "LG";
-  const mapImg = document.getElementById("mapImage");
-  if (mapImg && typeof FLOOR_MAPS !== 'undefined') {
-    mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
-    mapImg.onload = () => {
-      if (pzCreate) pzCreate.reset();
-      updatePinPosition();
-    };
-  }
-  resetMapAndPin();
-}
-
-function resetMapAndPin() {
-  if (pzCreate) pzCreate.reset();
-  markedX = null; 
-  markedY = null;
-  const pin = document.getElementById("mapPin");
-  if (pin) pin.classList.add("d-none");
-  const status = document.getElementById("mapStatus");
-  if (status) {
-    status.className = "text-danger small mt-1 d-block";
-    status.innerText = "* Belum menandai titik pada denah";
-  }
-}
-
-function updatePinPosition() {
-  const pin = document.getElementById("mapPin");
-  if (!markedX || !markedY || !pin) return;
-  pin.style.left = markedX + "%";
-  pin.style.top = markedY + "%";
-}
-
 document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function () {
-  initBocorPanzoom();
   updateBocorFloorMap();
+  const container = document.getElementById("bocorMapContainer");
+  const wrapper = document.getElementById("bocorMapWrapper");
+  
+  if (container && !pzBocor && typeof Panzoom !== 'undefined') {
+    // 1. Inisialisasi Panzoom pada container
+    pzBocor = Panzoom(container, {
+      maxScale: 5,
+      minScale: 1,
+      contain: 'outside'
+    });
+
+    // 2. Pasang Listener Zoom & Pan TEPAT pada elemen container
+    if (wrapper) {
+      wrapper.addEventListener('wheel', pzBocor.zoomWithWheel);
+    }
+    
+    // Kunci skala pin saat zoom in/out dan pan/geser
+    container.addEventListener('panzoomchange', updateBocorPinPosition);
+    container.addEventListener('panzoomzoom', updateBocorPinPosition);
+    container.addEventListener('panzoompan', updateBocorPinPosition);
+
+    // 3. Listener Klik Marking Pin Bocor
+    container.addEventListener('click', function (e) {
+      const img = document.getElementById("bocorMapImage");
+      if (!img) return;
+
+      const rect = img.getBoundingClientRect();
+
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      if (clickX < 0 || clickX > rect.width || clickY < 0 || clickY > rect.height) return;
+
+      bocorMarkingX = (clickX / rect.width) * 100;
+      bocorMarkingY = (clickY / rect.height) * 100;
+
+      const pin = document.getElementById("bocorMapPin");
+      if (pin) {
+        // Pastikan class pin biru aktif
+        pin.className = "map-pin map-pin-water";
+        updateBocorPinPosition();
+      }
+
+      const status = document.getElementById("bocorMapStatus");
+      if (status) {
+        status.innerText = `✓ Titik lokasi marked (${bocorMarkingX.toFixed(1)}%, ${bocorMarkingY.toFixed(1)}%)`;
+        status.className = "text-success small mt-1 d-block fw-bold";
+      }
+    });
+  }
 });
   
+ // 1. KUNCI POSISI PIN DENGAN SKALA KEBALIKAN (BIAR TIDAK MEMBESAR DAN PRESISI)
+  function updatePinPosition() {
+    const pin = document.getElementById("mapPin");
+    if (!markedX || !markedY || pin.classList.contains("d-none")) return;
+
+    // Set posisi persentase murni pada denah
+    pin.style.left = markedX + "%";
+    pin.style.top = markedY + "%";
+
+    // Balikkan skala zoom agar ukuran pin tetap 20px dan titik tengahnya pas di kursor
+    const scale = pzCreate ? pzCreate.getScale() : 1;
+    const invScale = 1 / scale;
+    pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
+  }
+
+  function updateViewPinPosition() {
+  const viewPin = document.getElementById("viewMapPin");
+  if (!viewPin) return;
+
+  viewPin.style.left = viewMarkedX + "%";
+  viewPin.style.top = viewMarkedY + "%";
+
+  // Ambil skala Panzoom saat ini (default 1 jika belum zoom)
+  const currentScale = window.pzView ? window.pzView.getScale() : 1;
+  viewPin.style.transform = `translate(-50%, -50%) scale(${1 / currentScale})`;
+}
+
+  // 2. BACA KLIK LANGSUNG DARI ELEMEN GAMBAR (mapImage), BUKAN CONTAINER!
+  let startX = 0, startY = 0;
+  const mapImg = document.getElementById("mapImage");
+
+  if (mapImg) {
+    mapImg.addEventListener('pointerdown', (e) => { 
+      startX = e.clientX; 
+      startY = e.clientY; 
+    });
+
+    mapImg.addEventListener('pointerup', (e) => {
+      const diffX = Math.abs(e.clientX - startX);
+      const diffY = Math.abs(e.clientY - startY);
+
+      // Hanya proses jika klik murni (bukan drag/pan)
+      if (diffX < 8 && diffY < 8) {
+        // Ambil posisi & ukuran visual gambar saat ini di layar
+        const rect = mapImg.getBoundingClientRect();
+
+        // Hitung posisi klik relatif terhadap gambar denah itu sendiri
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+
+        // Hitung persentase murni piksel denah
+        const xPercent = (clickX / rect.width) * 100;
+        const yPercent = (clickY / rect.height) * 100;
+
+        if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
+          markedX = xPercent.toFixed(2);
+          markedY = yPercent.toFixed(2);
+
+          const pin = document.getElementById("mapPin");
+          pin.classList.remove("d-none");
+
+          updatePinPosition();
+
+          document.getElementById("mapStatus").className = "text-success small mt-1 d-block";
+          document.getElementById("mapStatus").innerText = "✓ Titik lokasi berhasil ditandai!";
+        }
+      }
+    });
+  }
 function loadChecklistItems() {
   const cat = document.getElementById("chkCategory").value;
   const items = CHECKLIST_PRESETS[cat] || [];
   const container = document.getElementById("checklistItemsContainer");
   container.innerHTML = "";
 
-  if (items.length === 0) {
-    container.innerHTML = `<div class="text-muted small italic p-2">Pilih kategori area di atas untuk menampilkan daftar item pemeriksaan.</div>`;
-    return;
-  }
-
   items.forEach((item, idx) => {
+    // Ambil teks item (apabila string langsung atau objek)
     const itemName = typeof item === 'string' ? item : (item.name || item.title || item);
 
     container.innerHTML += `
@@ -1701,92 +1300,72 @@ function loadChecklistItems() {
   }
 
   document.getElementById("checklistForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  
-  const cat = document.getElementById("chkCategory").value;
-  const items = CHECKLIST_PRESETS[cat] || [];
-  const btn = document.getElementById("btnSubmitChecklist");
+    e.preventDefault();
+    const cat = document.getElementById("chkCategory").value;
+    const items = CHECKLIST_PRESETS[cat] || [];
+    const btn = document.getElementById("btnSubmitChecklist");
 
-  // SESUAIKAN DENGAN ID DROPDOWN YANG ADA DI FORM INSPEKSI HTML
-  const floorVal = document.getElementById("selectFloor").value;
-  const zoneVal = document.getElementById("selectZone").value;
-  const areaVal = document.getElementById("selectArea").value;
+    let totalPass = 0; let totalFail = 0;
+    const chkData = [];
+    const failedReports = [];
 
-  if (!floorVal || !zoneVal || !cat) {
-    alert("Lengkapi data Lantai, Zone, dan Kategori Area!");
-    return;
-  }
+    btn.disabled = true; btn.innerText = "Proses Watermark & Mengirim...";
 
-  let totalPass = 0; 
-  let totalFail = 0;
-  const chkData = [];
-  const failedReports = [];
+    const baseLocation = document.getElementById("chkLocationDetail").value;
 
-  btn.disabled = true; 
-  btn.innerText = "Proses Watermark & Mengirim...";
+    for (let i = 0; i < items.length; i++) {
+      const status = document.querySelector(`input[name="chk_${i}"]:checked`).value;
+      
+      if (status === "PASS") {
+        totalPass++;
+        chkData.push({ item_name: items[i], status: "PASS" });
+      } else {
+        const subItems = document.getElementById(`fail_list_${i}`).getElementsByClassName('fail-sub-item');
 
-  for (let i = 0; i < items.length; i++) {
-    const passRadio = document.getElementById(`pass_${i}`);
-    const isPass = passRadio ? passRadio.checked : true;
+        for (let k = 0; k < subItems.length; k++) {
+          totalFail++;
+          const locVal = subItems[k].querySelector(`.sub-loc-${i}`).value;
+          const noteVal = subItems[k].querySelector(`.sub-note-${i}`).value || "Kerusakan ditemukan saat inspeksi rutin.";
+          const subLocText = locVal ? ` - ${locVal}` : '';
+          const fullLocation = `${baseLocation}${subLocText}`;
 
-    if (isPass) {
-      totalPass++;
-      chkData.push({ item_name: items[i], status: "PASS" });
-    } else {
-      const subItems = document.getElementById(`fail_list_${i}`)?.getElementsByClassName('fail-sub-item') || [];
+          const camInput = subItems[k].querySelector(`.sub-cam-${i}`);
+          const targetFile = (camInput.files && camInput.files[0]) ? camInput.files[0] : null;
 
-      for (let k = 0; k < subItems.length; k++) {
-        totalFail++;
-        const locVal = subItems[k].querySelector(`.sub-loc-${i}`)?.value || "";
-        const noteVal = subItems[k].querySelector(`.sub-note-${i}`)?.value || "Kerusakan ditemukan saat inspeksi rutin.";
-        const subLocText = locVal ? ` - ${locVal}` : '';
-        const fullLocation = `${areaVal}${subLocText}`;
+          let base64Photo = "";
+          if (targetFile) {
+            base64Photo = await applyWatermark(targetFile, currentUser.username, "REPORTED", fullLocation);
+          }
 
-        const camInput = subItems[k].querySelector(`.sub-cam-${i}`);
-        const targetFile = (camInput && camInput.files && camInput.files[0]) ? camInput.files[0] : null;
-
-        let base64Photo = "";
-        if (targetFile) {
-          base64Photo = await applyWatermark(targetFile, currentUser.username, "REPORTED", fullLocation);
+          chkData.push({ item_name: `${items[i]}${subLocText}`, status: "FAIL", note: noteVal });
+          failedReports.push({ item_name: `${items[i]}${subLocText}`, issue: noteVal, photo: base64Photo });
         }
-
-        chkData.push({ item_name: `${items[i]}${subLocText}`, status: "FAIL", note: noteVal });
-        failedReports.push({ 
-          item_name: `${items[i]}${subLocText}`, 
-          issue: noteVal, 
-          photo: base64Photo,
-          marking_x: "",
-          marking_y: ""
-        });
       }
     }
-  }
 
-  const payload = {
-    action: "saveChecklist",
-    username: currentUser ? currentUser.username : "Petugas",
-    floor: floorVal,
-    zone: zoneVal,
-    area_category: cat,
-    location_detail: areaVal || "Area Inspeksi",
-    checklist_items: chkData,
-    total_pass: totalPass,
-    total_fail: totalFail,
-    failed_reports: failedReports
-  };
+    const payload = {
+      action: "saveChecklist",
+      username: currentUser.username,
+      floor: document.getElementById("chkFloor").value,
+      zone: document.getElementById("chkZone").value,
+      area_category: cat,
+      location_detail: baseLocation,
+      checklist_items: chkData,
+      total_pass: totalPass,
+      total_fail: totalFail,
+      failed_reports: failedReports
+    };
 
-  const res = await fetchAPI(payload);
-  alert(res.message);
-  
-  btn.disabled = false; 
-  btn.innerText = "Simpan Hasil Inspeksi";
+    const res = await fetchAPI(payload);
+    alert(res.message);
+    btn.disabled = false; btn.innerText = "Simpan Hasil Inspeksi";
 
-  if (res.status === "success") {
-    document.getElementById("checklistForm").reset();
-    loadChecklistItems();
-    switchTab('list');
-  }
-});
+    if (res.status === "success") {
+      document.getElementById("checklistForm").reset();
+      loadChecklistItems();
+      switchTab('list');
+    }
+  });
 
   function setFilter(filterType) {
   currentFilter = filterType;
@@ -1917,51 +1496,41 @@ function loadChecklistItems() {
   });
 
   document.getElementById("requestOTPForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById("btnRequestOTP");
-  btn.disabled = true; 
-  btn.innerText = "Mengirim OTP...";
-  targetResetUsername = document.getElementById("otpTarget").value;
+    e.preventDefault();
+    const btn = document.getElementById("btnRequestOTP");
+    btn.disabled = true; btn.innerText = "Mengirim OTP...";
+    targetResetUsername = document.getElementById("otpTarget").value;
 
-  // Ganti target: targetResetUsername -> usernameOrEmail: targetResetUsername
-  const res = await fetchAPI({ 
-    action: "requestOTP", 
-    usernameOrEmail: targetResetUsername 
+    const res = await fetchAPI({ action: "requestOTP", target: targetResetUsername });
+    alert(res.message);
+    btn.disabled = false; btn.innerText = "Kirim Kode OTP Ke Email";
+
+    if (res.status === "success") {
+      document.getElementById("otpNotice").innerText = res.message;
+      showAuthCard("verifyOTPCard");
+    }
   });
-
-  alert(res.message);
-  btn.disabled = false; 
-  btn.innerText = "Kirim Kode OTP Ke Email";
-
-  if (res.status === "success") {
-    document.getElementById("otpNotice").innerText = res.message;
-    showAuthCard("verifyOTPCard");
-  }
-});
 
   document.getElementById("verifyOTPForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const btn = document.getElementById("btnVerifyReset");
-  btn.disabled = true; 
-  btn.innerText = "Memverifikasi...";
+    e.preventDefault();
+    const btn = document.getElementById("btnVerifyReset");
+    btn.disabled = true; btn.innerText = "Memverifikasi...";
 
-  // Sesuaikan nama key agar pas dengan yang dibaca Apps Script (req.username, req.otp, req.newPassword)
-  const res = await fetchAPI({
-    action: "verifyOTPAndReset",
-    username: targetResetUsername,
-    otp: document.getElementById("otpInputCode").value,
-    newPassword: document.getElementById("otpNewPass").value
+    const res = await fetchAPI({
+      action: "verifyOTPAndReset",
+      target: targetResetUsername,
+      otp_code: document.getElementById("otpInputCode").value,
+      new_password: document.getElementById("otpNewPass").value
+    });
+
+    alert(res.message);
+    btn.disabled = false; btn.innerText = "Simpan Password Baru";
+
+    if (res.status === "success") {
+      document.getElementById("verifyOTPForm").reset();
+      showAuthCard("loginCard");
+    }
   });
-
-  alert(res.message);
-  btn.disabled = false; 
-  btn.innerText = "Simpan Password Baru";
-
-  if (res.status === "success") {
-    document.getElementById("verifyOTPForm").reset();
-    showAuthCard("loginCard");
-  }
-});
 
   document.getElementById("reportForm").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -2015,18 +1584,21 @@ function loadChecklistItems() {
 function updateDashboardStats(reports) {
   if (!Array.isArray(reports)) return;
 
-  // Hitung langsung semua laporan yang masuk di sheet Reports
-  const reportedCount = reports.filter(r => (r.status || 'REPORTED').toUpperCase() === 'REPORTED').length;
-  const progressCount = reports.filter(r => {
+  // Filter khusus laporan direct
+  const directReports = reports.filter(r => !r.source && !r.severity && (r.type === 'DIRECT' || !r.type || r.issue));
+
+  // Hitung 3 status Lapor Direct
+  const reportedCount = directReports.filter(r => (r.status || 'REPORTED').toUpperCase() === 'REPORTED').length;
+  const progressCount = directReports.filter(r => {
     const st = (r.status || '').toUpperCase();
     return st === 'PROGRESS' || st === 'IN_PROGRESS';
   }).length;
-  const resolvedCount = reports.filter(r => {
+  const resolvedCount = directReports.filter(r => {
     const st = (r.status || '').toUpperCase();
     return st === 'RESOLVED' || st === 'DONE';
   }).length;
 
-  // Render angka ke kartu statistik Lapor Direct
+  // Tampilkan ke 3 angka kartu Lapor Direct
   const elReported = document.getElementById("statDirectReported");
   const elProgress = document.getElementById("statDirectProgress");
   const elResolved = document.getElementById("statDirectResolved");
@@ -2035,7 +1607,7 @@ function updateDashboardStats(reports) {
   if (elProgress) elProgress.innerText = progressCount;
   if (elResolved) elResolved.innerText = resolvedCount;
 
-  // Hitung total Lapor Bocor
+  // Hitung Lapor Bocor langsung dari API agar angkanya sama persis dengan Sheet Laporan_Bocor
   fetchAPI({ action: "getBocorReports" }).then(res => {
     if (res && res.data) {
       const elBocor = document.getElementById("statBocorReport");
@@ -2044,55 +1616,30 @@ function updateDashboardStats(reports) {
   }).catch(err => console.log(err));
 }
 
-  // 1. FUNGSI UNTUK PINDAH TAB DENGAN AMAN & BERSIH
+  // FUNGSI UTAMA PERPINDAHAN TAB BERSIH
 function switchTab(tabId) {
-  // Sembunyikan semua tab content yang ada
   document.querySelectorAll('.tab-pane').forEach(el => {
     el.classList.remove('show', 'active');
   });
-
-  // Cari ID tab (bisa pakai suffix 'Tab' atau nama langsung)
-  let targetTab = document.getElementById(tabId);
-  if (!targetTab && !tabId.endsWith('Tab')) {
-    targetTab = document.getElementById(tabId + 'Tab');
-  }
-
+  const targetTab = document.getElementById(tabId + 'Tab') || document.getElementById(tabId);
   if (targetTab) {
     targetTab.classList.add('show', 'active');
   }
 }
 
-// 2. KLIK KARTU BIRU (LAPOR DIRECT)
-function openDirectHistoryTab() {
-  switchTab('listTab'); // Buka tab riwayat utama (#listTab)
-  loadReports();        // Ambil & tampilkan laporan direct + hasil inspeksi
-}
-
-// 3. KLIK KARTU KUNING (LAPOR BOCOR)
+// FUNGSI KARTU KUNING (LAPOR BOCOR)
 function openBocorHistoryTab() {
-  switchTab('bocorHistoryTab'); // Buka tab riwayat bocor (#bocorHistoryTab)
-  loadBocorReports();           // Ambil & tampilkan riwayat kebocoran
+  switchTab('bocorHistoryTab');
+  if (typeof loadBocorReports === 'function') {
+    loadBocorReports();
+  }
 }
 
-// 4. PERBAIKAN FUNGSI LOAD REPORTS DARI SHEET 'Reports'
-async function loadReports() {
-  const container = document.getElementById("reportsContainer");
-  if (!container) return;
-
-  container.innerHTML = `<div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data laporan...</div>`;
-  
-  try {
-    const res = await fetchAPI({ action: "getReports" });
-    if (res.status === "success") { 
-      allReports = res.data || []; 
-      updateDashboardStats(allReports); 
-      renderReports(); 
-    } else {
-      container.innerHTML = "<div class='text-center text-danger py-4'>Gagal memuat data laporan.</div>";
-    }
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = "<div class='text-center text-danger py-4'>Terjadi kesalahan koneksi.</div>";
+// FUNGSI KARTU BIRU (LAPOR DIRECT)
+function openDirectHistoryTab() {
+  switchTab('listTab');
+  if (typeof loadReports === 'function') {
+    loadReports();
   }
 }
   
@@ -2242,64 +1789,48 @@ async function loadBocorReports() {
   // 3. Ambil data riwayat dari spreadsheet
   loadBocorReports();
 }
+  
+  function openUpdateModal(id, targetStatus, locationDetail) {
+    activeUpdateData = { id, targetStatus, locationDetail };
+    updateFile = null;
+    document.getElementById("progressNote").value = "";
+    document.getElementById("updatePhotoStatus").innerText = "";
+    document.getElementById("updateModalTitle").innerText = targetStatus === "PROGRESS" ? "Update Ke Status PROGRESS" : "Update Ke Status RESOLVED";
+    updateModal.show();
+  }
 
-function openUpdateModal(id, targetStatus, locationDetail) {
-  activeUpdateData = { id, targetStatus, locationDetail };
-  updateFile = null;
-  document.getElementById("progressNote").value = "";
-  document.getElementById("updatePhotoStatus").innerText = "";
-  document.getElementById("updateModalTitle").innerText = targetStatus === "PROGRESS" ? "Update Ke Status PROGRESS" : "Update Ke Status RESOLVED";
-  updateModal.show();
-}
+  async function submitUpdateProgress() {
+    const note = document.getElementById("progressNote").value;
+    if (!note) { alert("Isi deskripsi progress perbaikan!"); return; }
+    if (!updateFile) { alert("Ambil foto bukti perbaikan!"); return; }
 
-async function submitUpdateProgress() {
-  const note = document.getElementById("progressNote").value;
-  if (!note) { alert("Isi deskripsi progress perbaikan!"); return; }
-  if (!updateFile) { alert("Ambil foto bukti perbaikan!"); return; }
+    const btn = document.getElementById("btnSaveUpdate");
+    btn.disabled = true;
 
-  const btn = document.getElementById("btnSaveUpdate");
-  btn.disabled = true;
+    const watermarkedBase64 = await applyWatermark(updateFile, currentUser.username, activeUpdateData.targetStatus, activeUpdateData.locationDetail);
 
-  const watermarkedBase64 = await applyWatermark(updateFile, currentUser.username, activeUpdateData.targetStatus, activeUpdateData.locationDetail);
+    const res = await fetchAPI({
+      action: "updateProgress",
+      report_id: activeUpdateData.id,
+      new_status: activeUpdateData.targetStatus,
+      progress_note: note,
+      photo: watermarkedBase64
+    });
 
-  const res = await fetchAPI({
-    action: "updateProgress",
-    report_id: activeUpdateData.id,
-    new_status: activeUpdateData.targetStatus,
-    progress_note: note,
-    photo: watermarkedBase64
-  });
+    alert(res.message);
+    btn.disabled = false;
+    updateModal.hide();
+    loadReports();
+  }
 
-  alert(res.message);
-  btn.disabled = false;
-  updateModal.hide();
-  loadReports();
-}
-
-// ==========================================
-// FUNGSI PEMBANTU PIN MODAL RIWAYAT
-// ==========================================
-function updateViewPinPosition() {
-  const viewPin = document.getElementById("viewMapPin");
-  if (!viewPin || typeof viewMarkedX === 'undefined' || typeof viewMarkedY === 'undefined') return;
-
-  // Set posisi persentase presisi
-  viewPin.style.left = viewMarkedX + "%";
-  viewPin.style.top = viewMarkedY + "%";
-
-  // Kebalikan skala zoom Panzoom agar ukuran pin tetap konstan
-  const currentScale = window.pzView ? window.pzView.getScale() : 1;
-  viewPin.style.transform = `translate(-50%, -50%) scale(${1 / currentScale})`;
-}
-
-function openMapModal(floor, x, y) {
+  function openMapModal(floor, x, y) {
   viewMarkedX = parseFloat(x);
   viewMarkedY = parseFloat(y);
 
   const viewImg = document.getElementById("viewMapImage");
   if (!viewImg) return;
 
-  // Set properti touch action agar tidak bentrok gestur di HP
+  // Set properti touch action agar bisa pinch-to-zoom di HP
   viewImg.style.touchAction = "none";
   viewImg.style.userSelect = "none";
   viewImg.style.webkitUserDrag = "none";
@@ -2307,40 +1838,13 @@ function openMapModal(floor, x, y) {
   viewImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
 
   viewImg.onload = () => {
-    const container = document.getElementById("viewMapContainer");
-    const wrapper = document.getElementById("viewMapWrapper") || container?.parentElement;
-
-    if (container && typeof Panzoom !== 'undefined') {
-      container.style.transition = "none";
-      container.style.touchAction = "none";
-
-      if (window.pzView && typeof window.pzView.destroy === 'function') {
-        window.pzView.destroy();
-      }
-
-      window.pzView = Panzoom(container, {
-        maxScale: 5,
-        minScale: 1,
-        contain: 'outside',
-        animate: true,
-        duration: 200
-      });
-
-      // KUNCI UTAMA: Aktifkan Zoom pake Wheel Mouse pada Wrapper
-      if (wrapper) {
-        wrapper.removeEventListener('wheel', window.pzView.zoomWithWheel);
-        wrapper.addEventListener('wheel', (e) => {
-          e.preventDefault(); // Mencegah halaman utama ikut ter-scroll
-          window.pzView.zoomWithWheel(e);
-        }, { passive: false });
-      }
-
-      // Sesuaikan skala pin tiap kali di-zoom/pan
-      container.removeEventListener('panzoomchange', updateViewPinPosition);
-      container.addEventListener('panzoomchange', updateViewPinPosition);
+    // InisialisasiPanzoom tepat setelah gambar denah selesai ter-load
+    if (typeof initPanzoom === 'function') {
+      initPanzoom();
     }
-
-    if (window.pzView) window.pzView.reset({ animate: true, duration: 200 });
+    if (pzView && typeof pzView.reset === 'function') {
+      pzView.reset();
+    }
 
     const viewPin = document.getElementById("viewMapPin");
     if (viewPin) {
@@ -2349,9 +1853,8 @@ function openMapModal(floor, x, y) {
     }
   };
 
-  const titleEl = document.getElementById("mapModalTitle");
-  if (titleEl) titleEl.innerText = `Denah Kerusakan (${floor})`;
-
+  document.getElementById("mapModalTitle").innerText = `Denah Kerusakan (${floor})`;
+  
   // Tampilkan modal Bootstrap
   if (typeof mapModal !== 'undefined' && mapModal.show) {
     mapModal.show();
@@ -2360,17 +1863,22 @@ function openMapModal(floor, x, y) {
     if (mapModalEl) new bootstrap.Modal(mapModalEl).show();
   }
 }
-
-function zoomInMap() {
-  if (window.pzView) window.pzView.zoomIn({ animate: true, duration: 200 });
+  function zoomInMap() {
+  if (window.pzView) {
+    window.pzView.zoomIn({ animate: true, duration: 250 });
+  }
 }
 
 function zoomOutMap() {
-  if (window.pzView) window.pzView.zoomOut({ animate: true, duration: 200 });
+  if (window.pzView) {
+    window.pzView.zoomOut({ animate: true, duration: 250 });
+  }
 }
 
 function resetMapZoom() {
-  if (window.pzView) window.pzView.reset({ animate: true, duration: 200 });
+  if (window.pzView) {
+    window.pzView.reset({ animate: true, duration: 250 });
+  }
 }
 
   function getGoogleThumbnailUrl(driveUrl) {

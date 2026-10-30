@@ -1701,72 +1701,92 @@ function loadChecklistItems() {
   }
 
   document.getElementById("checklistForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const cat = document.getElementById("chkCategory").value;
-    const items = CHECKLIST_PRESETS[cat] || [];
-    const btn = document.getElementById("btnSubmitChecklist");
+  e.preventDefault();
+  
+  const cat = document.getElementById("chkCategory").value;
+  const items = CHECKLIST_PRESETS[cat] || [];
+  const btn = document.getElementById("btnSubmitChecklist");
 
-    let totalPass = 0; let totalFail = 0;
-    const chkData = [];
-    const failedReports = [];
+  // SESUAIKAN DENGAN ID DROPDOWN YANG ADA DI FORM INSPEKSI HTML
+  const floorVal = document.getElementById("selectFloor").value;
+  const zoneVal = document.getElementById("selectZone").value;
+  const areaVal = document.getElementById("selectArea").value;
 
-    btn.disabled = true; btn.innerText = "Proses Watermark & Mengirim...";
+  if (!floorVal || !zoneVal || !cat) {
+    alert("Lengkapi data Lantai, Zone, dan Kategori Area!");
+    return;
+  }
 
-    const baseLocation = document.getElementById("chkLocationDetail").value;
+  let totalPass = 0; 
+  let totalFail = 0;
+  const chkData = [];
+  const failedReports = [];
 
-    for (let i = 0; i < items.length; i++) {
-      const status = document.querySelector(`input[name="chk_${i}"]:checked`).value;
-      
-      if (status === "PASS") {
-        totalPass++;
-        chkData.push({ item_name: items[i], status: "PASS" });
-      } else {
-        const subItems = document.getElementById(`fail_list_${i}`).getElementsByClassName('fail-sub-item');
+  btn.disabled = true; 
+  btn.innerText = "Proses Watermark & Mengirim...";
 
-        for (let k = 0; k < subItems.length; k++) {
-          totalFail++;
-          const locVal = subItems[k].querySelector(`.sub-loc-${i}`).value;
-          const noteVal = subItems[k].querySelector(`.sub-note-${i}`).value || "Kerusakan ditemukan saat inspeksi rutin.";
-          const subLocText = locVal ? ` - ${locVal}` : '';
-          const fullLocation = `${baseLocation}${subLocText}`;
+  for (let i = 0; i < items.length; i++) {
+    const passRadio = document.getElementById(`pass_${i}`);
+    const isPass = passRadio ? passRadio.checked : true;
 
-          const camInput = subItems[k].querySelector(`.sub-cam-${i}`);
-          const targetFile = (camInput.files && camInput.files[0]) ? camInput.files[0] : null;
+    if (isPass) {
+      totalPass++;
+      chkData.push({ item_name: items[i], status: "PASS" });
+    } else {
+      const subItems = document.getElementById(`fail_list_${i}`)?.getElementsByClassName('fail-sub-item') || [];
 
-          let base64Photo = "";
-          if (targetFile) {
-            base64Photo = await applyWatermark(targetFile, currentUser.username, "REPORTED", fullLocation);
-          }
+      for (let k = 0; k < subItems.length; k++) {
+        totalFail++;
+        const locVal = subItems[k].querySelector(`.sub-loc-${i}`)?.value || "";
+        const noteVal = subItems[k].querySelector(`.sub-note-${i}`)?.value || "Kerusakan ditemukan saat inspeksi rutin.";
+        const subLocText = locVal ? ` - ${locVal}` : '';
+        const fullLocation = `${areaVal}${subLocText}`;
 
-          chkData.push({ item_name: `${items[i]}${subLocText}`, status: "FAIL", note: noteVal });
-          failedReports.push({ item_name: `${items[i]}${subLocText}`, issue: noteVal, photo: base64Photo });
+        const camInput = subItems[k].querySelector(`.sub-cam-${i}`);
+        const targetFile = (camInput && camInput.files && camInput.files[0]) ? camInput.files[0] : null;
+
+        let base64Photo = "";
+        if (targetFile) {
+          base64Photo = await applyWatermark(targetFile, currentUser.username, "REPORTED", fullLocation);
         }
+
+        chkData.push({ item_name: `${items[i]}${subLocText}`, status: "FAIL", note: noteVal });
+        failedReports.push({ 
+          item_name: `${items[i]}${subLocText}`, 
+          issue: noteVal, 
+          photo: base64Photo,
+          marking_x: "",
+          marking_y: ""
+        });
       }
     }
+  }
 
-    const payload = {
-      action: "saveChecklist",
-      username: currentUser.username,
-      floor: document.getElementById("chkFloor").value,
-      zone: document.getElementById("chkZone").value,
-      area_category: cat,
-      location_detail: baseLocation,
-      checklist_items: chkData,
-      total_pass: totalPass,
-      total_fail: totalFail,
-      failed_reports: failedReports
-    };
+  const payload = {
+    action: "saveChecklist",
+    username: currentUser ? currentUser.username : "Petugas",
+    floor: floorVal,
+    zone: zoneVal,
+    area_category: cat,
+    location_detail: areaVal || "Area Inspeksi",
+    checklist_items: chkData,
+    total_pass: totalPass,
+    total_fail: totalFail,
+    failed_reports: failedReports
+  };
 
-    const res = await fetchAPI(payload);
-    alert(res.message);
-    btn.disabled = false; btn.innerText = "Simpan Hasil Inspeksi";
+  const res = await fetchAPI(payload);
+  alert(res.message);
+  
+  btn.disabled = false; 
+  btn.innerText = "Simpan Hasil Inspeksi";
 
-    if (res.status === "success") {
-      document.getElementById("checklistForm").reset();
-      loadChecklistItems();
-      switchTab('list');
-    }
-  });
+  if (res.status === "success") {
+    document.getElementById("checklistForm").reset();
+    loadChecklistItems();
+    switchTab('list');
+  }
+});
 
   function setFilter(filterType) {
   currentFilter = filterType;
@@ -1897,41 +1917,51 @@ function loadChecklistItems() {
   });
 
   document.getElementById("requestOTPForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById("btnRequestOTP");
-    btn.disabled = true; btn.innerText = "Mengirim OTP...";
-    targetResetUsername = document.getElementById("otpTarget").value;
+  e.preventDefault();
+  const btn = document.getElementById("btnRequestOTP");
+  btn.disabled = true; 
+  btn.innerText = "Mengirim OTP...";
+  targetResetUsername = document.getElementById("otpTarget").value;
 
-    const res = await fetchAPI({ action: "requestOTP", target: targetResetUsername });
-    alert(res.message);
-    btn.disabled = false; btn.innerText = "Kirim Kode OTP Ke Email";
-
-    if (res.status === "success") {
-      document.getElementById("otpNotice").innerText = res.message;
-      showAuthCard("verifyOTPCard");
-    }
+  // Ganti target: targetResetUsername -> usernameOrEmail: targetResetUsername
+  const res = await fetchAPI({ 
+    action: "requestOTP", 
+    usernameOrEmail: targetResetUsername 
   });
+
+  alert(res.message);
+  btn.disabled = false; 
+  btn.innerText = "Kirim Kode OTP Ke Email";
+
+  if (res.status === "success") {
+    document.getElementById("otpNotice").innerText = res.message;
+    showAuthCard("verifyOTPCard");
+  }
+});
 
   document.getElementById("verifyOTPForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById("btnVerifyReset");
-    btn.disabled = true; btn.innerText = "Memverifikasi...";
+  e.preventDefault();
+  const btn = document.getElementById("btnVerifyReset");
+  btn.disabled = true; 
+  btn.innerText = "Memverifikasi...";
 
-    const res = await fetchAPI({
-      action: "verifyOTPAndReset",
-      target: targetResetUsername,
-      otp_code: document.getElementById("otpInputCode").value,
-      new_password: document.getElementById("otpNewPass").value
-    });
-
-    alert(res.message);
-    btn.disabled = false; btn.innerText = "Simpan Password Baru";
-
-    if (res.status === "success") {
-      document.getElementById("verifyOTPForm").reset();
-      showAuthCard("loginCard");
-    }
+  // Sesuaikan nama key agar pas dengan yang dibaca Apps Script (req.username, req.otp, req.newPassword)
+  const res = await fetchAPI({
+    action: "verifyOTPAndReset",
+    username: targetResetUsername,
+    otp: document.getElementById("otpInputCode").value,
+    newPassword: document.getElementById("otpNewPass").value
   });
+
+  alert(res.message);
+  btn.disabled = false; 
+  btn.innerText = "Simpan Password Baru";
+
+  if (res.status === "success") {
+    document.getElementById("verifyOTPForm").reset();
+    showAuthCard("loginCard");
+  }
+});
 
   document.getElementById("reportForm").addEventListener("submit", async (e) => {
     e.preventDefault();

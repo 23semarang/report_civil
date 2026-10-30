@@ -2044,14 +2044,14 @@ function updateDashboardStats(reports) {
   }).catch(err => console.log(err));
 }
 
-  // Fungsi perbaikan perpindahan tab
+  // 1. FUNGSI UNTUK PINDAH TAB DENGAN AMAN & BERSIH
 function switchTab(tabId) {
-  // Sembunyikan semua konten tab
+  // Sembunyikan semua tab content yang ada
   document.querySelectorAll('.tab-pane').forEach(el => {
     el.classList.remove('show', 'active');
   });
 
-  // Ambil elemen tab tujuan
+  // Cari ID tab (bisa pakai suffix 'Tab' atau nama langsung)
   let targetTab = document.getElementById(tabId);
   if (!targetTab && !tabId.endsWith('Tab')) {
     targetTab = document.getElementById(tabId + 'Tab');
@@ -2062,11 +2062,37 @@ function switchTab(tabId) {
   }
 }
 
-// Fungsi pemicu saat Kartu Lapor Direct diklik
+// 2. KLIK KARTU BIRU (LAPOR DIRECT)
 function openDirectHistoryTab() {
-  switchTab('listTab'); // Membuka tab #listTab tempat #reportsContainer berada
-  if (typeof loadReports === 'function') {
-    loadReports();
+  switchTab('listTab'); // Buka tab riwayat utama (#listTab)
+  loadReports();        // Ambil & tampilkan laporan direct + hasil inspeksi
+}
+
+// 3. KLIK KARTU KUNING (LAPOR BOCOR)
+function openBocorHistoryTab() {
+  switchTab('bocorHistoryTab'); // Buka tab riwayat bocor (#bocorHistoryTab)
+  loadBocorReports();           // Ambil & tampilkan riwayat kebocoran
+}
+
+// 4. PERBAIKAN FUNGSI LOAD REPORTS DARI SHEET 'Reports'
+async function loadReports() {
+  const container = document.getElementById("reportsContainer");
+  if (!container) return;
+
+  container.innerHTML = `<div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data laporan...</div>`;
+  
+  try {
+    const res = await fetchAPI({ action: "getReports" });
+    if (res.status === "success") { 
+      allReports = res.data || []; 
+      updateDashboardStats(allReports); 
+      renderReports(); 
+    } else {
+      container.innerHTML = "<div class='text-center text-danger py-4'>Gagal memuat data laporan.</div>";
+    }
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = "<div class='text-center text-danger py-4'>Terjadi kesalahan koneksi.</div>";
   }
 }
   

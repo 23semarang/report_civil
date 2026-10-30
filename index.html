@@ -2015,21 +2015,18 @@ function loadChecklistItems() {
 function updateDashboardStats(reports) {
   if (!Array.isArray(reports)) return;
 
-  // Filter khusus laporan direct
-  const directReports = reports.filter(r => !r.source && !r.severity && (r.type === 'DIRECT' || !r.type || r.issue));
-
-  // Hitung 3 status Lapor Direct
-  const reportedCount = directReports.filter(r => (r.status || 'REPORTED').toUpperCase() === 'REPORTED').length;
-  const progressCount = directReports.filter(r => {
+  // Hitung langsung semua laporan yang masuk di sheet Reports
+  const reportedCount = reports.filter(r => (r.status || 'REPORTED').toUpperCase() === 'REPORTED').length;
+  const progressCount = reports.filter(r => {
     const st = (r.status || '').toUpperCase();
     return st === 'PROGRESS' || st === 'IN_PROGRESS';
   }).length;
-  const resolvedCount = directReports.filter(r => {
+  const resolvedCount = reports.filter(r => {
     const st = (r.status || '').toUpperCase();
     return st === 'RESOLVED' || st === 'DONE';
   }).length;
 
-  // Tampilkan ke 3 angka kartu Lapor Direct
+  // Render angka ke kartu statistik Lapor Direct
   const elReported = document.getElementById("statDirectReported");
   const elProgress = document.getElementById("statDirectProgress");
   const elResolved = document.getElementById("statDirectResolved");
@@ -2038,7 +2035,7 @@ function updateDashboardStats(reports) {
   if (elProgress) elProgress.innerText = progressCount;
   if (elResolved) elResolved.innerText = resolvedCount;
 
-  // Hitung Lapor Bocor langsung dari API agar angkanya sama persis dengan Sheet Laporan_Bocor
+  // Hitung total Lapor Bocor
   fetchAPI({ action: "getBocorReports" }).then(res => {
     if (res && res.data) {
       const elBocor = document.getElementById("statBocorReport");
@@ -2047,28 +2044,27 @@ function updateDashboardStats(reports) {
   }).catch(err => console.log(err));
 }
 
-  // FUNGSI UTAMA PERPINDAHAN TAB BERSIH
+  // Fungsi perbaikan perpindahan tab
 function switchTab(tabId) {
+  // Sembunyikan semua konten tab
   document.querySelectorAll('.tab-pane').forEach(el => {
     el.classList.remove('show', 'active');
   });
-  const targetTab = document.getElementById(tabId + 'Tab') || document.getElementById(tabId);
+
+  // Ambil elemen tab tujuan
+  let targetTab = document.getElementById(tabId);
+  if (!targetTab && !tabId.endsWith('Tab')) {
+    targetTab = document.getElementById(tabId + 'Tab');
+  }
+
   if (targetTab) {
     targetTab.classList.add('show', 'active');
   }
 }
 
-// FUNGSI KARTU KUNING (LAPOR BOCOR)
-function openBocorHistoryTab() {
-  switchTab('bocorHistoryTab');
-  if (typeof loadBocorReports === 'function') {
-    loadBocorReports();
-  }
-}
-
-// FUNGSI KARTU BIRU (LAPOR DIRECT)
+// Fungsi pemicu saat Kartu Lapor Direct diklik
 function openDirectHistoryTab() {
-  switchTab('listTab');
+  switchTab('listTab'); // Membuka tab #listTab tempat #reportsContainer berada
   if (typeof loadReports === 'function') {
     loadReports();
   }

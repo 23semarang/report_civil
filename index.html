@@ -2005,7 +2005,7 @@ function resetMapZoom() {
     return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(r => r.json());
   }
      
-      // 1. EVENT LISTENER: AMBIL MULTIPLE FOTO, WATERMARK, & NOTIFIKASI STATUS LAPOR BOCOR
+      // 1. EVENT LISTENER: MULTIPLE FOTO + WATERMARK + AUTO COMPRESS/RESIZE
 let bocorBase64Photos = [];
 
 const bocorPhotoInput = document.getElementById("bocorPhotoCamera");
@@ -2027,21 +2027,31 @@ if (bocorPhotoInput) {
 
     bocorBase64Photos = []; // Clear data lama
 
-    // Fungsi helper untuk memproses 1 foto + watermark
+    // Helper process watermark + resize otomatis agar payload kecil & super cepat
     const processWatermark = (file) => {
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = function (evt) {
           const img = new Image();
           img.onload = function () {
+            // BATASI RESULUSI MAX 1280px (AGAR SERVER GOOGLE KIKIRIM SEJATENYA DETIKAN)
+            const MAX_WIDTH = 1280;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
+            }
+
             const canvas = document.createElement("canvas");
+            canvas.width = width;
+            canvas.height = height;
             const ctx = canvas.getContext("2d");
 
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
+            ctx.drawImage(img, 0, 0, width, height);
 
-            // Data untuk Watermark
+            // Data Watermark
             const now = new Date();
             const timeString = now.toLocaleDateString('id-ID', {
               day: '2-digit', month: 'short', year: 'numeric',
@@ -2053,13 +2063,13 @@ if (bocorPhotoInput) {
             const locationVal = document.getElementById("bocorLocation") ? document.getElementById("bocorLocation").value : "-";
             const fullLocation = `${floorVal} - ${locationVal}`;
 
-            // Ukuran Font Responsif
-            const baseFontSize = Math.max(18, Math.floor(canvas.width / 25));
+            // Font & Layout Responsif
+            const baseFontSize = Math.max(16, Math.floor(canvas.width / 30));
             const padding = Math.floor(baseFontSize * 0.8);
             const startX = Math.floor(canvas.width * 0.04);
             let startY = canvas.height - Math.floor(baseFontSize * 6);
 
-            // 1. BADGE MERAH: STATUS: REPORTED
+            // 1. BADGE STATUS
             ctx.font = `bold ${baseFontSize}px sans-serif`;
             const statusText = "STATUS: REPORTED";
             const statusWidth = ctx.measureText(statusText).width + (padding * 2);
@@ -2080,7 +2090,7 @@ if (bocorPhotoInput) {
             ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
             ctx.fillRect(startX, startY, boxWidth, boxHeight);
 
-            // 3. TEKS ISI
+            // 3. TEKS WATERMARK
             ctx.fillStyle = "#FFFFFF";
             ctx.font = `bold ${Math.floor(baseFontSize * 0.85)}px sans-serif`;
 
@@ -2088,7 +2098,8 @@ if (bocorPhotoInput) {
             ctx.fillText(`Lokasi: ${fullLocation}`, startX + padding, startY + (lineGap * 2));
             ctx.fillText(`Waktu: ${timeString}`, startX + padding, startY + (lineGap * 3));
 
-            resolve(canvas.toDataURL("image/jpeg", 0.8));
+            // Kompresi JPEG kualitas 0.7 (Hasil bersih, file ringan)
+            resolve(canvas.toDataURL("image/jpeg", 0.7));
           };
           img.src = evt.target.result;
         };
@@ -2096,7 +2107,6 @@ if (bocorPhotoInput) {
       });
     };
 
-    // Process semua foto secara asynchronous
     for (let i = 0; i < files.length; i++) {
       const watermarkedBase64 = await processWatermark(files[i]);
       if (watermarkedBase64) bocorBase64Photos.push(watermarkedBase64);
@@ -2109,18 +2119,21 @@ if (bocorPhotoInput) {
   });
 }
 
-  // 2. TAMBAHKAN SCRIPT PENGHUBUNG INI TEPAT DI BAWAHNYA
-  const cameraOnlyInput = document.getElementById("bocorPhotoCameraOnly");
-  if (cameraOnlyInput) {
-    cameraOnlyInput.addEventListener("change", function (e) {
-      const galleryInput = document.getElementById("bocorPhotoCamera");
-      if (galleryInput && e.target.files.length > 0) {
-        const event = new Event('change', { bubbles: true });
-        Object.defineProperty(galleryInput, 'files', { value: e.target.files, writable: false });
-        galleryInput.dispatchEvent(event);
+// 2. SCRIPT PENGHUBUNG AMBIL FOTO KAMERA (BEBAS INFINITE LOOP)
+const cameraOnlyInput = document.getElementById("bocorPhotoCameraOnly");
+if (cameraOnlyInput) {
+  cameraOnlyInput.addEventListener("change", function (e) {
+    const galleryInput = document.getElementById("bocorPhotoCamera");
+    if (galleryInput && e.target.files.length > 0) {
+      const dataTransfer = new DataTransfer();
+      for (let i = 0; i < e.target.files.length; i++) {
+        dataTransfer.items.add(e.target.files[i]);
       }
-    });
-  }
+      galleryInput.files = dataTransfer.files;
+      galleryInput.dispatchEvent(new Event("change"));
+    }
+  });
+}
 
   // HANDLER SUBMIT FORM LAPOR BOCOR (FIXED ASYNC & LOCK KOORDINAT)
 const bocorForm = document.getElementById("bocorForm");

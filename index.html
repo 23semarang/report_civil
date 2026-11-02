@@ -1142,53 +1142,72 @@ function zoomOutBocor() {
   if (pzBocor) pzBocor.zoomOut({ animate: true, duration: 200 });
 }
 
-// LISTEN KLIK PIN DI DENAH
-let startBocorX = 0, startBocorY = 0;
+// LISTEN KLIK PIN DI DENAH (DIRECT & BOCOR)
 document.addEventListener("DOMContentLoaded", function () {
-  const bocorMapImg = document.getElementById("bocorMapImage");
+  // 1. EVENT LISTENER KLIK DENAH LAPOR DIRECT (#mapImage)
+  const mapImg = document.getElementById("mapImage");
+  if (mapImg) {
+    mapImg.addEventListener("click", function (e) {
+      const rect = mapImg.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
 
-  if (bocorMapImg) {
-    bocorMapImg.addEventListener('pointerdown', (e) => { 
-      startBocorX = e.clientX; 
-      startBocorY = e.clientY; 
-    });
+      const xPercent = ((clickX / rect.width) * 100).toFixed(2);
+      const yPercent = ((clickY / rect.height) * 100).toFixed(2);
 
-    bocorMapImg.addEventListener('pointerup', (e) => {
-      const diffX = Math.abs(e.clientX - startBocorX);
-      const diffY = Math.abs(e.clientY - startBocorY);
+      if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
+        markedX = xPercent;
+        markedY = yPercent;
 
-      if (diffX < 6 && diffY < 6) {
-        const rect = bocorMapImg.getBoundingClientRect();
+        const pin = document.getElementById("mapPin");
+        if (pin) {
+          pin.className = "map-pin";
+          pin.classList.remove("d-none");
+          updatePinPosition();
+        }
 
-        const clickX = e.clientX - rect.left;
-        const clickY = e.clientY - rect.top;
-
-        const xPercent = (clickX / rect.width) * 100;
-        const yPercent = (clickY / rect.height) * 100;
-
-        if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
-          bocorMarkingX = xPercent.toFixed(2);
-          bocorMarkingY = yPercent.toFixed(2);
-
-          const pin = document.getElementById("bocorMapPin");
-          if (pin) {
-            pin.className = "map-pin map-pin-water";
-            pin.classList.remove("d-none");
-            updateBocorPinPosition();
-          }
-
-          const status = document.getElementById("bocorMapStatus");
-          if (status) {
-            status.innerText = `✓ Titik lokasi marked (${bocorMarkingX}%, ${bocorMarkingY}%)`;
-            status.className = "text-success small mt-1 d-block fw-bold";
-          }
+        const status = document.getElementById("mapStatus");
+        if (status) {
+          status.innerText = `✓ Titik lokasi marked (${markedX}%, ${markedY}%)`;
+          status.className = "text-success small mt-1 d-block fw-bold";
         }
       }
     });
   }
 
-  // Panggil saat pertama kali load
+  // 2. EVENT LISTENER KLIK DENAH LAPOR BOCOR (#bocorMapImage)
+  const bocorMapImg = document.getElementById("bocorMapImage");
+  if (bocorMapImg) {
+    bocorMapImg.addEventListener("click", function (e) {
+      const rect = bocorMapImg.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      const xPercent = ((clickX / rect.width) * 100).toFixed(2);
+      const yPercent = ((clickY / rect.height) * 100).toFixed(2);
+
+      if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
+        bocorMarkingX = xPercent;
+        bocorMarkingY = yPercent;
+
+        const pin = document.getElementById("bocorMapPin");
+        if (pin) {
+          pin.className = "map-pin map-pin-water";
+          pin.classList.remove("d-none");
+          updateBocorPinPosition();
+        }
+
+        const status = document.getElementById("bocorMapStatus");
+        if (status) {
+          status.innerText = `✓ Titik lokasi marked (${bocorMarkingX}%, ${bocorMarkingY}%)`;
+          status.className = "text-success small mt-1 d-block fw-bold";
+        }
+      }
+    });
+  }
+
   initBocorPanzoom();
+  if (currentUser) showApp();
 });
 
 // Panggil saat pindah tab Lapor Bocor

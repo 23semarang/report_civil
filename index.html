@@ -730,11 +730,34 @@
       </div>
 
       <div class="mb-3">
-        <label class="form-label small fw-bold">Foto Dokumen Kebocoran</label>
-        <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('bocorPhotoCamera').click()"><i class="bi bi-camera me-1"></i> Ambil Foto Bocor</button>
-        <input type="file" id="bocorPhotoCamera" class="d-none" accept="image/*" multiple>
-        <small id="bocorPhotoStatus" class="text-muted d-block"></small>
-      </div>
+  <label class="form-label small fw-bold text-secondary">Foto Dokumen Kebocoran</label>
+  <div class="d-flex gap-2 mb-1">
+    <!-- Tombol Kamera (Modern SVG Icon) -->
+    <button type="button" class="btn btn-outline-primary btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold" onclick="document.getElementById('bocorPhotoCameraOnly').click()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera-fill" viewBox="0 0 16 16">
+        <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+        <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 7.172 2H8.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 5.172 4H2zm0.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"/>
+      </svg>
+      Ambil Foto
+    </button>
+
+    <!-- Tombol Galeri Multiple (Modern SVG Icon) -->
+    <button type="button" class="btn btn-outline-secondary btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold" onclick="document.getElementById('bocorPhotoCamera').click()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-images" viewBox="0 0 16 16">
+        <path d="M4.5 3a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-5 0zm0 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+        <path d="M14.002 2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10zm-10-1a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V4a3 3 0 0 0-3-3h-10z"/>
+        <path d="M10.648 7.646a.5.5 0 0 1 .577-.093l3.777 2.158a.5.5 0 1 1-.492.87L11 8.611l-2.58 2.553a.5.5 0 0 1-.722-.016l-1.62-1.8-2.324 2.324a.5.5 0 0 1-.707-.707l2.677-2.677a.5.5 0 0 1 .715.013l1.583 1.76 2.308-2.285z"/>
+      </svg>
+      Pilih Galeri
+    </button>
+  </div>
+
+  <!-- Hidden Inputs -->
+  <input type="file" id="bocorPhotoCameraOnly" class="d-none" accept="image/*" capture="environment">
+  <input type="file" id="bocorPhotoCamera" class="d-none" accept="image/*" multiple>
+
+  <small id="bocorPhotoStatus" class="text-muted d-block mt-1"></small>
+</div>
 
       <button type="submit" id="btnSubmitBocor" class="btn btn-primary w-100">Kirim Laporan Kebocoran</button>
     </form>
@@ -2085,6 +2108,19 @@ if (bocorPhotoInput) {
     }
   });
 }
+
+  // 2. TAMBAHKAN SCRIPT PENGHUBUNG INI TEPAT DI BAWAHNYA
+  const cameraOnlyInput = document.getElementById("bocorPhotoCameraOnly");
+  if (cameraOnlyInput) {
+    cameraOnlyInput.addEventListener("change", function (e) {
+      const galleryInput = document.getElementById("bocorPhotoCamera");
+      if (galleryInput && e.target.files.length > 0) {
+        const event = new Event('change', { bubbles: true });
+        Object.defineProperty(galleryInput, 'files', { value: e.target.files, writable: false });
+        galleryInput.dispatchEvent(event);
+      }
+    });
+  }
 
   // HANDLER SUBMIT FORM LAPOR BOCOR (FIXED ASYNC & LOCK KOORDINAT)
 const bocorForm = document.getElementById("bocorForm");

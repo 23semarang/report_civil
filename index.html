@@ -1142,38 +1142,59 @@ function zoomOutBocor() {
   if (pzBocor) pzBocor.zoomOut({ animate: true, duration: 200 });
 }
 
-// LISTEN KLIK PIN DI DENAH (DIRECT & BOCOR)
+// LISTEN KLIK PIN DI DENAH (FIXED TRACKING)
+let startBocorX = 0, startBocorY = 0;
+
 document.addEventListener("DOMContentLoaded", function () {
-  // 1. EVENT LISTENER KLIK DENAH LAPOR DIRECT (#mapImage)
-  const mapImg = document.getElementById("mapImage");
-  if (mapImg) {
-    mapImg.addEventListener("click", function (e) {
-      const rect = mapImg.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
+  const bocorMapImg = document.getElementById("bocorMapImage");
 
-      const xPercent = ((clickX / rect.width) * 100).toFixed(2);
-      const yPercent = ((clickY / rect.height) * 100).toFixed(2);
+  if (bocorMapImg) {
+    bocorMapImg.addEventListener('pointerdown', (e) => { 
+      startBocorX = e.clientX; 
+      startBocorY = e.clientY; 
+    });
 
-      if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
-        markedX = xPercent;
-        markedY = yPercent;
+    bocorMapImg.addEventListener('pointerup', (e) => {
+      const diffX = Math.abs(e.clientX - startBocorX);
+      const diffY = Math.abs(e.clientY - startBocorY);
 
-        const pin = document.getElementById("mapPin");
-        if (pin) {
-          pin.className = "map-pin";
-          pin.classList.remove("d-none");
-          updatePinPosition();
-        }
+      // Mengizinkan toleransi pergeseran kecil (< 10px) agar tetap terdeteksi sebagai Klik/Tap
+      if (diffX < 10 && diffY < 10) {
+        const rect = bocorMapImg.getBoundingClientRect();
 
-        const status = document.getElementById("mapStatus");
-        if (status) {
-          status.innerText = `✓ Titik lokasi marked (${markedX}%, ${markedY}%)`;
-          status.className = "text-success small mt-1 d-block fw-bold";
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+
+        const xPercent = (clickX / rect.width) * 100;
+        const yPercent = (clickY / rect.height) * 100;
+
+        if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
+          // PAKSA SIMPAN KE VARIABEL GLOBAL
+          window.bocorMarkingX = xPercent.toFixed(2);
+          window.bocorMarkingY = yPercent.toFixed(2);
+          bocorMarkingX = window.bocorMarkingX;
+          bocorMarkingY = window.bocorMarkingY;
+
+          const pin = document.getElementById("bocorMapPin");
+          if (pin) {
+            pin.className = "map-pin map-pin-water";
+            pin.classList.remove("d-none");
+            updateBocorPinPosition();
+          }
+
+          const status = document.getElementById("bocorMapStatus");
+          if (status) {
+            status.innerText = `✓ Titik lokasi marked (${bocorMarkingX}%, ${bocorMarkingY}%)`;
+            status.className = "text-success small mt-1 d-block fw-bold";
+          }
         }
       }
     });
   }
+
+  initBocorPanzoom();
+  if (currentUser) showApp();
+});
 
   // 2. EVENT LISTENER KLIK DENAH LAPOR BOCOR (#bocorMapImage)
   const bocorMapImg = document.getElementById("bocorMapImage");
@@ -2060,10 +2081,16 @@ function resetMapZoom() {
     });
   }
 
-  // 2. HANDLER SUBMIT FORM LAPOR BOCOR
+  // 2. HANDLER SUBMIT FORM LAPOR BOCOR (FIXED KOORDINAT)
   if (bocorForm) {
     bocorForm.addEventListener("submit", function (e) {
       e.preventDefault();
+
+      // VALIDASI: Wajib beri tanda titik di denah!
+      if (!bocorMarkingX || !bocorMarkingY) {
+        alert("Silakan tandai titik lokasi kebocoran pada denah terlebih dahulu!");
+        return;
+      }
 
       const btnSubmit = document.getElementById("btnSubmitBocor");
       btnSubmit.disabled = true;
@@ -2078,13 +2105,12 @@ function resetMapZoom() {
           severity: document.querySelector('input[name="debitAir"]:checked') ? document.querySelector('input[name="debitAir"]:checked').value : "RINGAN",
           location_detail: document.getElementById("bocorLocation").value,
           issue: document.getElementById("bocorIssue").value,
-          marking_x: bocorMarkingX,
-          marking_y: bocorMarkingY,
+          marking_x: String(bocorMarkingX || window.bocorMarkingX || ""),
+          marking_y: String(bocorMarkingY || window.bocorMarkingY || ""),
           photo: photoData || bocorBase64Photo
         };
 
-        // PASTIKAN NAMA VARIABEL URL DI SINI SAMA DENGAN FORM DIREK (misal: SCRIPT_URL / API_URL)
-        fetch("https://script.google.com/macros/s/AKfycbxYfqKB2SSDxPXGdwI5mqwivozqUi28DiLw2yS8Q5pHbwAdvEPL2xUbsq7mdE1RQ5wN/exec", {
+        fetch(API_URL, {
           method: "POST",
           body: JSON.stringify(payload)
         })
@@ -2114,7 +2140,7 @@ function resetMapZoom() {
         });
       };
 
-          const bocorPhotoInput = document.getElementById("bocorPhotoCamera");
+      const bocorPhotoInput = document.getElementById("bocorPhotoCamera");
       
       if (bocorPhotoInput && bocorPhotoInput.files && bocorPhotoInput.files[0]) {
         const reader = new FileReader();
@@ -2125,8 +2151,8 @@ function resetMapZoom() {
       } else {
         sendBocorData(bocorBase64Photo || "");
       }
-        });
-      }
+    });
+  }
   
   // ==========================================
 // 3. EVENT LISTENER HIDE NAMA AKUN SAAT SCROLL DOWN

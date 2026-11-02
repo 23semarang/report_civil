@@ -2080,13 +2080,12 @@ function resetMapZoom() {
     bocorForm.addEventListener("submit", function (e) {
       e.preventDefault();
 
-      // Lock nilai koordinat saat ini (ambil dari variabel global/window)
-      const currentX = bocorMarkingX || window.bocorMarkingX || "";
-      const currentY = bocorMarkingY || window.bocorMarkingY || "";
+      // Lock koordinat langsung dari window global saat tombol submit diklik
+      const finalX = window.bocorMarkingX || bocorMarkingX || "";
+      const finalY = window.bocorMarkingY || bocorMarkingY || "";
 
-      // Validasi wajib klik denah sebelum kirim
-      if (!currentX || !currentY) {
-        alert("Silakan klik/tandai titik lokasi kebocoran pada denah terlebih dahulu!");
+      if (!finalX || !finalY) {
+        alert("Silakan tandai titik lokasi kebocoran pada denah terlebih dahulu!");
         return;
       }
 
@@ -2102,8 +2101,8 @@ function resetMapZoom() {
         severity: document.querySelector('input[name="debitAir"]:checked') ? document.querySelector('input[name="debitAir"]:checked').value : "RINGAN",
         location_detail: document.getElementById("bocorLocation").value,
         issue: document.getElementById("bocorIssue").value,
-        marking_x: String(currentX),
-        marking_y: String(currentY),
+        marking_x: String(finalX),
+        marking_y: String(finalY),
         photo: bocorBase64Photo || ""
       };
 
@@ -2119,8 +2118,14 @@ function resetMapZoom() {
         if (res.status === "success") {
           alert("✓ " + res.message);
           bocorForm.reset();
-          if (typeof resetBocorMapAndPin === 'function') resetBocorMapAndPin();
           
+          // Clear koordinat hanya SETELAH respon sukses dari server
+          window.bocorMarkingX = null;
+          window.bocorMarkingY = null;
+          bocorMarkingX = null;
+          bocorMarkingY = null;
+          
+          if (typeof resetBocorMapAndPin === 'function') resetBocorMapAndPin();
           const tabLaporanBtn = document.getElementById("tab-laporan");
           if (tabLaporanBtn) tabLaporanBtn.click();
           if (typeof loadReports === "function") loadReports();
@@ -2131,7 +2136,7 @@ function resetMapZoom() {
       .catch(err => {
         btnSubmit.disabled = false;
         btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
-        alert("Terjadi kesalahan koneksi saat mengirim laporan kebocoran.");
+        alert("Terjadi kesalahan koneksi saat mengirim laporan.");
         console.error(err);
       });
     });

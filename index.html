@@ -1213,15 +1213,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const pin = document.getElementById("bocorMapPin");
         if (pin) {
-          pin.className = "map-pin map-pin-water";
-          pin.classList.remove("d-none");
-          updateBocorPinPosition();
-        }
+            pin.className = "map-pin map-pin-water";
+            pin.classList.remove("d-none");
+            updateBocorPinPosition();
+          }
 
-        const status = document.getElementById("bocorMapStatus");
-        if (status) {
-          status.innerText = `✓ Titik lokasi marked (${bocorMarkingX}%, ${bocorMarkingY}%)`;
-          status.className = "text-success small mt-1 d-block fw-bold";
+          const status = document.getElementById("bocorMapStatus");
+          if (status) {
+            status.innerText = `✓ Titik lokasi marked (${bocorMarkingX}%, ${bocorMarkingY}%)`;
+            status.className = "text-success small mt-1 d-block fw-bold";
+          }
         }
       }
     });

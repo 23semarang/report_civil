@@ -2074,73 +2074,90 @@ function resetMapZoom() {
     });
   }
 
-  // 2. HANDLER SUBMIT FORM LAPOR BOCOR (FIXED KOORDINAT)
-  const bocorForm = document.getElementById("bocorForm");
-  if (bocorForm) {
-    bocorForm.addEventListener("submit", function (e) {
-      e.preventDefault();
+  // HANDLER SUBMIT FORM LAPOR BOCOR (FIXED ASYNC & LOCK KOORDINAT)
+const bocorForm = document.getElementById("bocorForm");
+if (bocorForm) {
+  bocorForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
 
-      // Lock koordinat langsung dari window global saat tombol submit diklik
-      const finalX = window.bocorMarkingX || bocorMarkingX || "";
-      const finalY = window.bocorMarkingY || bocorMarkingY || "";
+    // 1. KUNCI KOORDINAT SEBELUM PROSES LAIN BERJALAN
+    const currentX = window.bocorMarkingX || bocorMarkingX || "";
+    const currentY = window.bocorMarkingY || bocorMarkingY || "";
 
-      if (!finalX || !finalY) {
-        alert("Silakan tandai titik lokasi kebocoran pada denah terlebih dahulu!");
-        return;
-      }
+    // Validasi: Wajib tandai titik pada denah
+    if (!currentX || !currentY) {
+      alert("Silakan tandai titik lokasi kebocoran pada denah terlebih dahulu!");
+      return;
+    }
 
-      const btnSubmit = document.getElementById("btnSubmitBocor");
-      btnSubmit.disabled = true;
-      btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...`;
+    const btnSubmit = document.getElementById("btnSubmitBocor");
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...`;
 
-      const payload = {
-        action: "saveLaporBocor",
-        username: (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : "Petugas",
-        floor: document.getElementById("bocorFloor").value,
-        source: document.getElementById("bocorSource").value,
-        severity: document.querySelector('input[name="debitAir"]:checked') ? document.querySelector('input[name="debitAir"]:checked').value : "RINGAN",
-        location_detail: document.getElementById("bocorLocation").value,
-        issue: document.getElementById("bocorIssue").value,
-        marking_x: String(finalX),
-        marking_y: String(finalY),
-        photo: bocorBase64Photo || ""
-      };
+    // 2. AMBIL FOTO WATERMARK / FILE DENGAN PROMISE (AGAR ASYNC TUNGGU SELESAI)
+    let finalPhotoBase64 = bocorBase64Photo || "";
+    const bocorPhotoInput = document.getElementById("bocorPhotoCamera");
 
-      fetch(API_URL, {
+    if (!finalPhotoBase64 && bocorPhotoInput && bocorPhotoInput.files && bocorPhotoInput.files[0]) {
+      finalPhotoBase64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (evt) => resolve(evt.target.result);
+        reader.onerror = () => resolve("");
+        reader.readAsDataURL(bocorPhotoInput.files[0]);
+      });
+    }
+
+    // 3. SUSUN PAYLOAD DENGAN KOORDINAT YANG SUDAH DIKUNCI
+    const payload = {
+      action: "saveLaporBocor",
+      username: (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : "Petugas",
+      floor: document.getElementById("bocorFloor").value,
+      source: document.getElementById("bocorSource").value,
+      severity: document.querySelector('input[name="debitAir"]:checked') ? document.querySelector('input[name="debitAir"]:checked').value : "RINGAN",
+      location_detail: document.getElementById("bocorLocation").value,
+      issue: document.getElementById("bocorIssue").value,
+      marking_x: String(currentX),
+      marking_y: String(currentY),
+      photo: finalPhotoBase64
+    };
+
+    // 4. KIRIM DATA KE GOOGLE APPS SCRIPT
+    try {
+      const response = await fetch(API_URL, {
         method: "POST",
         body: JSON.stringify(payload)
-      })
-      .then(res => res.json())
-      .then(res => {
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
-
-        if (res.status === "success") {
-          alert("✓ " + res.message);
-          bocorForm.reset();
-          
-          // Clear koordinat hanya SETELAH respon sukses dari server
-          window.bocorMarkingX = null;
-          window.bocorMarkingY = null;
-          bocorMarkingX = null;
-          bocorMarkingY = null;
-          
-          if (typeof resetBocorMapAndPin === 'function') resetBocorMapAndPin();
-          const tabLaporanBtn = document.getElementById("tab-laporan");
-          if (tabLaporanBtn) tabLaporanBtn.click();
-          if (typeof loadReports === "function") loadReports();
-        } else {
-          alert("Gagal mengirim laporan: " + res.message);
-        }
-      })
-      .catch(err => {
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
-        alert("Terjadi kesalahan koneksi saat mengirim laporan.");
-        console.error(err);
       });
-    });
-  }
+      const res = await response.json();
+
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
+
+      if (res.status === "success") {
+        alert("✓ " + res.message);
+        
+        // Reset form & variabel koordinat HANYA SETELAH SERVER MERESPON SUKSES
+        bocorForm.reset();
+        window.bocorMarkingX = null;
+        window.bocorMarkingY = null;
+        bocorMarkingX = null;
+        bocorMarkingY = null;
+        bocorBase64Photo = "";
+
+        if (typeof resetBocorMapAndPin === 'function') resetBocorMapAndPin();
+        const tabLaporanBtn = document.getElementById("tab-laporan");
+        if (tabLaporanBtn) tabLaporanBtn.click();
+        if (typeof loadReports === "function") loadReports();
+      } else {
+        alert("Gagal mengirim laporan: " + res.message);
+      }
+    } catch (err) {
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
+      alert("Terjadi kesalahan koneksi saat mengirim laporan kebocoran.");
+      console.error(err);
+    }
+  });
+}
   
   // ==========================================
 // 3. EVENT LISTENER HIDE NAMA AKUN SAAT SCROLL DOWN

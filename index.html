@@ -1469,7 +1469,7 @@ function getInspectionResults() {
   return JSON.parse(localStorage.getItem(STORAGE_KEY_RESULTS)) || {};
 }
 
-// FUNGSI HANDLE ZONE CHANGE BARU (MEMILIKI FITUR LOCK AREA SELESAI)
+// 1. DROPDOWN ZONE: MENAMPILKAN AREA SELESAI DENGAN STATUS EDITABLE
 function handleZoneChange() {
   const floor = document.getElementById("chkFloor").value;
   const zone = document.getElementById("chkZone").value;
@@ -1495,15 +1495,114 @@ function handleZoneChange() {
       
       const option = document.createElement("option");
       option.value = area;
-      option.innerText = isCompleted ? `✓ ${area} (Selesai)` : area;
+      option.innerText = isCompleted ? `✓ ${area} (Selesai - Klik utk Edit)` : area;
+      
+      // Opsi tetap aktif (tidak disabled) agar bisa diklik
       if (isCompleted) {
-        option.disabled = true; // Kunci area yang sudah diinspeksi agar tidak bisa dipilih lagi
-        option.style.color = "#a0a0a0";
+        option.style.color = "#0d6efd"; // Warna biru penanda sudah diisi
+        option.style.fontWeight = "bold";
       }
       areaSelect.appendChild(option);
     });
   } else {
     areaSelect.disabled = true;
+  }
+}
+
+// 2. DROPDOWN AREA: CEK DATA LAMA & SWEETALERT KONFIRMASI EDIT
+async function handleAreaChange() {
+  const floor = document.getElementById("chkFloor").value;
+  const zone = document.getElementById("chkZone").value;
+  const area = document.getElementById("chkArea").value;
+  const container = document.getElementById("checklistItemsContainer");
+  const btnSubmit = document.getElementById("btnSubmitChecklist");
+  const countBadge = document.getElementById("itemCountBadge");
+
+  container.innerHTML = "";
+  if (!area) {
+    btnSubmit.disabled = true;
+    countBadge.innerText = "0 Item";
+    return;
+  }
+
+  const areaKey = `${floor}_${zone}_${area}`;
+  const completedList = getCompletedAreas();
+  const isCompleted = completedList.includes(areaKey);
+
+  // Jika area sudah pernah diisi, tampilkan konfirmasi SweetAlert2
+  if (isCompleted) {
+    const result = await Swal.fire({
+      title: 'Area Sudah Diinspeksi',
+      text: `Area "${area}" sudah memiliki data inspeksi. Apakah Anda ingin mengedit atau memperbarui hasilnya?`,
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonColor: '#4361ee',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Ya, Edit Data',
+      cancelButtonText: 'Batal'
+    });
+
+    if (!result.isConfirmed) {
+      document.getElementById("chkArea").value = "";
+      btnSubmit.disabled = true;
+      countBadge.innerText = "0 Item";
+      container.innerHTML = `
+        <div class="text-center text-muted py-4 border rounded bg-light">
+          <small>Silakan pilih <strong>Area/Ruangan</strong>.</small>
+        </div>
+      `;
+      return;
+    }
+  }
+
+  const items = INSPECTION_DATA[floor]?.[zone]?.[area] || [];
+  countBadge.innerText = `${items.length} Item`;
+  btnSubmit.disabled = false;
+
+  // Ambil data hasil inspeksi lama jika ada
+  const allResults = getInspectionResults();
+  const existingFloorData = allResults[floor] || [];
+  const existingRecord = existingFloorData.find(r => r.zone === zone && r.area === area);
+
+  items.forEach((item, idx) => {
+    let savedStatus = "PASS";
+    if (existingRecord && existingRecord.details) {
+      const match = existingRecord.details.find(d => d.item_name.startsWith(item));
+      if (match) savedStatus = match.status;
+    }
+
+    container.innerHTML += `
+      <div class="chk-item-card p-3 mb-2 card border-0 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="fw-bold small pe-2 text-dark text-uppercase">${idx + 1}. ${item}</div>
+          <div class="btn-group" role="group">
+            <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" ${savedStatus === 'PASS' ? 'checked' : ''} onchange="toggleFailDetail(${idx}, false)">
+            <label class="btn btn-sm btn-outline-success" for="pass_${idx}">NORMAL</label>
+            
+            <input type="radio" class="btn-check" name="chk_${idx}" id="fail_${idx}" value="FAIL" ${savedStatus === 'FAIL' ? 'checked' : ''} onchange="toggleFailDetail(${idx}, true)">
+            <label class="btn btn-sm btn-outline-danger" for="fail_${idx}">RUSAK</label>
+          </div>
+        </div>
+
+        <div id="fail_box_${idx}" class="d-none mt-2 pt-2 border-top">
+          <div id="fail_list_${idx}"></div>
+          <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-2" onclick="addSubFailItem(${idx})">+ Tambah Detail Kerusakan</button>
+        </div>
+      </div>
+    `;
+
+    if (savedStatus === "FAIL") {
+      setTimeout(() => toggleFailDetail(idx, true), 50);
+    }
+  });
+
+  // Ubah teks tombol submit jika sedang dalam mode Edit
+  if (isCompleted) {
+    btnSubmit.innerText = "Update Hasil Inspeksi";
+    btnSubmit.className = "btn btn-warning w-100 mt-3";
+  } else {
+    btnSubmit.innerText = "Simpan Hasil Inspeksi";
+    btnSubmit.className = "btn btn-success w-100 mt-3";
   }
 }
 
@@ -1810,7 +1909,7 @@ function handleAreaChange() {
     try {
       const res = await fetchAPI(payload);
       
-      // POPUP MODERN SWEETALERT2 (Menggantikan alert hitam bawaan browser)
+      // POPUP MODERN SWEETALERT2
       Swal.fire({
         title: 'Berhasil!',
         text: res.message || 'Hasil inspeksi area berhasil disimpan!',
@@ -1819,17 +1918,19 @@ function handleAreaChange() {
         confirmButtonText: 'Lanjut Inspeksi'
       });
 
-      // 1. Simpan status lock ke LocalStorage agar area ini tidak bisa dipilih lagi
+      // 1. Simpan status lock ke LocalStorage agar area ini bertanda selesai
       const completed = getCompletedAreas();
       if (!completed.includes(areaKey)) {
         completed.push(areaKey);
         localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify(completed));
       }
 
-      // 2. Simpan rekap data per lantai untuk kebutuhan Cetak PDF
+      // 2. Simpan / Update rekap data per lantai untuk kebutuhan Cetak PDF
       const allResults = getInspectionResults();
       if (!allResults[floor]) allResults[floor] = [];
-      allResults[floor].push({
+      
+      const existingIdx = allResults[floor].findIndex(r => r.zone === zone && r.area === area);
+      const newRecord = {
         zone: zone,
         area: area,
         inspector: currentUser ? currentUser.username : "Petugas",
@@ -1837,7 +1938,14 @@ function handleAreaChange() {
         totalPass: totalPass,
         totalFail: totalFail,
         details: chkData
-      });
+      };
+
+      if (existingIdx !== -1) {
+        allResults[floor][existingIdx] = newRecord; // Update data lama
+      } else {
+        allResults[floor].push(newRecord); // Tambah data baru
+      }
+      
       localStorage.setItem(STORAGE_KEY_RESULTS, JSON.stringify(allResults));
 
     } catch (err) {

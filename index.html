@@ -552,6 +552,23 @@
   <!-- 1. TAB CHECKLIST INSPEKSI (BERDASARKAN MIND MAP DINAMIS) -->
   <div id="checklistTab" class="tab-pane fade card p-3 shadow-sm">
     <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Inspeksi Rutin Area & Sanitary</h5>
+    <!-- BANNER STATUS PROGRESS & TOMBOL CETAK PDF -->
+<div class="card p-3 mb-3 bg-light border-0 shadow-sm">
+  <div class="d-flex justify-content-between align-items-center mb-2">
+    <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Cetak Laporan PDF Per Lantai</h6>
+    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetCompletedInspections()">
+      <i class="bi bi-arrow-counterclockwise"></i> Reset Lock
+    </button>
+  </div>
+  <div class="d-flex flex-wrap gap-2">
+    <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('LG')"><i class="bi bi-download"></i> PDF LG</button>
+    <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('L1')"><i class="bi bi-download"></i> PDF L1</button>
+    <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('L2')"><i class="bi bi-download"></i> PDF L2</button>
+    <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('L3')"><i class="bi bi-download"></i> PDF L3</button>
+    <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('ROOFTOP')"><i class="bi bi-download"></i> PDF ROOFTOP</button>
+    <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('FACADE')"><i class="bi bi-download"></i> PDF FACADE</button>
+  </div>
+</div>
     <form id="checklistForm">
       <div class="row g-2 mb-2">
         <div class="col-6">
@@ -1435,6 +1452,21 @@ function handleFloorChange() {
   }
 }
 
+// =========================================================
+// 1. TAMBAHKAN SISTEM PENGUNCIAN AREA & LOCALSTORAGE
+// =========================================================
+const STORAGE_KEY_COMPLETED = "completed_inspections_v1";
+const STORAGE_KEY_RESULTS = "inspection_results_data_v1";
+
+function getCompletedAreas() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY_COMPLETED)) || [];
+}
+
+function getInspectionResults() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY_RESULTS)) || {};
+}
+
+// FUNGSI HANDLE ZONE CHANGE BARU (MEMILIKI FITUR LOCK AREA SELESAI)
 function handleZoneChange() {
   const floor = document.getElementById("chkFloor").value;
   const zone = document.getElementById("chkZone").value;
@@ -1450,14 +1482,141 @@ function handleZoneChange() {
   `;
   document.getElementById("itemCountBadge").innerText = "0 Item";
 
+  const completedList = getCompletedAreas();
+
   if (floor && zone && INSPECTION_DATA[floor] && INSPECTION_DATA[floor][zone]) {
     areaSelect.disabled = false;
     Object.keys(INSPECTION_DATA[floor][zone]).forEach(area => {
-      areaSelect.add(new Option(area, area));
+      const areaKey = `${floor}_${zone}_${area}`;
+      const isCompleted = completedList.includes(areaKey);
+      
+      const option = document.createElement("option");
+      option.value = area;
+      option.innerText = isCompleted ? `✓ ${area} (Selesai)` : area;
+      if (isCompleted) {
+        option.disabled = true; // Kunci area yang sudah diinspeksi agar tidak bisa dipilih lagi
+        option.style.color = "#a0a0a0";
+      }
+      areaSelect.appendChild(option);
     });
   } else {
     areaSelect.disabled = true;
   }
+}
+
+// =========================================================
+// 2. FUNGSI RESET LOCK & EXPORT PDF PER LANTAI
+// =========================================================
+function resetCompletedInspections() {
+  if (confirm("Apakah Anda yakin ingin me-reset status inspeksi? Semua area akan terbuka kembali untuk diisi.")) {
+    localStorage.removeItem(STORAGE_KEY_COMPLETED);
+    localStorage.removeItem(STORAGE_KEY_RESULTS);
+    alert("Status inspeksi berhasil di-reset!");
+    handleFloorChange();
+  }
+}
+
+function exportPDFByFloor(selectedFloor) {
+  const allResults = getInspectionResults();
+  const floorData = allResults[selectedFloor] || [];
+
+  if (floorData.length === 0) {
+    alert(`Belum ada data inspeksi yang disimpan untuk LANTAI ${selectedFloor}. Silakan selesaikan inspeksi terlebih dahulu.`);
+    return;
+  }
+
+  const printWindow = window.open('', '_blank');
+  let rowsHtml = '';
+  let no = 1;
+
+  floorData.forEach(res => {
+    res.details.forEach(item => {
+      const statusBadge = item.status === 'PASS' 
+        ? '<span style="color: green; font-weight: bold;">NORMAL (PASS)</span>' 
+        : '<span style="color: red; font-weight: bold;">RUSAK (FAIL)</span>';
+
+      rowsHtml += `
+        <tr>
+          <td style="text-align: center;">${no++}</td>
+          <td><b>Zone ${res.zone}</b> - ${res.area}</td>
+          <td>${item.item_name}</td>
+          <td style="text-align: center;">${statusBadge}</td>
+          <td>${item.note || '-'}</td>
+          <td style="font-size: 11px;">${res.inspector} (${res.date})</td>
+        </tr>
+      `;
+    });
+  });
+
+  const pdfContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Form Inspeksi Civil - Lantai ${selectedFloor}</title>
+      <style>
+        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+        .header h2 { margin: 0; color: #1d3557; }
+        .header p { margin: 4px 0 0 0; font-size: 14px; color: #666; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { border: 1px solid #ccc; padding: 8px 10px; text-align: left; }
+        th { background-color: #f2f2f2; font-weight: bold; }
+        tr:nth-child(even) { background-color: #fafafa; }
+        .footer { margin-top: 30px; display: flex; justify-content: space-between; font-size: 12px; }
+        .sign-box { text-align: center; width: 200px; }
+        .sign-space { height: 60px; }
+        @media print {
+          @page { size: A4 portrait; margin: 15mm; }
+        }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h2>LAPORAN INSPEKSI ROUTINE CIVIL & SANITARY</h2>
+        <p>MAL 23 SEMARANG - LANTAI ${selectedFloor}</p>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 5%;">No</th>
+            <th style="width: 25%;">Zone & Area</th>
+            <th style="width: 25%;">Komponen Inspeksi</th>
+            <th style="width: 15%;">Status</th>
+            <th style="width: 18%;">Keterangan Kerusakan</th>
+            <th style="width: 12%;">Inspector</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rowsHtml}
+        </tbody>
+      </table>
+
+      <div class="footer">
+        <div class="sign-box">
+          <p>Dibuat Oleh,</p>
+          <div class="sign-space"></div>
+          <p><b>( Petugas Civil )</b></p>
+        </div>
+        <div class="sign-box">
+          <p>Disetujui Oleh,</p>
+          <div class="sign-space"></div>
+          <p><b>( Spv / Chief Engineering )</b></p>
+        </div>
+      </div>
+
+      <script>
+        window.onload = function() {
+          window.print();
+        };
+      <\/script>
+    </body>
+    </html>
+  `;
+
+  printWindow.document.open();
+  printWindow.document.write(pdfContent);
+  printWindow.document.close();
 }
 
 function handleAreaChange() {

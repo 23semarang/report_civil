@@ -2183,7 +2183,8 @@ if (bocorForm) {
       btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
 
       if (res.status === "success") {
-        alert("✓ " + res.message);
+        // GANTI ALERT DEGRADED JADI TOAST MODERN
+        showToast("✓ " + res.message, "success");
         
         // Reset form & array foto setelah berhasil
         bocorForm.reset();
@@ -2201,7 +2202,7 @@ if (bocorForm) {
         if (tabLaporanBtn) tabLaporanBtn.click();
         if (typeof loadReports === "function") loadReports();
       } else {
-        alert("Gagal mengirim laporan: " + res.message);
+        showToast("Gagal: " + res.message, "error");
       }
     } catch (err) {
       btnSubmit.disabled = false;
@@ -2345,6 +2346,19 @@ if (originalSwitchTab) {
     setTimeout(triggerMapReload, 100);
   };
 }
+
+  // HELPER FUNCTION TOAST NOTIFIKASI MODERN
+function showToast(message, type = 'success') {
+  const toastEl = document.getElementById('appToast');
+  const toastText = document.getElementById('toastText');
+  if (!toastEl || !toastText) return;
+
+  toastText.innerText = message;
+  toastEl.className = `toast align-items-center text-white border-0 shadow-lg ${type === 'success' ? 'bg-success' : 'bg-danger'}`;
+
+  const bsToast = new bootstrap.Toast(toastEl, { delay: 3500 });
+  bsToast.show();
+}
   </script> <!-- PENUTUP TAG SCRIPT PALING BAWAH -->
 
   <!-- TOMBOL FLOATING LAPOR BOCOR CEAPAT -->
@@ -2355,5 +2369,21 @@ if (originalSwitchTab) {
         title="Lapor Bocor Cepat">
   <i class="bi bi-droplet-fill text-dark fs-4"></i>
 </button>
+
+<!-- TARO KODE TOAST HTML DI SINI (SEBELUM </body>) -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+    <div id="appToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body d-flex align-items-center gap-2 fs-6 fw-medium" id="toastMessage">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l5.002-6.502a.75.75 0 0 0-.022-1.072z"/>
+          </svg>
+          <span id="toastText">Pesan Notifikasi</span>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+  
 </body>
 </html>

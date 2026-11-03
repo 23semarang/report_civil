@@ -17,6 +17,9 @@
   <!-- Panzoom JS -->
   <script src="https://cdn.jsdelivr.net/npm/@panzoom/panzoom@4.5.1/dist/panzoom.min.js"></script>
 
+  <!-- SweetAlert2 (Popup Modern) -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
   <style>
     /* Style Tombol Debit Air */
 .btn-debit-info, .btn-debit-warning, .btn-debit-danger {
@@ -1508,12 +1511,30 @@ function handleZoneChange() {
 // 2. FUNGSI RESET LOCK & EXPORT PDF PER LANTAI
 // =========================================================
 function resetCompletedInspections() {
-  if (confirm("Apakah Anda yakin ingin me-reset status inspeksi? Semua area akan terbuka kembali untuk diisi.")) {
-    localStorage.removeItem(STORAGE_KEY_COMPLETED);
-    localStorage.removeItem(STORAGE_KEY_RESULTS);
-    alert("Status inspeksi berhasil di-reset!");
-    handleFloorChange();
-  }
+  Swal.fire({
+    title: 'Reset Status Inspeksi?',
+    text: "Semua area yang sudah dikunci akan terbuka kembali untuk diisi.",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Ya, Reset!',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      localStorage.removeItem(STORAGE_KEY_COMPLETED);
+      localStorage.removeItem(STORAGE_KEY_RESULTS);
+      
+      Swal.fire({
+        title: 'Di-reset!',
+        text: 'Status inspeksi berhasil di-reset.',
+        icon: 'success',
+        confirmButtonColor: '#4361ee'
+      });
+      
+      handleFloorChange();
+    }
+  });
 }
 
 function exportPDFByFloor(selectedFloor) {
@@ -1521,9 +1542,14 @@ function exportPDFByFloor(selectedFloor) {
   const floorData = allResults[selectedFloor] || [];
 
   if (floorData.length === 0) {
-    alert(`Belum ada data inspeksi yang disimpan untuk LANTAI ${selectedFloor}. Silakan selesaikan inspeksi terlebih dahulu.`);
-    return;
-  }
+  Swal.fire({
+    title: 'Data Belum Ada',
+    text: `Belum ada data inspeksi yang disimpan untuk LANTAI ${selectedFloor}. Silakan selesaikan inspeksi terlebih dahulu.`,
+    icon: 'info',
+    confirmButtonColor: '#4361ee'
+  });
+  return;
+}
 
   const printWindow = window.open('', '_blank');
   let rowsHtml = '';
@@ -1736,34 +1762,39 @@ function handleAreaChange() {
       
       if (status === "PASS") {
         totalPass++;
-        chkData.push({ item_name: items[i], status: "PASS" });
+        chkData.push({ item_name: items[i], status: "PASS", note: "-" });
       } else {
         const subItems = document.getElementById(`fail_list_${i}`).getElementsByClassName('fail-sub-item');
 
-        for (let k = 0; k < subItems.length; k++) {
+        if (subItems.length === 0) {
           totalFail++;
-          const locVal = subItems[k].querySelector(`.sub-loc-${i}`).value;
-          const noteVal = subItems[k].querySelector(`.sub-note-${i}`).value || "Kerusakan ditemukan saat inspeksi rutin.";
-          const subLocText = locVal ? ` - ${locVal}` : '';
-          const fullLocation = `${baseLocation}${subLocText}`;
+          chkData.push({ item_name: items[i], status: "FAIL", note: "Kerusakan ditemukan." });
+        } else {
+          for (let k = 0; k < subItems.length; k++) {
+            totalFail++;
+            const locVal = subItems[k].querySelector(`.sub-loc-${i}`).value;
+            const noteVal = subItems[k].querySelector(`.sub-note-${i}`).value || "Kerusakan ditemukan saat inspeksi rutin.";
+            const subLocText = locVal ? ` - ${locVal}` : '';
+            const fullLocation = `${baseLocation}${subLocText}`;
 
-          const camInput = subItems[k].querySelector(`.sub-cam-${i}`);
-          const targetFile = (camInput.files && camInput.files[0]) ? camInput.files[0] : null;
+            const camInput = subItems[k].querySelector(`.sub-cam-${i}`);
+            const targetFile = (camInput && camInput.files && camInput.files[0]) ? camInput.files[0] : null;
 
-          let base64Photo = "";
-          if (targetFile) {
-            base64Photo = await applyWatermark(targetFile, currentUser.username, "REPORTED", fullLocation);
+            let base64Photo = "";
+            if (targetFile) {
+              base64Photo = await applyWatermark(targetFile, currentUser ? currentUser.username : "Petugas", "REPORTED", fullLocation);
+            }
+
+            chkData.push({ item_name: `${items[i]}${subLocText}`, status: "FAIL", note: noteVal });
+            failedReports.push({ item_name: `${items[i]}${subLocText}`, issue: noteVal, photo: base64Photo });
           }
-
-          chkData.push({ item_name: `${items[i]}${subLocText}`, status: "FAIL", note: noteVal });
-          failedReports.push({ item_name: `${items[i]}${subLocText}`, issue: noteVal, photo: base64Photo });
         }
       }
     }
 
     const payload = {
       action: "saveChecklist",
-      username: currentUser.username,
+      username: currentUser ? currentUser.username : "Petugas",
       floor: floor,
       zone: zone,
       area_category: area,
@@ -1774,35 +1805,79 @@ function handleAreaChange() {
       failed_reports: failedReports
     };
 
-    const res = await fetchAPI(payload);
-    alert(res.message);
-    btn.disabled = false; btn.innerText = "Simpan Hasil Inspeksi";
+    const areaKey = `${floor}_${zone}_${area}`;
 
-    if (res.status === "success") {
-      document.getElementById("checklistForm").reset();
-      handleFloorChange();
-      switchTab('list');
+    try {
+      const res = await fetchAPI(payload);
+      
+      // POPUP MODERN SWEETALERT2 (Menggantikan alert hitam bawaan browser)
+      Swal.fire({
+        title: 'Berhasil!',
+        text: res.message || 'Hasil inspeksi area berhasil disimpan!',
+        icon: 'success',
+        confirmButtonColor: '#4361ee',
+        confirmButtonText: 'Lanjut Inspeksi'
+      });
+
+      // 1. Simpan status lock ke LocalStorage agar area ini tidak bisa dipilih lagi
+      const completed = getCompletedAreas();
+      if (!completed.includes(areaKey)) {
+        completed.push(areaKey);
+        localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify(completed));
+      }
+
+      // 2. Simpan rekap data per lantai untuk kebutuhan Cetak PDF
+      const allResults = getInspectionResults();
+      if (!allResults[floor]) allResults[floor] = [];
+      allResults[floor].push({
+        zone: zone,
+        area: area,
+        inspector: currentUser ? currentUser.username : "Petugas",
+        date: new Date().toLocaleString("id-ID"),
+        totalPass: totalPass,
+        totalFail: totalFail,
+        details: chkData
+      });
+      localStorage.setItem(STORAGE_KEY_RESULTS, JSON.stringify(allResults));
+
+    } catch (err) {
+      console.error(err);
+      Swal.fire({
+        title: 'Gagal Simpan!',
+        text: 'Gagal mengirim ke server, namun data tersimpan di perangkat.',
+        icon: 'warning',
+        confirmButtonColor: '#f59e0b'
+      });
     }
+
+    // Reset tombol & form kembali bersih (tetap di halaman inspeksi)
+    btn.disabled = false; 
+    btn.innerText = "Simpan Hasil Inspeksi";
+    
+    document.getElementById("checklistForm").reset();
+    
+    // Trigger perubahan dropdown agar area yang baru diisi langsung terkunci (✓ Selesai)
+    handleFloorChange();
   });
 
   function setFilter(filterType) {
-  currentFilter = filterType;
+    currentFilter = filterType;
 
-  const selectEl = document.getElementById("filterStatusSelect");
-  if (selectEl && selectEl.value !== filterType) {
-    selectEl.value = filterType;
+    const selectEl = document.getElementById("filterStatusSelect");
+    if (selectEl && selectEl.value !== filterType) {
+      selectEl.value = filterType;
+    }
+
+    if (typeof renderReports === 'function') {
+      renderReports();
+    }
   }
 
-  if (typeof renderReports === 'function') {
-    renderReports();
-  }
-}
-
-  document.getElementById("photoCamera").addEventListener("change", (e) => {
+  document.getElementById("photoCamera")?.addEventListener("change", (e) => {
     if (e.target.files[0]) document.getElementById("photoStatus").innerText = "Foto kamera berhasil diambil!";
   });
 
-  document.getElementById("updateCamera").addEventListener("change", (e) => {
+  document.getElementById("updateCamera")?.addEventListener("change", (e) => {
     if (e.target.files[0]) {
       updateFile = e.target.files[0];
       document.getElementById("updatePhotoStatus").innerText = "Foto kamera berhasil diambil!";
@@ -1879,7 +1954,7 @@ function handleAreaChange() {
       password: document.getElementById("loginPass").value
     });
 
-    alert(res.message);
+    Swal.fire({   title: 'Notifikasi',   text: res.message,   icon: 'info',   confirmButtonColor: '#4361ee' });
     btn.disabled = false; btn.innerText = "Login";
 
     if (res.status === "success") {
@@ -1902,7 +1977,7 @@ function handleAreaChange() {
       password: document.getElementById("regPass").value
     });
 
-    alert(res.message);
+    Swal.fire({   title: 'Notifikasi',   text: res.message,   icon: 'info',   confirmButtonColor: '#4361ee' });
     btn.disabled = false; btn.innerText = "Daftar Akun";
 
     if (res.status === "success") {
@@ -1918,7 +1993,7 @@ function handleAreaChange() {
     targetResetUsername = document.getElementById("otpTarget").value;
 
     const res = await fetchAPI({ action: "requestOTP", target: targetResetUsername });
-    alert(res.message);
+    Swal.fire({   title: 'Notifikasi',   text: res.message,   icon: 'info',   confirmButtonColor: '#4361ee' });
     btn.disabled = false; btn.innerText = "Kirim Kode OTP Ke Email";
 
     if (res.status === "success") {
@@ -1939,7 +2014,7 @@ function handleAreaChange() {
       new_password: document.getElementById("otpNewPass").value
     });
 
-    alert(res.message);
+    Swal.fire({   title: 'Notifikasi',   text: res.message,   icon: 'info',   confirmButtonColor: '#4361ee' });
     btn.disabled = false; btn.innerText = "Simpan Password Baru";
 
     if (res.status === "success") {
@@ -1950,7 +2025,15 @@ function handleAreaChange() {
 
   document.getElementById("reportForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    if (!markedX || !markedY) { alert("Silakan berikan tanda titik lokasi pada denah layout!"); return; }
+    if (!markedX || !markedY) { 
+  Swal.fire({
+    title: 'Peringatan!',
+    text: 'Silakan berikan tanda titik lokasi pada denah layout!',
+    icon: 'warning',
+    confirmButtonColor: '#ef4444'
+  });
+  return; 
+}
     const fileCam = document.getElementById("photoCamera").files[0];
     if (!fileCam) { alert("Ambil foto bukti laporan!"); return; }
 
@@ -1974,7 +2057,7 @@ function handleAreaChange() {
     };
 
     const res = await fetchAPI(payload);
-    alert(res.message);
+    Swal.fire({   title: 'Notifikasi',   text: res.message,   icon: 'info',   confirmButtonColor: '#4361ee' });
     btn.disabled = false; btn.innerText = "Kirim Laporan";
 
     if (res.status === "success") {
@@ -2217,7 +2300,7 @@ async function submitUpdateProgress() {
     photo: watermarkedBase64
   });
 
-  alert(res.message);
+  Swal.fire({   title: 'Notifikasi',   text: res.message,   icon: 'info',   confirmButtonColor: '#4361ee' });
   btn.disabled = false;
   updateModal.hide();
   loadReports();

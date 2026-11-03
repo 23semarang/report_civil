@@ -1073,14 +1073,31 @@
     document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
 
-  // FUNGSI UNTUK MEMBUKA POPUP PREVIEW FOTO KEBOCORAN
+  // FUNGSI MEMBUKA POPUP PREVIEW FOTO (FIXED BROKEN IMAGE)
 function openImageModal(imgUrl) {
+  if (!imgUrl) return;
+
   const modalImg = document.getElementById("previewModalImage");
   const modalEl = document.getElementById("imagePreviewModal");
 
   if (modalImg && modalEl) {
-    modalImg.src = imgUrl;
-    const bsModal = new bootstrap.Modal(modalEl);
+    // Format URL Google Drive agar bisa langsung ditampilkan di <img> tag
+    let directUrl = imgUrl;
+
+    if (imgUrl.includes("drive.google.com")) {
+      // Ekstrak ID File Google Drive
+      const match = imgUrl.match(/\/d\/([^\/]+)/) || imgUrl.match(/id=([^&]+)/);
+      if (match && match[1]) {
+        const fileId = match[1];
+        // URL direct view beresolusi tinggi (width 1600px)
+        directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600`;
+      }
+    }
+
+    modalImg.src = directUrl;
+    
+    // Tampilkan Modal Bootstrap
+    const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
     bsModal.show();
   }
 }

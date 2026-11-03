@@ -549,49 +549,50 @@
   <!-- TAB CONTENT WRAPPER -->
 <div class="tab-content">
   
-  <!-- 1. TAB CHECKLIST INSPEKSI -->
+  <!-- 1. TAB CHECKLIST INSPEKSI (BERDASARKAN MIND MAP DINAMIS) -->
   <div id="checklistTab" class="tab-pane fade card p-3 shadow-sm">
     <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Inspeksi Rutin Area & Sanitary</h5>
     <form id="checklistForm">
       <div class="row g-2 mb-2">
         <div class="col-6">
           <label class="form-label small fw-bold">Lantai</label>
-          <select id="chkFloor" class="form-select" required>
-            <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
+          <select id="chkFloor" class="form-select" onchange="handleFloorChange()" required>
+            <option value="">-- Pilih Lantai --</option>
+            <option value="LG">LG</option>
+            <option value="L1">L1</option>
+            <option value="L2">L2</option>
+            <option value="L3">L3</option>
+            <option value="ROOFTOP">ROOFTOP</option>
+            <option value="FACADE">FACADE</option>
           </select>
         </div>
         <div class="col-6">
           <label class="form-label small fw-bold">Zone</label>
-          <select id="chkZone" class="form-select" required>
-            <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
+          <select id="chkZone" class="form-select" onchange="handleZoneChange()" required disabled>
+            <option value="">-- Pilih Zone --</option>
           </select>
         </div>
       </div>
 
-      <div class="mb-2">
-        <label class="form-label small fw-bold">Kategori Area</label>
-        <select id="chkCategory" class="form-select" onchange="loadChecklistItems()" required>
-          <option value="Toilet Customer Public">Toilet Customer Public</option>
-          <option value="Toilet Priority / Difabel">Toilet Priority / Difabel</option>
-          <option value="Nursery / Laktasi Room">Nursery / Laktasi Room</option>
-          <option value="Public Corridor & Koridor Utama">Public Corridor & Koridor Utama</option>
-          <option value="Atrium & Event Area (Public Space)">Atrium & Event Area (Public Space)</option>
-          <option value="Service Corridor & Loading Area (Backside)">Service Corridor & Loading Area (Backside)</option>
-          <option value="Fasad Gedung & Drop-off Lobby">Fasad Gedung & Drop-off Lobby</option>
-          <option value="Rooftop & Struktur Gedung Outer">Rooftop & Struktur Gedung Outer</option>
-          <option value="Management Office (MO) Area">Management Office (MO) Area</option>
+      <div class="mb-3">
+        <label class="form-label small fw-bold">Nama Area / Ruangan</label>
+        <select id="chkArea" class="form-select" onchange="handleAreaChange()" required disabled>
+          <option value="">-- Pilih Area / Ruangan --</option>
         </select>
       </div>
 
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Detail Nama Area/Tenant</label>
-        <input type="text" id="chkLocationDetail" class="form-control" placeholder="Contoh: Toilet Utama Dekat Atrium A" required>
+      <h6 class="mt-3 mb-2 text-primary fw-bold d-flex justify-content-between align-items-center">
+        <span>Daftar Komponen Pemeriksaan:</span>
+        <span id="itemCountBadge" class="badge bg-secondary">0 Item</span>
+      </h6>
+      <div id="checklistItemsContainer">
+        <div class="text-center text-muted py-4 border rounded bg-light">
+          <i class="bi bi-arrow-up-circle fs-3 d-block mb-1"></i>
+          <small>Silakan pilih <strong>Lantai</strong>, <strong>Zone</strong>, dan <strong>Area/Ruangan</strong> di atas terlebih dahulu.</small>
+        </div>
       </div>
 
-      <h6 class="mt-3 mb-2 text-primary fw-bold">Daftar Item Pemeriksaan:</h6>
-      <div id="checklistItemsContainer"></div>
-
-      <button type="submit" id="btnSubmitChecklist" class="btn btn-success w-100 mt-3">Simpan Hasil Inspeksi</button>
+      <button type="submit" id="btnSubmitChecklist" class="btn btn-success w-100 mt-3" disabled>Simpan Hasil Inspeksi</button>
     </form>
   </div>
 
@@ -882,68 +883,231 @@
     "Rooftop": "Rooftop.jpg"
   };
 
-  const CHECKLIST_PRESETS = {
-    "Toilet Customer Public": [
-      "Kloset Duduk / Jongkok (Flush & Bidet)",
-      "Urinoir & Flush Sensor",
-      "Kran Wastafel & Sensor Air",
-      "Cermin & Meja Wastafel",
-      "Partisi Cubicle & Handle Pintu",
-      "Lantai HT & Slope Drainage",
-      "Plafon & Exhaust Fan"
-    ],
-    "Toilet Priority / Difabel": [
-      "Kloset Difabel & Flush Button",
-      "Grab Bar (Pegangan Tangan Besi)",
-      "Tombol Emergency Call / Alarm",
-      "Akses Ramp & Pintu Sliding",
-      "Wastafel Rendah & Kran"
-    ],
-    "Nursery / Laktasi Room": [
-      "Baby Changing Station (Meja Popok)",
-      "Kursi Sofa Laktasi",
-      "Wastafel Air Warm/Cold",
-      "Kebersihan Dinding & Kebocoran Plafon"
-    ],
-    "Public Corridor & Koridor Utama": [
-      "Lantai HT / Granit Public (Nat & Popping)",
-      "Glass Railing Void Utama & Klem Stainless",
-      "Plat Bordes & Comb Escalator",
-      "Plafon Gypsum Public & Manhole Access",
-      "Pintu Emergency & Exit Signage"
-    ],
-    "Atrium & Event Area (Public Space)": [
-      "Lantai Atrium (Alun-Alun / Dauntown)",
-      "Floor Outlet Box / Stopkontak Lantai Atrium",
-      "Kondisi Dinding Void Atrium Outer",
-      "Lampu Highlight High-Ceiling Atrium"
-    ],
-    "Service Corridor & Loading Area (Backside)": [
-      "Lantai Epoksi / Concrete Floor Service Koridor",
-      "Dinding Service Koridor & Bump Guard Protektor",
-      "Pintu Shaft Utility (Listrik/Plumbing) & Kunci",
-      "Penerangan Koridor Service & Jalur Evakuasi",
-      "Loading Dock Ramp & Bumper Pad Loading"
-    ],
-    "Fasad Gedung & Drop-off Lobby": [
-      "Canopy Glass / ACP Entrance Lobby",
-      "Panel Cladding GRC / ACP & Sealant Fasad",
-      "Jendela Kaca Outer & Sealant Kaca",
-      "Pintu Kaca Utama Entrance (Floor Hinge / Auto Door)"
-    ],
-    "Rooftop & Struktur Gedung Outer": [
-      "Waterproofing Dak Beton (Retak & Ponding)",
-      "Roof Drain & Scupper Drainage (Sumbatan)",
-      "Dudukan Rangka Baja Equipment & Anti-Karat",
-      "Dinding Parapet Beton & Guardrail Proteksi"
-    ],
-    "Management Office (MO) Area": [
-      "Lantai Carpet / Vinyl / HT MO",
-      "Partisi Dinding / Gypsum / Glass Partition MO",
-      "Plafond Gypsum & Akses Lampu MO",
-      "Pintu Utama Office, Handle & Lockset",
-      "Area Toilet Internal MO & Pantry MO"
-    ]
+  // ==========================================
+  // DATA MIND MAP DENGAN HIRARKI PRESIASI 100%
+  // ==========================================
+  const INSPECTION_DATA = {
+    "LG": {
+      "A": {
+        "RUANG B3": ["DINDING", "PLAFON", "LANTAI EPOXY", "PINTU BESI"],
+        "R. PANEL": ["PINTU BESI", "DINDING", "PLAFON", "LANTAI EPOXY"],
+        "R. GAS": ["PINTU BESI", "LANTAI", "PLAFON", "DINDING"],
+        "GREASE TRAP": ["LANTAI", "DINDING", "PLAFON", "PINTU BESI"],
+        "LOADING DOCK": ["LANTAI BETON", "RAMP", "DINDING", "CEILING", "PINTU BESI"],
+        "R. SAMPAH": ["GUTTER", "PINTU BESI", "LANTAI KERAMIK", "DINDING", "PLAFON"],
+        "R. CHILLER": ["GUTTER", "PINTU BESI", "RAILING", "TANGGA DAN RAMP", "DINDING DAN KOLOM", "CEILING"],
+        "R. VENDOR": ["DINDING DAN KOLOM", "LANTAI", "CEILING", "PINTU"],
+        "WORKSHOP": ["DINDING DAN KOLOM", "LANTAI", "CEILING", "PINTU BESI"],
+        "STORAGE": ["DINDING DAN KOLOM", "LANTAI", "CEILING", "PINTU BESI"],
+        "TRAINING ROOM": ["DINDING DAN KOLOM", "LANTAI", "CEILING", "PINTU BESI"],
+        "LOGISTIK": ["DINDING DAN KOLOM", "LANTAI", "CEILING", "PINTU", "JENDELA KACA"],
+        "KORIDOR LOGISTIK": ["RAMP DAN TANGGA", "RAILING", "LANTAI", "DINDING", "CEILING"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "KORIDOR LIFT SERVICE": ["LANTAI", "DINDING", "CEILING", "PINTU BESI"],
+        "R. GENSET": ["LANTAI EPOXY", "DINDING", "CEILING", "TANGGA DAN RAILING BESI", "PINTU BESI"],
+        "R. TRAFO": ["LANTAI EPOXY", "DINDING", "CEILING", "PINTU BESI"],
+        "KORIDOR PANEL": ["LANTAI", "DINDING", "CEILING", "PINTU BESI"],
+        "R. STORAGE HSE": ["LANTAI", "DINDING", "CEILING", "PINTU BESI"],
+        "KORIDOR PUBLIK": ["LANTAI GERANIT", "PLAFON", "KOLOM DAN DINDING", "VOID"]
+      },
+      "B": {
+        "LOBBY SANAYA": ["LANTAI GERANIT DAN BATU ALAM", "KANSTIN", "DINDING DAN KOLOM", "PINTU DAN JENDELA KACA", "PLAFON DAN KISI KISI KAYU"],
+        "STP, POMPA, DAN GWT": ["LANTAI", "GUTTER", "TANGGA BESI, RAILING DAN TANGGA MONYET", "PEDESTAL POMPA", "DINDING", "CEILING"],
+        "KORIDOR SERVICE": ["LANTAI", "DINDING", "PINTU BESI", "PLAFON"],
+        "R. BM, SERVER DAN MCFA": ["LANTAI", "DINDING", "PLAFON", "PINTU BESI"],
+        "R. SECURITY, CCTV": ["LANTAI", "DINDING", "PLAFON", "PINTU"],
+        "R. PANEL": ["LANTAI EPOXY", "PLAFON", "DINDING", "PINTU BESI"],
+        "R. HOUSEKEEPING DAN PARKING": ["LANTAI", "DINDING", "PLAFON", "PINTU"],
+        "TOILET BOH DAN DRIVER": ["LANTAI", "CLOSET", "WASTAFEL", "DINDING", "PLAFON", "PINTU"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "KORIDOR PUBLIK": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON", "VOID"]
+      },
+      "C": {
+        "KORIDOR PUBLIK": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON", "VOID", "PINTU DAN JENDELA KACA"],
+        "LOBBY LAWANG": ["PINTU DAN JENDELA KACA", "LANTAI", "DINDING", "PLAFON"],
+        "TOILET CUSTOMER": ["KLOSET", "URINAL", "SEKAT URINAL", "WASTAFEL DAN KRAN SENSOR", "LEHER ANGSA", "CERMIN DAN MEJA WASTAFEL", "PARTISI DAN PINTU CUBICLE", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON"],
+        "JANITOR": ["PLAFON", "DINDING", "LANTAI DAN FLOOR DRAIN", "KRAN"],
+        "TOILET PRIORITY": ["KLOSET", "WASTAFEL DAN KRAN", "LEHER ANGSA", "CERMIN DAN MEJA WASTAFEL", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON", "HANDRAIL"],
+        "GREASE TRAP": ["LANTAI", "DINDING", "PLAFON", "PINTU BESI"],
+        "LOBBY, R. MEETING, MUSHOLA, R. SERVER MO": ["PINTU", "MEJA KURSI", "LANTAI DAN KARPET", "DINDING", "PLAFON"],
+        "OFFICE MO": ["MEJA KURSI", "LANTAI", "DINDING", "PLAFON", "PINTU"],
+        "TOILET DAN PANTRY MO": ["WASTAFEL, KRAN DAN LEHER ANGSA", "LANTAI DAN FLOOR DRAIN", "DINDING", "PINTU", "PLAFON", "PARTISI CUBICLE"],
+        "LOBBY DAUNTOWN": ["LANTAI GERANIT DAN BATU ALAM", "KANSTIN", "DINDING DAN KOLOM", "PINTU DAN JENDELA KACA", "PLAFON", "PARTISI KE THEATER", "BOLLARD"]
+      },
+      "D": {
+        "MUSHOLA": ["LANTAI DAN KARPET", "DINDING DAN KOLOM", "PLAFON"],
+        "TEMPAT WUDHU": ["KRAN", "GUTTER", "LANTAI", "DINDING", "PLAFON", "CERMIN"],
+        "TOILET CUSTOMER": ["KLOSET", "URINAL", "SEKAT URINAL", "WASTAFEL DAN KRAN SENSOR", "LEHER ANGSA", "SHOWER", "CERMIN DAN MEJA WASTAFEL", "PARTISI DAN PINTU CUBICLE", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON"],
+        "TOILET PRIORITY": ["KLOSET", "WASTAFEL DAN KRAN", "LEHER ANGSA", "CERMIN DAN MEJA WASTAFEL", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON", "HANDRAIL"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "KORIDOR PUBLIK": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "KORIDOR SERVICE": ["LANTAI", "DINDING DAN KOLOM", "PLAFON"],
+        "GREASE TRAP": ["DINDING", "LANTAI", "PLAFON", "PINTU BESI"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "LOBBY ALUN-ALUN": ["LANTAI", "DINDING", "PINTU DAN JENDELA KACA", "PLAFON"],
+        "JANITOR": ["PLAFON", "DINDING", "LANTAI DAN FLOOR DRAIN", "KRAN"]
+      },
+      "ALL ZONE": {
+        "GEDUNG PARKIR MOTOR": ["PAVING, RAMP DAN DAK BETON", "RAILING, PARAPET DAN STRUKTUR BAJA", "MARKA JALAN"],
+        "GEDUNG PARKIR MOBIL": ["CAR STOPER", "PARAPET DAN STRUKTUR BAJA", "MARKA JALAN", "PAVING DAN DAK BETON"],
+        "AREA PARKIR BARAT": ["KANOPI PARKIR DAN GATE PARKIR", "PAVING DAN KANSTIN", "COVER DAN MANHOLE UDITCH", "PARAPET PERIMETER"],
+        "AREA PARKIR TIMUR": ["PAVING DAN KANSTIN", "COVER DAN MANHOLE UDITCH", "PARAPET PERIMETER", "KANOPI GATE PARKIR"],
+        "AREA PARKIR STAFF": ["LANTAI BETON", "KANSTIN DAN PAVING"],
+        "ATRIUM ALUN-ALUN": ["LANTAI", "DINDING DAN KOLOM", "PLAFON"]
+      }
+    },
+    "L1": {
+      "A": {
+        "STORAGE": ["DINDING DAN KOLOM", "LANTAI", "CEILING", "PINTU BESI"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "TOILET CUSTOMER": ["KLOSET", "URINAL", "SEKAT URINAL", "WASTAFEL DAN KRAN SENSOR", "LEHER ANGSA", "SHOWER", "CERMIN DAN MEJA WASTAFEL", "PARTISI DAN PINTU CUBICLE", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON"],
+        "TOILET PRIORITY": ["KLOSET", "WASTAFEL DAN KRAN", "LEHER ANGSA", "CERMIN DAN MEJA WASTAFEL", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON", "HANDRAIL"],
+        "TOILET FAMILY": ["KLOSET", "WASTAFEL DAN KRAN", "LEHER ANGSA", "CERMIN DAN MEJA WASTAFEL", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON", "KURSI BALITA"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "KORIDOR SERVICE": ["LANTAI", "DINDING DAN KOLOM", "PLAFON"],
+        "KORIDOR PUBLIK DAN ATRIUM": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON", "VOID DAN RAILING KACA"],
+        "KORIDOR LOADING": ["LANTAI GERANIT", "PLAFON", "ROLLING DOOR", "RAMP DAN PARAPET", "DINDING"],
+        "JANITOR": ["PLAFON", "DINDING", "LANTAI DAN FLOOR DRAIN", "KRAN"]
+      },
+      "B": {
+        "STORAGE": ["LANTAI", "DINDING", "PLAFON", "PINTU"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "KORIDOR SERVICE": ["LANTAI GERANIT", "DINDING", "PLAFON"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "KORIDOR PUBLIK": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON DAN KISI-KISI", "VOID DAN RAILING KACA", "PINTU DAN JENDELA KACA"]
+      },
+      "C": {
+        "KORIDOR PUBLIK": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON DAN KISI-KISI", "VOID DAN RAILING KACA", "PINTU DAN JENDELA KACA"],
+        "SMOKING AREA": ["LANTAI", "RAILING KACA", "DINDING"],
+        "KORIDOR SERVICE": ["LANTAI", "DINDING DAN KOLOM", "PLAFON"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "TOILET STAFF": ["ROLLING DOOR", "LANTAI", "PLAFON", "PARTISI CUBICLE", "KLOSET", "CERMIN DAN WASTAFEL", "URINOIR DAN SEKAT", "DINDING"],
+        "JANITOR": ["PLAFON", "DINDING", "LANTAI DAN FLOOR DRAIN", "KRAN"],
+        "JEMBATAN": ["LANTAI DAN FLOOR DRAIN", "RAILING KACA", "DINDING DAN KOLOM", "PLAFON"],
+        "STORAGE": ["LANTAI", "DINDING", "PLAFON", "PINTU"]
+      },
+      "D": {
+        "TOILET CUSTOMER": ["KLOSET", "URINAL", "SEKAT URINAL", "WASTAFEL DAN KRAN SENSOR", "LEHER ANGSA", "SHOWER", "CERMIN DAN MEJA WASTAFEL", "PARTISI DAN PINTU CUBICLE", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON"],
+        "TOILET PRIORITY": ["KLOSET", "WASTAFEL DAN KRAN", "LEHER ANGSA", "CERMIN DAN MEJA WASTAFEL", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON", "HANDRAIL"],
+        "KORIDOR PUBLIK": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON DAN KISI-KISI", "VOID DAN RAILING KACA", "PINTU DAN JENDELA KACA"],
+        "KORIDOR SERVICE": ["LANTAI", "DINDING DAN KOLOM", "PLAFON"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "JANITOR": ["PLAFON", "DINDING", "LANTAI DAN FLOOR DRAIN", "KRAN"],
+        "CONNECTING P1 & P2": ["LANTAI", "DINDING DAN KOLOM", "PLAFON", "PINTU DAN JENDELA KACA", "STEP NOSING", "RAILING BESI"]
+      },
+      "ALL ZONE": {
+        "FOREST": ["BATU ALAM", "TERAZZO DAN POT", "WATERMIST", "GRILL GUTTER", "WOODEN DECK", "KOLAM DAN AIR MANCUR", "SANGKAR BESI", "DINDING VOID ATAS TENANT", "TANGGA DAN RAILING KAYU"]
+      }
+    },
+    "L2": {
+      "A": {
+        "STORAGE": ["DINDING DAN KOLOM", "LANTAI", "CEILING", "PINTU BESI"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "TOILET CUSTOMER": ["KLOSET", "URINAL", "SEKAT URINAL", "WASTAFEL DAN KRAN SENSOR", "LEHER ANGSA", "SHOWER", "CERMIN DAN MEJA WASTAFEL", "PARTISI DAN PINTU CUBICLE", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON"],
+        "TOILET PRIORITY": ["KLOSET", "WASTAFEL DAN KRAN", "LEHER ANGSA", "CERMIN DAN MEJA WASTAFEL", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON", "HANDRAIL"],
+        "TOILET FAMILY": ["KLOSET", "WASTAFEL DAN KRAN", "LEHER ANGSA", "CERMIN DAN MEJA WASTAFEL", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON", "KURSI BALITA"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "KORIDOR SERVICE": ["LANTAI", "DINDING DAN KOLOM", "PLAFON"],
+        "KORIDOR PUBLIK DAN ATRIUM": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON", "VOID DAN RAILING KACA"],
+        "JANITOR": ["PLAFON", "DINDING", "LANTAI DAN FLOOR DRAIN", "KRAN"]
+      },
+      "B": {
+        "STORAGE": ["LANTAI", "DINDING", "PLAFON", "PINTU"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "KORIDOR SERVICE": ["LANTAI GERANIT", "DINDING", "PLAFON"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "KORIDOR PUBLIK": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON DAN KISI-KISI", "VOID DAN RAILING KACA", "PINTU DAN JENDELA KACA"],
+        "LOBBY PENDHAPA": ["LANTAI BATU ALAM", "TANGGA, RAMP DAN RAILING KAYU", "DINDING DAN KOLOM", "PINTU DAN JENDELA KACA", "PLAFON DAN KISI KISI", "KANSTIN DAN POT"]
+      },
+      "C": {
+        "KORIDOR PUBLIK": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON DAN KISI-KISI", "VOID DAN RAILING KACA", "PINTU DAN JENDELA KACA"],
+        "KORIDOR SERVICE": ["LANTAI", "DINDING DAN KOLOM", "PLAFON", "PINTU BESI"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "TOILET STAFF": ["ROLLING DOOR", "LANTAI", "PLAFON", "PARTISI CUBICLE", "KLOSET", "CERMIN DAN WASTAFEL", "URINOIR DAN SEKAT", "DINDING"],
+        "JANITOR": ["PLAFON", "DINDING", "LANTAI DAN FLOOR DRAIN", "KRAN"],
+        "STORAGE": ["LANTAI", "DINDING", "PLAFON", "PINTU"],
+        "MUSHOLA": ["LANTAI DAN KARPET", "PINTU KAYU", "DINDING", "PLAFON", "TEMPAT WUDHU, FLOOR DRAIN DAN KRAN", "RAK SEPATU DAN LEMARI"]
+      },
+      "D": {
+        "TOILET CUSTOMER": ["KLOSET", "URINAL", "SEKAT URINAL", "WASTAFEL DAN KRAN SENSOR", "LEHER ANGSA", "SHOWER", "CERMIN DAN MEJA WASTAFEL", "PARTISI DAN PINTU CUBICLE", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON"],
+        "TOILET PRIORITY": ["KLOSET", "WASTAFEL DAN KRAN", "LEHER ANGSA", "CERMIN DAN MEJA WASTAFEL", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON", "HANDRAIL"],
+        "KORIDOR SERVICE": ["LANTAI", "DINDING DAN KOLOM", "PLAFON"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "JANITOR": ["PLAFON", "DINDING", "LANTAI DAN FLOOR DRAIN", "KRAN"],
+        "CONNECTING P3": ["LANTAI", "DINDING DAN KOLOM", "PLAFON", "PINTU DAN JENDELA KACA", "STEP NOSING", "RAILING BESI"],
+        "KORIDOR PUBLIK": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON DAN KISI-KISI", "VOID DAN RAILING KACA", "PINTU DAN JENDELA KACA"],
+        "TERAS": ["RAILING KACA", "LANTAI", "PINTU DAN JENDELA KACA", "GRILL GUTTER"]
+      },
+      "ALL ZONE": {
+        "TERAS": ["LANTAI", "RAILING KACA", "GRILL GUTTER", "PINTU DAN JENDELA KACA"]
+      }
+    },
+    "L3": {
+      "A": {
+        "STORAGE": ["DINDING DAN KOLOM", "LANTAI", "CEILING", "PINTU BESI"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "TOILET CUSTOMER": ["KLOSET", "URINAL", "SEKAT URINAL", "WASTAFEL DAN KRAN SENSOR", "LEHER ANGSA", "SHOWER", "CERMIN DAN MEJA WASTAFEL", "PARTISI DAN PINTU CUBICLE", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON"],
+        "TOILET PRIORITY": ["KLOSET", "WASTAFEL DAN KRAN", "LEHER ANGSA", "CERMIN DAN MEJA WASTAFEL", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON", "HANDRAIL"],
+        "TOILET FAMILY": ["KLOSET", "WASTAFEL DAN KRAN", "LEHER ANGSA", "CERMIN DAN MEJA WASTAFEL", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON", "KURSI BALITA"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "KORIDOR SERVICE": ["LANTAI", "DINDING DAN KOLOM", "PLAFON"],
+        "KORIDOR PUBLIK DAN ATRIUM": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON", "VOID DAN RAILING KACA"],
+        "JANITOR": ["PLAFON", "DINDING", "LANTAI DAN FLOOR DRAIN", "KRAN"]
+      },
+      "B": {
+        "STORAGE": ["LANTAI", "DINDING", "PLAFON", "PINTU"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "KORIDOR SERVICE": ["LANTAI GERANIT", "DINDING", "PLAFON"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "KORIDOR PUBLIK": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON DAN KISI-KISI", "VOID DAN RAILING KACA", "PINTU DAN JENDELA KACA"]
+      },
+      "C": {
+        "KORIDOR PUBLIK": ["DINDING DAN KOLOM", "LANTAI GERANIT", "PLAFON DAN KISI-KISI", "VOID DAN RAILING KACA", "PINTU DAN JENDELA KACA"],
+        "KORIDOR SERVICE": ["LANTAI", "DINDING DAN KOLOM", "PLAFON", "PINTU BESI"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "TOILET STAFF": ["ROLLING DOOR", "LANTAI", "PLAFON", "PARTISI CUBICLE", "KLOSET", "CERMIN DAN WASTAFEL", "URINOIR DAN SEKAT", "DINDING"],
+        "JANITOR": ["PLAFON", "DINDING", "LANTAI DAN FLOOR DRAIN", "KRAN"],
+        "STORAGE": ["LANTAI", "DINDING", "PLAFON", "PINTU"],
+        "TERAS": ["PINTU DAN JENDELA KACA", "LANTAI DAN FLOOR DRAIN", "PLAFON", "RAILING KACA", "DINDING DAN KOLOM"]
+      },
+      "D": {
+        "KORIDOR PUBLIK EATERIA": ["LANTAI GRANIT DAN TEGEL", "PINTU DAN JENDELA KACA", "RAILING KACA DAN VOID", "PLAFON", "HANDWASH STATION", "MEJA KURSI", "DINDING DAN KOLOM"],
+        "SEATING OUTDOOR": ["RAILING KACA", "DINDING DAN KOLOM", "LANTAI DAN FLOOR DRAIN", "PLAFON"],
+        "TOILET CUSTOMER": ["KLOSET", "URINAL", "SEKAT URINAL", "WASTAFEL DAN KRAN SENSOR", "LEHER ANGSA", "SHOWER", "CERMIN DAN MEJA WASTAFEL", "PARTISI DAN PINTU CUBICLE", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON"],
+        "TOILET PRIORITY": ["KLOSET", "WASTAFEL DAN KRAN", "LEHER ANGSA", "CERMIN DAN MEJA WASTAFEL", "LANTAI GERANIT DAN FLOOR DRAIN", "DINDING", "PLAFON", "HANDRAIL"],
+        "KORIDOR SERVICE": ["LANTAI", "DINDING DAN KOLOM", "PLAFON"],
+        "TANGGA DARURAT": ["STEP NOSING", "RAILING", "DINDING", "PINTU BESI", "LANTAI"],
+        "R. PANEL": ["LANTAI EPOXY", "DINDING", "PLAFON", "PINTU BESI"],
+        "JANITOR": ["PLAFON", "DINDING", "LANTAI DAN FLOOR DRAIN", "KRAN"]
+      }
+    },
+    "ROOFTOP": {
+      "A": {
+        "DAK": ["DINDING DAN PARAPET", "ROOFDRAIN DAN GUTTER", "KOLOM BAJA", "LISPLANG DAN PLAFON", "PEDESTAL", "DAK BETON"]
+      },
+      "B": {
+        "DAK": ["DINDING DAN PARAPET", "ROOFDRAIN DAN GUTTER", "KOLOM BAJA", "LISPLANG DAN PLAFON", "PEDESTAL", "DAK BETON"]
+      },
+      "C": {
+        "DAK": ["DINDING DAN PARAPET", "ROOFDRAIN DAN GUTTER", "KOLOM BAJA", "LISPLANG DAN PLAFON", "PEDESTAL", "DAK BETON"]
+      },
+      "D": {
+        "DAK": ["DINDING DAN PARAPET", "ROOFDRAIN DAN GUTTER", "KOLOM BAJA", "LISPLANG DAN PLAFON", "PEDESTAL", "DAK BETON"]
+      }
+    },
+    "FACADE": {
+      "FACADE": {
+        "BARAT": ["CAT", "GRC", "KACA"],
+        "UTARA": ["CAT", "GRC", "KACA"],
+        "TIMUR": ["CAT", "GRC", "KACA"],
+        "SELATAN": ["CAT", "GRC", "KACA"]
+      }
+    }
   };
 
   let currentUser = JSON.parse(localStorage.getItem("user_civil")) || null;
@@ -975,7 +1139,6 @@
   const container = document.getElementById("viewMapContainer");
   if (!container) return;
 
-  // Pastikan CSS transition dimatikan total agar Panzoom yang ambil alih penuh
   container.style.transition = "none";
   container.style.touchAction = "none";
 
@@ -989,13 +1152,12 @@
       minScale: 1,
       contain: 'outside',
       startScale: 1,
-      animate: true, // Animasi smooth bawaan Panzoom
-      duration: 200  // Durasi animasi (ms)
+      animate: true,
+      duration: 200
     });
 
     container.parentElement.addEventListener('wheel', window.pzView.zoomWithWheel);
 
-    // Bikin pin ukurannya tetap presisi & tidak ikut membesar
     container.addEventListener('panzoomchange', (event) => {
       const scale = event.detail.scale;
       const viewPin = document.getElementById("viewMapPin");
@@ -1030,28 +1192,6 @@
     showAuthCard("loginCard");
   }
 
-  function switchTab(tab) {
-    document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-    document.getElementById("listTab").classList.add("d-none");
-    document.getElementById("createTab").classList.add("d-none");
-    document.getElementById("checklistTab").classList.add("d-none");
-
-    if (tab === 'checklist') {
-      document.getElementById("checklistTab").classList.remove("d-none");
-      document.getElementById("tabChecklist").classList.add("active");
-      loadChecklistItems();
-    } else if (tab === 'create') {
-      document.getElementById("createTab").classList.remove("d-none");
-      document.getElementById("tabCreate").classList.add("active");
-      initPanzoom();
-      updateFloorMap();
-    } else {
-      document.getElementById("listTab").classList.remove("d-none");
-      document.getElementById("tabList").classList.add("active");
-      loadReports();
-    }
-  }
-
   function updateFloorMap() {
     const floor = document.getElementById("floor").value;
     const mapImg = document.getElementById("mapImage");
@@ -1073,7 +1213,6 @@
     document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
   }
 
-  // FUNGSI MEMBUKA POPUP PREVIEW FOTO (FIXED BROKEN IMAGE)
 function openImageModal(imgUrl) {
   if (!imgUrl) return;
 
@@ -1081,39 +1220,30 @@ function openImageModal(imgUrl) {
   const modalEl = document.getElementById("imagePreviewModal");
 
   if (modalImg && modalEl) {
-    // Format URL Google Drive agar bisa langsung ditampilkan di <img> tag
     let directUrl = imgUrl;
 
     if (imgUrl.includes("drive.google.com")) {
-      // Ekstrak ID File Google Drive
       const match = imgUrl.match(/\/d\/([^\/]+)/) || imgUrl.match(/id=([^&]+)/);
       if (match && match[1]) {
         const fileId = match[1];
-        // URL direct view beresolusi tinggi (width 1600px)
         directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600`;
       }
     }
 
     modalImg.src = directUrl;
-    
-    // Tampilkan Modal Bootstrap
     const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
     bsModal.show();
   }
 }
-// ==========================================
-// FIX DENAH LAPOR BOCOR (ZOOM & TAG PIN)
-// ==========================================
+
 let pzBocor = null;
 let bocorMarkingX = null;
 let bocorMarkingY = null;
 
-// FUNGSI INISIALISASI PANZOOM BOCOR
 function initBocorPanzoom() {
   const container = document.getElementById("bocorMapContainer");
   if (!container || typeof Panzoom === 'undefined') return;
 
-  // Hapus instance lama jika ada
   if (pzBocor && typeof pzBocor.destroy === 'function') {
     pzBocor.destroy();
     pzBocor = null;
@@ -1122,7 +1252,6 @@ function initBocorPanzoom() {
   container.style.transition = "none";
   container.style.touchAction = "none";
 
-  // Bind Panzoom ke container
   pzBocor = Panzoom(container, {
     maxScale: 5,
     minScale: 1,
@@ -1137,7 +1266,6 @@ function initBocorPanzoom() {
     wrapper.addEventListener('wheel', pzBocor.zoomWithWheel);
   }
 
-  // Update skala pin saat zoom/pan
   container.removeEventListener('panzoomchange', updateBocorPinPosition);
   container.addEventListener('panzoomchange', updateBocorPinPosition);
 }
@@ -1185,7 +1313,6 @@ function updateBocorPinPosition() {
   pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
 }
 
-// FUNGSI TOMBOL ZOOM (+ / - / RESET)
 function zoomInBocor() {
   if (pzBocor) pzBocor.zoomIn({ animate: true, duration: 200 });
 }
@@ -1194,11 +1321,9 @@ function zoomOutBocor() {
   if (pzBocor) pzBocor.zoomOut({ animate: true, duration: 200 });
 }
 
-// LISTEN KLIK PIN DI DENAH (FIXED TRACKING & SYNTAX)
 let startBocorX = 0, startBocorY = 0;
 
 document.addEventListener("DOMContentLoaded", function () {
-  // 1. EVENT LISTENER KLIK DENAH LAPOR DIRECT (#mapImage)
   const mapImg = document.getElementById("mapImage");
   if (mapImg) {
     mapImg.addEventListener("click", function (e) {
@@ -1229,7 +1354,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // 2. EVENT LISTENER TRACKING DENAH LAPOR BOCOR (#bocorMapImage)
   const bocorMapImg = document.getElementById("bocorMapImage");
   if (bocorMapImg) {
     bocorMapImg.addEventListener('pointerdown', (e) => { 
@@ -1276,26 +1400,90 @@ document.addEventListener("DOMContentLoaded", function () {
   if (currentUser) showApp();
 });
 
-// Panggil saat pindah tab Lapor Bocor
 document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function () {
   initBocorPanzoom();
   updateBocorFloorMap();
 });
+
+// ==========================================
+// LOGIKA DROPDOWN DINAMIS (CASCADING FORM INSPEKSI)
+// ==========================================
+function handleFloorChange() {
+  const floor = document.getElementById("chkFloor").value;
+  const zoneSelect = document.getElementById("chkZone");
+  const areaSelect = document.getElementById("chkArea");
   
-function loadChecklistItems() {
-  const cat = document.getElementById("chkCategory").value;
-  const items = CHECKLIST_PRESETS[cat] || [];
+  zoneSelect.innerHTML = '<option value="">-- Pilih Zone --</option>';
+  areaSelect.innerHTML = '<option value="">-- Pilih Area / Ruangan --</option>';
+  areaSelect.disabled = true;
+  document.getElementById("btnSubmitChecklist").disabled = true;
+
+  document.getElementById("checklistItemsContainer").innerHTML = `
+    <div class="text-center text-muted py-4 border rounded bg-light">
+      <small>Silakan pilih <strong>Zone</strong> dan <strong>Area/Ruangan</strong>.</small>
+    </div>
+  `;
+  document.getElementById("itemCountBadge").innerText = "0 Item";
+
+  if (floor && INSPECTION_DATA[floor]) {
+    zoneSelect.disabled = false;
+    Object.keys(INSPECTION_DATA[floor]).forEach(z => {
+      zoneSelect.add(new Option(floor === "FACADE" ? z : `Zone ${z}`, z));
+    });
+  } else {
+    zoneSelect.disabled = true;
+  }
+}
+
+function handleZoneChange() {
+  const floor = document.getElementById("chkFloor").value;
+  const zone = document.getElementById("chkZone").value;
+  const areaSelect = document.getElementById("chkArea");
+
+  areaSelect.innerHTML = '<option value="">-- Pilih Area / Ruangan --</option>';
+  document.getElementById("btnSubmitChecklist").disabled = true;
+  
+  document.getElementById("checklistItemsContainer").innerHTML = `
+    <div class="text-center text-muted py-4 border rounded bg-light">
+      <small>Silakan pilih <strong>Area/Ruangan</strong>.</small>
+    </div>
+  `;
+  document.getElementById("itemCountBadge").innerText = "0 Item";
+
+  if (floor && zone && INSPECTION_DATA[floor] && INSPECTION_DATA[floor][zone]) {
+    areaSelect.disabled = false;
+    Object.keys(INSPECTION_DATA[floor][zone]).forEach(area => {
+      areaSelect.add(new Option(area, area));
+    });
+  } else {
+    areaSelect.disabled = true;
+  }
+}
+
+function handleAreaChange() {
+  const floor = document.getElementById("chkFloor").value;
+  const zone = document.getElementById("chkZone").value;
+  const area = document.getElementById("chkArea").value;
   const container = document.getElementById("checklistItemsContainer");
+  const btnSubmit = document.getElementById("btnSubmitChecklist");
+  const countBadge = document.getElementById("itemCountBadge");
+
   container.innerHTML = "";
+  if (!area) {
+    btnSubmit.disabled = true;
+    countBadge.innerText = "0 Item";
+    return;
+  }
+
+  const items = INSPECTION_DATA[floor]?.[zone]?.[area] || ["LANTAI", "DINDING", "PLAFON", "PINTU"];
+  countBadge.innerText = `${items.length} Item`;
+  btnSubmit.disabled = false;
 
   items.forEach((item, idx) => {
-    // Ambil teks item (apabila string langsung atau objek)
-    const itemName = typeof item === 'string' ? item : (item.name || item.title || item);
-
     container.innerHTML += `
       <div class="chk-item-card p-3 mb-2 card border-0 shadow-sm">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <div class="fw-bold small pe-2 text-dark">${idx + 1}. ${itemName}</div>
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="fw-bold small pe-2 text-dark text-uppercase">${idx + 1}. ${item}</div>
           <div class="btn-group" role="group">
             <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" checked onchange="toggleFailDetail(${idx}, false)">
             <label class="btn btn-sm btn-outline-success" for="pass_${idx}">NORMAL</label>
@@ -1313,6 +1501,7 @@ function loadChecklistItems() {
     `;
   });
 }
+
   function toggleFailDetail(idx, isFail) {
     const box = document.getElementById(`fail_box_${idx}`);
     if (box) {
@@ -1343,7 +1532,6 @@ function loadChecklistItems() {
     <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Selatan)">
     <textarea class="form-control form-control-sm mb-2 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
 
-    <!-- TOMBOL KAMERA DENGAN BOOTSTRAP ICON MODERN -->
     <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="triggerSubCam('${idx}', ${subIdx})">
       <i class="bi bi-camera-fill me-1"></i> Ambil Foto
     </button>
@@ -1352,6 +1540,7 @@ function loadChecklistItems() {
   `;
   failList.appendChild(newItem);
 }
+
   function triggerSubCam(itemIdx, subIdx) {
     const container = document.getElementById(`fail_list_${itemIdx}`).getElementsByClassName('fail-sub-item')[subIdx];
     container.querySelector(`.sub-cam-${itemIdx}`).click();
@@ -1367,8 +1556,11 @@ function loadChecklistItems() {
 
   document.getElementById("checklistForm").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const cat = document.getElementById("chkCategory").value;
-    const items = CHECKLIST_PRESETS[cat] || [];
+    const floor = document.getElementById("chkFloor").value;
+    const zone = document.getElementById("chkZone").value;
+    const area = document.getElementById("chkArea").value;
+    
+    const items = INSPECTION_DATA[floor]?.[zone]?.[area] || [];
     const btn = document.getElementById("btnSubmitChecklist");
 
     let totalPass = 0; let totalFail = 0;
@@ -1377,10 +1569,11 @@ function loadChecklistItems() {
 
     btn.disabled = true; btn.innerText = "Proses Watermark & Mengirim...";
 
-    const baseLocation = document.getElementById("chkLocationDetail").value;
+    const baseLocation = `${area} (${floor} - ${zone})`;
 
     for (let i = 0; i < items.length; i++) {
-      const status = document.querySelector(`input[name="chk_${i}"]:checked`).value;
+      const statusInput = document.querySelector(`input[name="chk_${i}"]:checked`);
+      const status = statusInput ? statusInput.value : "PASS";
       
       if (status === "PASS") {
         totalPass++;
@@ -1412,9 +1605,9 @@ function loadChecklistItems() {
     const payload = {
       action: "saveChecklist",
       username: currentUser.username,
-      floor: document.getElementById("chkFloor").value,
-      zone: document.getElementById("chkZone").value,
-      area_category: cat,
+      floor: floor,
+      zone: zone,
+      area_category: area,
       location_detail: baseLocation,
       checklist_items: chkData,
       total_pass: totalPass,
@@ -1428,7 +1621,7 @@ function loadChecklistItems() {
 
     if (res.status === "success") {
       document.getElementById("checklistForm").reset();
-      loadChecklistItems();
+      handleFloorChange();
       switchTab('list');
     }
   });
@@ -1436,13 +1629,11 @@ function loadChecklistItems() {
   function setFilter(filterType) {
   currentFilter = filterType;
 
-  // Sinkronkan nilai pilihan dropdown filter
   const selectEl = document.getElementById("filterStatusSelect");
   if (selectEl && selectEl.value !== filterType) {
     selectEl.value = filterType;
   }
 
-  // Langsung render ulang daftar laporan saat status filter diganti
   if (typeof renderReports === 'function') {
     renderReports();
   }
@@ -1650,10 +1841,8 @@ function loadChecklistItems() {
 function updateDashboardStats(reports) {
   if (!Array.isArray(reports)) return;
 
-  // Filter khusus laporan direct
   const directReports = reports.filter(r => !r.source && !r.severity && (r.type === 'DIRECT' || !r.type || r.issue));
 
-  // Hitung 3 status Lapor Direct
   const reportedCount = directReports.filter(r => (r.status || 'REPORTED').toUpperCase() === 'REPORTED').length;
   const progressCount = directReports.filter(r => {
     const st = (r.status || '').toUpperCase();
@@ -1664,7 +1853,6 @@ function updateDashboardStats(reports) {
     return st === 'RESOLVED' || st === 'DONE';
   }).length;
 
-  // Tampilkan ke 3 angka kartu Lapor Direct
   const elReported = document.getElementById("statDirectReported");
   const elProgress = document.getElementById("statDirectProgress");
   const elResolved = document.getElementById("statDirectResolved");
@@ -1673,16 +1861,15 @@ function updateDashboardStats(reports) {
   if (elProgress) elProgress.innerText = progressCount;
   if (elResolved) elResolved.innerText = resolvedCount;
 
-  // Hitung Lapor Bocor langsung dari API agar angkanya sama persis dengan Sheet Laporan_Bocor
   fetchAPI({ action: "getBocorReports" }).then(res => {
     if (res && res.data) {
-      const elBocor = document.getElementById("statBocorReport");
-      if (elBocor) elBocor.innerText = res.data.length;
+      const elBocor = document.getElementById("statStatBocorReport");
+      const elBocorMain = document.getElementById("statBocorReport");
+      if (elBocorMain) elBocorMain.innerText = res.data.length;
     }
   }).catch(err => console.log(err));
 }
 
-  // FUNGSI UTAMA PERPINDAHAN TAB BERSIH
 function switchTab(tabId) {
   document.querySelectorAll('.tab-pane').forEach(el => {
     el.classList.remove('show', 'active');
@@ -1693,7 +1880,6 @@ function switchTab(tabId) {
   }
 }
 
-// FUNGSI KARTU KUNING (LAPOR BOCOR)
 function openBocorHistoryTab() {
   switchTab('bocorHistoryTab');
   if (typeof loadBocorReports === 'function') {
@@ -1701,7 +1887,6 @@ function openBocorHistoryTab() {
   }
 }
 
-// FUNGSI KARTU BIRU (LAPOR DIRECT)
 function openDirectHistoryTab() {
   switchTab('listTab');
   if (typeof loadReports === 'function') {
@@ -1771,7 +1956,6 @@ function openDirectHistoryTab() {
     });
   }
 
-  // FUNGSI MEMUAT DAN MERENDER DATA LANGSUNG DARI SHEET Laporan_Bocor
 async function loadBocorReports() {
   const container = document.getElementById("bocorReportsContainer");
   if (!container) return;
@@ -1847,22 +2031,6 @@ async function loadBocorReports() {
   }
 }
 
-  function openBocorHistoryTab() {
-  // 1. Sembunyikan semua tab yang sedang aktif
-  document.querySelectorAll('.tab-pane').forEach(el => {
-    el.classList.remove('show', 'active');
-  });
-  
-  // 2. Tampilkan tab riwayat bocor
-  const historyTab = document.getElementById('bocorHistoryTab');
-  if (historyTab) {
-    historyTab.classList.add('show', 'active');
-  }
-
-  // 3. Ambil data riwayat dari spreadsheet
-  loadBocorReports();
-}
-
 function openUpdateModal(id, targetStatus, locationDetail) {
   activeUpdateData = { id, targetStatus, locationDetail };
   updateFile = null;
@@ -1896,18 +2064,13 @@ async function submitUpdateProgress() {
   loadReports();
 }
 
-// ==========================================
-// FUNGSI PEMBANTU PIN MODAL RIWAYAT
-// ==========================================
 function updateViewPinPosition() {
   const viewPin = document.getElementById("viewMapPin");
   if (!viewPin || typeof viewMarkedX === 'undefined' || typeof viewMarkedY === 'undefined') return;
 
-  // Set posisi persentase presisi
   viewPin.style.left = viewMarkedX + "%";
   viewPin.style.top = viewMarkedY + "%";
 
-  // Kebalikan skala zoom Panzoom agar ukuran pin tetap konstan
   const currentScale = window.pzView ? window.pzView.getScale() : 1;
   viewPin.style.transform = `translate(-50%, -50%) scale(${1 / currentScale})`;
 }
@@ -1919,7 +2082,6 @@ function openMapModal(floor, x, y) {
   const viewImg = document.getElementById("viewMapImage");
   if (!viewImg) return;
 
-  // Set properti touch action agar tidak bentrok gestur di HP
   viewImg.style.touchAction = "none";
   viewImg.style.userSelect = "none";
   viewImg.style.webkitUserDrag = "none";
@@ -1946,16 +2108,14 @@ function openMapModal(floor, x, y) {
         duration: 200
       });
 
-      // KUNCI UTAMA: Aktifkan Zoom pake Wheel Mouse pada Wrapper
       if (wrapper) {
         wrapper.removeEventListener('wheel', window.pzView.zoomWithWheel);
         wrapper.addEventListener('wheel', (e) => {
-          e.preventDefault(); // Mencegah halaman utama ikut ter-scroll
+          e.preventDefault();
           window.pzView.zoomWithWheel(e);
         }, { passive: false });
       }
 
-      // Sesuaikan skala pin tiap kali di-zoom/pan
       container.removeEventListener('panzoomchange', updateViewPinPosition);
       container.addEventListener('panzoomchange', updateViewPinPosition);
     }
@@ -1972,7 +2132,6 @@ function openMapModal(floor, x, y) {
   const titleEl = document.getElementById("mapModalTitle");
   if (titleEl) titleEl.innerText = `Denah Kerusakan (${floor})`;
 
-  // Tampilkan modal Bootstrap
   if (typeof mapModal !== 'undefined' && mapModal.show) {
     mapModal.show();
   } else {
@@ -2041,7 +2200,6 @@ function resetMapZoom() {
     return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(r => r.json());
   }
      
-      // 1. EVENT LISTENER: MULTIPLE FOTO + WATERMARK + AUTO COMPRESS/RESIZE
 let bocorBase64Photos = [];
 
 const bocorPhotoInput = document.getElementById("bocorPhotoCamera");
@@ -2061,16 +2219,14 @@ if (bocorPhotoInput) {
       statusElement.className = "text-warning small d-block mt-1 fw-bold";
     }
 
-    bocorBase64Photos = []; // Clear data lama
+    bocorBase64Photos = [];
 
-    // Helper process watermark + resize otomatis agar payload kecil & super cepat
     const processWatermark = (file) => {
       return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = function (evt) {
           const img = new Image();
           img.onload = function () {
-            // BATASI RESULUSI MAX 1280px (AGAR SERVER GOOGLE KIKIRIM SEJATENYA DETIKAN)
             const MAX_WIDTH = 1280;
             let width = img.width;
             let height = img.height;
@@ -2087,7 +2243,6 @@ if (bocorPhotoInput) {
 
             ctx.drawImage(img, 0, 0, width, height);
 
-            // Data Watermark
             const now = new Date();
             const timeString = now.toLocaleDateString('id-ID', {
               day: '2-digit', month: 'short', year: 'numeric',
@@ -2099,13 +2254,11 @@ if (bocorPhotoInput) {
             const locationVal = document.getElementById("bocorLocation") ? document.getElementById("bocorLocation").value : "-";
             const fullLocation = `${floorVal} - ${locationVal}`;
 
-            // Font & Layout Responsif
             const baseFontSize = Math.max(16, Math.floor(canvas.width / 30));
             const padding = Math.floor(baseFontSize * 0.8);
             const startX = Math.floor(canvas.width * 0.04);
             let startY = canvas.height - Math.floor(baseFontSize * 6);
 
-            // 1. BADGE STATUS
             ctx.font = `bold ${baseFontSize}px sans-serif`;
             const statusText = "STATUS: REPORTED";
             const statusWidth = ctx.measureText(statusText).width + (padding * 2);
@@ -2117,7 +2270,6 @@ if (bocorPhotoInput) {
             ctx.fillStyle = "#FFFFFF";
             ctx.fillText(statusText, startX + padding, startY + statusHeight - Math.floor(padding / 2));
 
-            // 2. KOTAK HITAM TRANSPARAN
             startY += statusHeight;
             const lineGap = Math.floor(baseFontSize * 1.3);
             const boxHeight = (lineGap * 3) + padding;
@@ -2126,7 +2278,6 @@ if (bocorPhotoInput) {
             ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
             ctx.fillRect(startX, startY, boxWidth, boxHeight);
 
-            // 3. TEKS WATERMARK
             ctx.fillStyle = "#FFFFFF";
             ctx.font = `bold ${Math.floor(baseFontSize * 0.85)}px sans-serif`;
 
@@ -2134,7 +2285,6 @@ if (bocorPhotoInput) {
             ctx.fillText(`Lokasi: ${fullLocation}`, startX + padding, startY + (lineGap * 2));
             ctx.fillText(`Waktu: ${timeString}`, startX + padding, startY + (lineGap * 3));
 
-            // Kompresi JPEG kualitas 0.7 (Hasil bersih, file ringan)
             resolve(canvas.toDataURL("image/jpeg", 0.7));
           };
           img.src = evt.target.result;
@@ -2155,7 +2305,6 @@ if (bocorPhotoInput) {
   });
 }
 
-// 2. SCRIPT PENGHUBUNG AMBIL FOTO KAMERA (BEBAS INFINITE LOOP)
 const cameraOnlyInput = document.getElementById("bocorPhotoCameraOnly");
 if (cameraOnlyInput) {
   cameraOnlyInput.addEventListener("change", function (e) {
@@ -2171,13 +2320,11 @@ if (cameraOnlyInput) {
   });
 }
 
-  // HANDLER SUBMIT FORM LAPOR BOCOR (FIXED MULTIPLE PHOTOS & KOORDINAT)
 const bocorForm = document.getElementById("bocorForm");
 if (bocorForm) {
   bocorForm.addEventListener("submit", async function (e) {
     e.preventDefault();
 
-    // 1. Kunci koordinat titik denah
     const currentX = window.bocorMarkingX || bocorMarkingX || "";
     const currentY = window.bocorMarkingY || bocorMarkingY || "";
 
@@ -2190,10 +2337,8 @@ if (bocorForm) {
     btnSubmit.disabled = true;
     btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...`;
 
-    // 2. Ambil array multiple foto yang sudah diproses & ber-watermark
     const finalPhotos = (typeof bocorBase64Photos !== 'undefined' && Array.isArray(bocorBase64Photos)) ? bocorBase64Photos : [];
 
-    // 3. Susun payload pengiriman
     const payload = {
       action: "saveLaporBocor",
       username: (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : "Petugas",
@@ -2204,10 +2349,9 @@ if (bocorForm) {
       issue: document.getElementById("bocorIssue").value,
       marking_x: String(currentX),
       marking_y: String(currentY),
-      photos: finalPhotos // Array foto dikirim ke backend
+      photos: finalPhotos
     };
 
-    // 4. Kirim data ke Apps Script API
     try {
       const response = await fetch(API_URL, {
         method: "POST",
@@ -2219,10 +2363,8 @@ if (bocorForm) {
       btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
 
       if (res.status === "success") {
-        // GANTI ALERT DEGRADED JADI TOAST MODERN
         showToast("✓ " + res.message, "success");
         
-        // Reset form & array foto setelah berhasil
         bocorForm.reset();
         window.bocorMarkingX = null;
         window.bocorMarkingY = null;
@@ -2249,9 +2391,6 @@ if (bocorForm) {
   });
 }
   
-  // ==========================================
-// 3. EVENT LISTENER HIDE NAMA AKUN SAAT SCROLL DOWN
-// ==========================================
 window.addEventListener('scroll', function () {
   const header = document.getElementById('topHeader');
   if (header) {
@@ -2263,7 +2402,6 @@ window.addEventListener('scroll', function () {
   }
 });
 
-// Panggil data riwayat saat tab Riwayat Lapor Bocor dibuka
 const bocorRiwayatTabBtn = document.getElementById("tab-bocor-riwayat");
 if (bocorRiwayatTabBtn) {
   bocorRiwayatTabBtn.addEventListener("shown.bs.tab", function () {
@@ -2271,23 +2409,18 @@ if (bocorRiwayatTabBtn) {
   });
 }
 
-  // FUNGSI UNTUK MEMINDAHKAN TAB KE LAPOR BOCOR SAAT KARTU KUNING DIKLIK
 function switchTabToBocor() {
   const bocorTabBtn = document.getElementById("tab-bocor");
   if (bocorTabBtn) {
-    // Pemicu perpindahan tab Bootstrap
     const tab = new bootstrap.Tab(bocorTabBtn);
     tab.show();
     
-    // Render data riwayat kebocoran
     if (typeof renderBocorReports === 'function') {
       renderBocorReports();
     }
   }
 }
 
-// FUNGSI UPDATE POSISI PIN DENAH (GLOBAL)
-// ==========================================
 function updatePinPosition() {
   const pin = document.getElementById("mapPin");
   if (!markedX || !markedY || !pin) return;
@@ -2307,12 +2440,10 @@ function updateBocorPinPosition() {
   pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
 }
   
-  // GANTI KODE EVENT LISTENER DOMCONTENTLOADED DENGAN YANG INI
 document.addEventListener("DOMContentLoaded", function () {
   const sidebarButtons = document.querySelectorAll('#mainTab button[data-bs-toggle="pill"]');
   sidebarButtons.forEach(btn => {
     btn.addEventListener('shown.bs.tab', function (e) {
-      // Hanya membersihkan tab lain SETELAH tab baru resmi aktif oleh Bootstrap
       document.querySelectorAll('.tab-pane').forEach(el => {
         if (el !== document.querySelector(e.target.getAttribute('data-bs-target'))) {
           el.classList.remove('show', 'active');
@@ -2322,16 +2453,11 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-  // FUNGSI UNTUK MEMBUKA FORM LAPOR BOCOR SECARA CEAPAT VIA HOT BUTTON
 function openQuickBocorForm() {
-  // Pindah ke tab form lapor bocor
-  switchTab('bocorTab'); // Sesuaikan ID tab form bocor kamu jika beda (misal: 'bocorFormTab')
-  
-  // Reset atau fokuskan ke form jika diperlukan
+  switchTab('bocorTab');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-  // FUNGSI RE-INISIALISASI TOUCH & ZOOM DENAH
 function reinitMapZoom() {
   const mapImages = document.querySelectorAll("#mapImage, #bocorMapImage, .floor-plan-img, img[src*='denah'], img[src*='floor']");
   mapImages.forEach(img => {
@@ -2345,36 +2471,29 @@ function reinitMapZoom() {
   }
 }
 
-// FUNGSI UNTUK MEMAKSA DENAH KELOAD DENGAN INSTAN
 function triggerMapReload() {
-  // Pemicu untuk Form Lapor Direct
   const directFloorSelect = document.getElementById("directFloor") || document.querySelector("#directFormSelectFloor") || document.getElementById("floor");
   if (directFloorSelect) {
     directFloorSelect.dispatchEvent(new Event('change'));
   }
 
-  // Pemicu untuk Form Lapor Bocor
   const bocorFloorSelect = document.getElementById("bocorFloor") || document.getElementById("floorSelect");
   if (bocorFloorSelect) {
     bocorFloorSelect.dispatchEvent(new Event('change'));
   }
 
-  // Panggil re-inisialisasi zoom setelah event change dipicu
   setTimeout(reinitMapZoom, 150);
 }
 
-// JALANKAN OTOMATIS TIAP KALI PENGGUNA PINDAH TAB / MENU
 document.addEventListener("DOMContentLoaded", function () {
-  // Pemicu saat tombol menu tab diklik
   const allTabButtons = document.querySelectorAll('button[data-bs-toggle="pill"], button[data-bs-toggle="tab"], .nav-link');
   allTabButtons.forEach(btn => {
     btn.addEventListener('shown.bs.tab', function () {
-      setTimeout(triggerMapReload, 100); // Beri delay sedikit agar HTML tab selesai dirender sempurna
+      setTimeout(triggerMapReload, 100);
     });
   });
 });
 
-// DIPAKAI JUGA PADA FUNGSI SWITCHTAB MANUAL
 const originalSwitchTab = typeof switchTab === 'function' ? switchTab : null;
 if (originalSwitchTab) {
   switchTab = function(tabId) {
@@ -2383,7 +2502,6 @@ if (originalSwitchTab) {
   };
 }
 
-  // HELPER FUNCTION TOAST NOTIFIKASI MODERN
 function showToast(message, type = 'success') {
   const toastEl = document.getElementById('appToast');
   const toastText = document.getElementById('toastText');
@@ -2395,9 +2513,9 @@ function showToast(message, type = 'success') {
   const bsToast = new bootstrap.Toast(toastEl, { delay: 3500 });
   bsToast.show();
 }
-  </script> <!-- PENUTUP TAG SCRIPT PALING BAWAH -->
+  </script>
 
-  <!-- TOMBOL FLOATING LAPOR BOCOR CEAPAT -->
+<!-- TOMBOL FLOATING LAPOR BOCOR CEAPAT -->
 <button type="button" 
         class="btn btn-warning rounded-circle shadow-lg position-fixed d-flex align-items-center justify-content-center" 
         style="bottom: 20px; right: 20px; width: 56px; height: 56px; z-index: 1050; border: 2px solid #fff;" 
@@ -2406,7 +2524,7 @@ function showToast(message, type = 'success') {
   <i class="bi bi-droplet-fill text-dark fs-4"></i>
 </button>
 
-<!-- TARO KODE TOAST HTML DI SINI (SEBELUM </body>) -->
+<!-- TOAST NOTIFIKASI -->
   <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
     <div id="appToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="d-flex">

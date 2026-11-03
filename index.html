@@ -2135,17 +2135,16 @@ if (cameraOnlyInput) {
   });
 }
 
-  // HANDLER SUBMIT FORM LAPOR BOCOR (FIXED ASYNC & LOCK KOORDINAT)
+  // HANDLER SUBMIT FORM LAPOR BOCOR (FIXED MULTIPLE PHOTOS & KOORDINAT)
 const bocorForm = document.getElementById("bocorForm");
 if (bocorForm) {
   bocorForm.addEventListener("submit", async function (e) {
     e.preventDefault();
 
-    // 1. KUNCI KOORDINAT SEBELUM PROSES LAIN BERJALAN
+    // 1. Kunci koordinat titik denah
     const currentX = window.bocorMarkingX || bocorMarkingX || "";
     const currentY = window.bocorMarkingY || bocorMarkingY || "";
 
-    // Validasi: Wajib tandai titik pada denah
     if (!currentX || !currentY) {
       alert("Silakan tandai titik lokasi kebocoran pada denah terlebih dahulu!");
       return;
@@ -2155,33 +2154,24 @@ if (bocorForm) {
     btnSubmit.disabled = true;
     btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...`;
 
-    // 2. AMBIL FOTO WATERMARK / FILE DENGAN PROMISE (AGAR ASYNC TUNGGU SELESAI)
-    let finalPhotoBase64 = bocorBase64Photo || "";
-    const bocorPhotoInput = document.getElementById("bocorPhotoCamera");
+    // 2. Ambil array multiple foto yang sudah diproses & ber-watermark
+    const finalPhotos = (typeof bocorBase64Photos !== 'undefined' && Array.isArray(bocorBase64Photos)) ? bocorBase64Photos : [];
 
-    if (!finalPhotoBase64 && bocorPhotoInput && bocorPhotoInput.files && bocorPhotoInput.files[0]) {
-      finalPhotoBase64 = await new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (evt) => resolve(evt.target.result);
-        reader.onerror = () => resolve("");
-        reader.readAsDataURL(bocorPhotoInput.files[0]);
-      });
-    }
-
-    // 3. SUSUN PAYLOAD DENGAN KOORDINAT YANG SUDAH DIKUNCI
+    // 3. Susun payload pengiriman
     const payload = {
-    action: "saveLaporBocor",
-    username: (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : "Petugas",
-    floor: document.getElementById("bocorFloor").value,
-    source: document.getElementById("bocorSource").value,
-    severity: document.querySelector('input[name="debitAir"]:checked') ? document.querySelector('input[name="debitAir"]:checked').value : "RINGAN",
-    location_detail: document.getElementById("bocorLocation").value,
-    issue: document.getElementById("bocorIssue").value,
-    marking_x: String(currentX),
-    marking_y: String(currentY),
-    photos: bocorBase64Photos // <--- Mengirim Array foto ber-watermark
-  };
-    // 4. KIRIM DATA KE GOOGLE APPS SCRIPT
+      action: "saveLaporBocor",
+      username: (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : "Petugas",
+      floor: document.getElementById("bocorFloor").value,
+      source: document.getElementById("bocorSource").value,
+      severity: document.querySelector('input[name="debitAir"]:checked') ? document.querySelector('input[name="debitAir"]:checked').value : "RINGAN",
+      location_detail: document.getElementById("bocorLocation").value,
+      issue: document.getElementById("bocorIssue").value,
+      marking_x: String(currentX),
+      marking_y: String(currentY),
+      photos: finalPhotos // Array foto dikirim ke backend
+    };
+
+    // 4. Kirim data ke Apps Script API
     try {
       const response = await fetch(API_URL, {
         method: "POST",
@@ -2195,13 +2185,16 @@ if (bocorForm) {
       if (res.status === "success") {
         alert("✓ " + res.message);
         
-        // Reset form & variabel koordinat HANYA SETELAH SERVER MERESPON SUKSES
+        // Reset form & array foto setelah berhasil
         bocorForm.reset();
         window.bocorMarkingX = null;
         window.bocorMarkingY = null;
         bocorMarkingX = null;
         bocorMarkingY = null;
-        bocorBase64Photo = "";
+        bocorBase64Photos = [];
+
+        const statusText = document.getElementById("bocorPhotoStatus");
+        if (statusText) statusText.innerText = "";
 
         if (typeof resetBocorMapAndPin === 'function') resetBocorMapAndPin();
         const tabLaporanBtn = document.getElementById("tab-laporan");

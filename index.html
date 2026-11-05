@@ -2154,20 +2154,38 @@ function handleAreaChange() {
     btn.disabled = true; btn.innerText = "Memproses...";
 
     const res = await fetchAPI({
-      action: "login",
-      username: document.getElementById("loginUser").value,
-      password: document.getElementById("loginPass").value
+    action: "login",
+    username: document.getElementById("loginUser").value,
+    password: document.getElementById("loginPass").value
+  });
+
+  btn.disabled = false; 
+  btn.innerText = "Login";
+
+  if (res.status === "success") {
+    currentUser = res.user;
+    localStorage.setItem("user_civil", JSON.stringify(currentUser));
+    localStorage.setItem("user_civil_login_time", new Date().getTime().toString());
+
+    // Notifikasi sukses yang rapi (akan hilang otomatis dalam 1.5 detik)
+    Swal.fire({
+      title: 'Selamat Datang!',
+      text: res.message || 'Login berhasil.',
+      icon: 'success',
+      timer: 1500,
+      showConfirmButton: false
     });
 
-    Swal.fire({   title: 'Notifikasi',   text: res.message,   icon: 'info',   confirmButtonColor: '#4361ee' });
-    btn.disabled = false; btn.innerText = "Login";
-
-    if (res.status === "success") {
-  currentUser = res.user;
-  localStorage.setItem("user_civil", JSON.stringify(currentUser));
-  localStorage.setItem("user_civil_login_time", new Date().getTime().toString()); // <-- TAMBAHKAN BARIS INI
-  showApp();
-}
+    showApp();
+  } else {
+    // Notifikasi jika login gagal
+    Swal.fire({
+      title: 'Gagal Login!',
+      text: res.message || 'Username atau password salah.',
+      icon: 'error',
+      confirmButtonColor: '#ef4444'
+    });
+  }
   });
 
   document.getElementById("registerForm").addEventListener("submit", async (e) => {

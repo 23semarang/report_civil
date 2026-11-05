@@ -370,7 +370,12 @@
         </div>
         <div class="mb-3">
           <label class="form-label fw-bold small">Password</label>
-          <input type="password" id="loginPass" class="form-control" required>
+          <div class="input-group">
+            <input type="password" id="loginPass" class="form-control" required>
+            <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('loginPass', 'loginToggleIcon')">
+              <i class="bi bi-eye" id="loginToggleIcon"></i>
+            </button>
+          </div>
         </div>
         <button type="submit" id="btnLogin" class="btn btn-primary w-100">Login</button>
       </form>
@@ -397,7 +402,12 @@
         </div>
         <div class="mb-3">
           <label class="form-label fw-bold small">Password</label>
-          <input type="password" id="regPass" class="form-control" required>
+          <div class="input-group">
+            <input type="password" id="regPass" class="form-control" required>
+            <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('regPass', 'regToggleIcon')">
+              <i class="bi bi-eye" id="regToggleIcon"></i>
+            </button>
+          </div>
         </div>
         <button type="submit" id="btnRegister" class="btn btn-success w-100">Daftar Akun</button>
       </form>
@@ -430,7 +440,12 @@
         </div>
         <div class="mb-3">
           <label class="form-label fw-bold small">Password Baru</label>
-          <input type="password" id="otpNewPass" class="form-control" required>
+          <div class="input-group">
+            <input type="password" id="otpNewPass" class="form-control" required>
+            <button class="btn btn-outline-secondary" type="button" onclick="togglePasswordVisibility('otpNewPass', 'otpToggleIcon')">
+              <i class="bi bi-eye" id="otpToggleIcon"></i>
+            </button>
+          </div>
         </div>
         <button type="submit" id="btnVerifyReset" class="btn btn-success w-100">Simpan Password Baru</button>
       </form>
@@ -1245,25 +1260,53 @@ function showApp() {
 
   function logout() {
   localStorage.removeItem("user_civil");
-  localStorage.removeItem("user_civil_login_time"); // <-- Tambahkan baris ini
+  localStorage.removeItem("user_civil_login_time");
   currentUser = null;
   document.getElementById("appSection").classList.add("d-none");
   document.getElementById("authContainer").classList.remove("d-none");
   showAuthCard("loginCard");
 }
 
-  function updateFloorMap() {
-    const floor = document.getElementById("floor").value;
-    const mapImg = document.getElementById("mapImage");
-    mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
-    
-    mapImg.onload = () => {
-      if (pzCreate) pzCreate.reset();
-      updatePinPosition();
-    };
+// === FUNGSI TOGGLE SHOW/HIDE PASSWORD ===
+function togglePasswordVisibility(inputId, iconId) {
+  const passwordInput = document.getElementById(inputId);
+  const icon = document.getElementById(iconId);
 
-    resetMapAndPin();
+  if (!passwordInput) return;
+
+  if (passwordInput.type === "password") {
+    passwordInput.type = "text";
+    if (icon) {
+      if (icon.classList.contains("bi")) {
+        icon.classList.replace("bi-eye", "bi-eye-slash");
+      } else if (icon.classList.contains("fa") || icon.classList.contains("fas")) {
+        icon.classList.replace("fa-eye", "fa-eye-slash");
+      }
+    }
+  } else {
+    passwordInput.type = "password";
+    if (icon) {
+      if (icon.classList.contains("bi")) {
+        icon.classList.replace("bi-eye-slash", "bi-eye");
+      } else if (icon.classList.contains("fa") || icon.classList.contains("fas")) {
+        icon.classList.replace("fa-eye-slash", "fa-eye");
+      }
+    }
   }
+}
+
+function updateFloorMap() {
+  const floor = document.getElementById("floor").value;
+  const mapImg = document.getElementById("mapImage");
+  mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+  
+  mapImg.onload = () => {
+    if (pzCreate) pzCreate.reset();
+    updatePinPosition();
+  };
+
+  resetMapAndPin();
+}
 
   function resetMapAndPin() {
     if (pzCreate) pzCreate.reset();

@@ -1211,10 +1211,10 @@
     document.getElementById(cardId).classList.remove("d-none");
   }
 
-  // DURASI TIMEOUT SESI LOGIN (Contoh: 8 Jam = 8 * 60 * 60 * 1000 ms)
-const SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000;
+  function checkLoginSession() {
+  // Pindahkan deklarasi konstanta ke dalam paling atas fungsi
+  const SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000; // 8 Jam
 
-function checkLoginSession() {
   const loginTime = localStorage.getItem("user_civil_login_time");
   const now = new Date().getTime();
 

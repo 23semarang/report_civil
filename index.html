@@ -1196,21 +1196,61 @@
     document.getElementById(cardId).classList.remove("d-none");
   }
 
-  function showApp() {
-    document.getElementById("authContainer").classList.add("d-none");
-    document.getElementById("appSection").classList.remove("d-none");
-    document.getElementById("userGreeting").innerText = `Halo, ${currentUser.fullname || currentUser.username}`;
-    initPanzoom();
-    loadReports();
+  // DURASI TIMEOUT SESI LOGIN (Contoh: 8 Jam = 8 * 60 * 60 * 1000 ms)
+const SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000;
+
+function checkLoginSession() {
+  const loginTime = localStorage.getItem("user_civil_login_time");
+  const now = new Date().getTime();
+
+  if (currentUser && loginTime) {
+    if (now - parseInt(loginTime) > SESSION_TIMEOUT_MS) {
+      // Sesi Kadaluwarsa
+      localStorage.removeItem("user_civil");
+      localStorage.removeItem("user_civil_login_time");
+      currentUser = null;
+      
+      Swal.fire({
+        title: 'Sesi Berakhir!',
+        text: 'Waktu login Anda telah habis. Silakan login kembali demi keamanan.',
+        icon: 'warning',
+        confirmButtonColor: '#4361ee'
+      });
+
+      document.getElementById("appSection").classList.add("d-none");
+      document.getElementById("authContainer").classList.remove("d-none");
+      showAuthCard("loginCard");
+      return false;
+    }
+  }
+  return true;
+}
+
+// FUNGSI showApp YANG SUDAH DIPERBARUI
+function showApp() {
+  if (!checkLoginSession()) return; // Cek timeout sebelum membuka aplikasi
+
+  document.getElementById("authContainer").classList.add("d-none");
+  document.getElementById("appSection").classList.remove("d-none");
+  document.getElementById("userGreeting").innerText = `Halo, ${currentUser.fullname || currentUser.username}`;
+  
+  // Tampilkan / Sembunyikan Tombol PDF berdasarkan Role User (Jika sudah dipasang)
+  if (typeof renderPDFButtonsByRole === 'function') {
+    renderPDFButtonsByRole();
   }
 
+  initPanzoom();
+  loadReports();
+}
+
   function logout() {
-    localStorage.removeItem("user_civil");
-    currentUser = null;
-    document.getElementById("appSection").classList.add("d-none");
-    document.getElementById("authContainer").classList.remove("d-none");
-    showAuthCard("loginCard");
-  }
+  localStorage.removeItem("user_civil");
+  localStorage.removeItem("user_civil_login_time"); // <-- Tambahkan baris ini
+  currentUser = null;
+  document.getElementById("appSection").classList.add("d-none");
+  document.getElementById("authContainer").classList.remove("d-none");
+  showAuthCard("loginCard");
+}
 
   function updateFloorMap() {
     const floor = document.getElementById("floor").value;
@@ -1637,6 +1677,20 @@ function resetCompletedInspections() {
 }
 
 function exportPDFByFloor(selectedFloor) {
+  // Validasi Hak Akses Super User / Admin
+  const userRole = (currentUser && currentUser.role) ? currentUser.role.toLowerCase() : "";
+  const isSuperUser = userRole === "superuser" || userRole === "admin" || currentUser?.is_superuser === true;
+
+  if (!isSuperUser) {
+    Swal.fire({
+      title: 'Akses Ditolak!',
+      text: 'Fitur cetak rekap PDF ini hanya dapat diakses oleh Super User / Admin.',
+      icon: 'error',
+      confirmButtonColor: '#ef4444'
+    });
+    return;
+  }
+
   const allResults = getInspectionResults();
   const floorData = allResults[selectedFloor] || [];
 
@@ -2066,10 +2120,11 @@ function handleAreaChange() {
     btn.disabled = false; btn.innerText = "Login";
 
     if (res.status === "success") {
-      currentUser = res.user;
-      localStorage.setItem("user_civil", JSON.stringify(currentUser));
-      showApp();
-    }
+  currentUser = res.user;
+  localStorage.setItem("user_civil", JSON.stringify(currentUser));
+  localStorage.setItem("user_civil_login_time", new Date().getTime().toString()); // <-- TAMBAHKAN BARIS INI
+  showApp();
+}
   });
 
   document.getElementById("registerForm").addEventListener("submit", async (e) => {

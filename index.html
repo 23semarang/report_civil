@@ -21,6 +21,38 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
+/* Style Pin Kebocoran di Denah */
+.bocor-pin {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 32px;
+  height: 32px;
+  background-color: #ef4444;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  animation: pulse-pin 2s infinite;
+}
+
+.bocor-pin:hover {
+  transform: translate(-50%, -50%) scale(1.3);
+  background-color: #dc2626;
+  z-index: 20;
+}
+
+@keyframes pulse-pin {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+    
     /* Style Tombol Debit Air */
 .btn-debit-info, .btn-debit-warning, .btn-debit-danger {
   color: #6c757d !important;
@@ -801,18 +833,60 @@
     </form>
   </div>
 
-  <!-- 4. TAB KHUSUS RIWAYAT LAPOR BOCOR (DIBUKA OLEH KARTU KUNING) -->
-  <div id="bocorHistoryTab" class="tab-pane fade card p-3 shadow-sm">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="fw-bold text-primary m-0">
-        <i class="bi bi-journal-text me-2"></i> Riwayat Laporan Kebocoran Air
-      </h5>
-      <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadBocorReports()">
+  <!-- RIWAYAT LAPORAN KEBOCORAN AIR -->
+<div id="bocorHistoryTab" class="tab-pane fade card p-3 shadow-sm">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold text-primary mb-0">
+      <i class="bi bi-droplet-half me-2"></i>Riwayat Laporan Kebocoran Air
+    </h5>
+    <div class="d-flex gap-2">
+      <!-- Toggle Switch Antara Kartu & Denah -->
+      <div class="btn-group btn-group-sm" role="group">
+        <button type="button" class="btn btn-outline-primary active" id="btnViewList" onclick="switchBocorView('list')">
+          <i class="bi bi-list-task"></i> List
+        </button>
+        <button type="button" class="btn btn-outline-primary" id="btnViewMap" onclick="switchBocorView('map')">
+          <i class="bi bi-map"></i> Denah
+        </button>
+      </div>
+      <button class="btn btn-sm btn-outline-secondary" onclick="loadBocorReports()">
         <i class="bi bi-arrow-clockwise"></i> Refresh
       </button>
     </div>
-    <div id="bocorReportsContainer">Memuat riwayat kebocoran...</div>
   </div>
+
+  <!-- VIEW 1: TAMPILAN KARTU (DEFAULT) -->
+  <div id="bocorListViewContainer">
+    <div id="bocorReportsList">
+      <!-- Kartu-kartu riwayat bocor akan di-render di sini oleh JavaScript -->
+    </div>
+  </div>
+
+  <!-- VIEW 2: TAMPILAN DENAH FLOORMAP INTERAKTIF -->
+  <div id="bocorMapViewContainer" class="d-none">
+    <!-- Filter Lantai Denah -->
+    <div class="mb-3">
+      <label class="form-label fw-bold small">Pilih Denah Lantai:</label>
+      <select id="bocorMapFloorSelect" class="form-select form-select-sm" onchange="renderBocorMapPins()">
+        <option value="LG">LG - Lower Ground</option>
+        <option value="L1" selected>L1 - Floor 1</option>
+        <option value="L2">L2 - Floor 2</option>
+        <option value="L3">L3 - Floor 3</option>
+        <option value="ROOFTOP">ROOFTOP</option>
+        <option value="FACADE">FACADE</option>
+      </select>
+    </div>
+
+    <!-- Area Denah & Container Pin -->
+    <div class="position-relative border rounded overflow-hidden bg-light text-center" style="min-height: 350px;">
+      <img id="bocorFloorMapImage" src="" class="img-fluid w-100" style="max-height: 500px; object-fit: contain;">
+      
+      <!-- Layer Tempat Pin Ditampilkan -->
+      <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100 style-pointer-events-none"></div>
+    </div>
+    <small class="text-muted d-block mt-2 text-center">* Klik pada ikon pin tetesan air untuk melihat detail laporan kebocoran.</small>
+  </div>
+</div>
 
   <!-- 5. TAB UTAMA DEFAULT: RIWAYAT LAPORAN DIRECT -->
   <div id="listTab" class="tab-pane fade show active">
@@ -2318,17 +2392,140 @@ function handleAreaChange() {
   });
 
   async function loadReports() {
-    const container = document.getElementById("reportsContainer");
-    container.innerHTML = "Memuat data...";
-    const res = await fetchAPI({ action: "getReports" });
-    if (res.status === "success") { 
-  allReports = res.data || []; 
-  updateDashboardStats(allReports); 
-  renderReports(); 
-}
-    else container.innerHTML = "<div class='text-center text-danger py-4'>Gagal memuat data.</div>";
+  const container = document.getElementById("reportsContainer");
+  container.innerHTML = "Memuat data...";
+  const res = await fetchAPI({ action: "getReports" });
+  if (res.status === "success") { 
+    allReports = res.data || []; 
+    updateDashboardStats(allReports); 
+    renderReports(); 
   }
+  else container.innerHTML = "<div class='text-center text-danger py-4'>Gagal memuat data.</div>";
+}
+
+// =======================================================
+// === LANGKAH 3: FITUR VIEW DENAH & MAP PINS BOCOR ======
+// =======================================================
+
+// Variable Penyimpanan Data Laporan Bocor Global
+let globalBocorReportsData = [];
+
+// 1. FUNGSI SWITCH MODES (LIST vs MAP)
+function switchBocorView(mode) {
+  const listView = document.getElementById("bocorListViewContainer");
+  const mapView = document.getElementById("bocorMapViewContainer");
+  const btnList = document.getElementById("btnViewList");
+  const btnMap = document.getElementById("btnViewMap");
+
+  if (mode === 'map') {
+    if (listView) listView.classList.add("d-none");
+    if (mapView) mapView.classList.remove("d-none");
+    if (btnList) btnList.classList.remove("active");
+    if (btnMap) btnMap.classList.add("active");
+    renderBocorMapPins();
+  } else {
+    if (mapView) mapView.classList.add("d-none");
+    if (listView) listView.classList.remove("d-none");
+    if (btnMap) btnMap.classList.remove("active");
+    if (btnList) btnList.classList.add("active");
+  }
+}
+
+// 2. FUNGSI LOAD BOCOR REPORTS (MEMPERBARUI KODE LAMA AGAR MENYIMPAN KE GLOBAL)
+async function loadBocorReports() {
+  const container = document.getElementById("bocorReportsList");
+  if (container) container.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>`;
+
+  const res = await fetchAPI({ action: "getBocorReports" });
+
+  if (res.status === "success" && res.data) {
+    globalBocorReportsData = res.data;
+    
+    // Render tampilan list jika fungsinya ada
+    if (typeof renderBocorList === 'function') {
+      renderBocorList(globalBocorReportsData);
+    }
+
+    // Perbarui pin denah jika sedang membuka mode map
+    const mapView = document.getElementById("bocorMapViewContainer");
+    if (mapView && !mapView.classList.contains("d-none")) {
+      renderBocorMapPins();
+    }
+  } else {
+    if (container) container.innerHTML = `<div class="alert alert-warning text-center">Gagal memuat data laporan kebocoran.</div>`;
+  }
+}
+
+// 3. FUNGSI RENDER PIN PADA DENAH
+function renderBocorMapPins() {
+  const floorSelect = document.getElementById("bocorMapFloorSelect");
+  if (!floorSelect) return;
   
+  const selectedFloor = floorSelect.value;
+  const mapImg = document.getElementById("bocorFloorMapImage");
+  const pinsLayer = document.getElementById("bocorPinsLayer");
+
+  if (typeof FLOOR_MAPS !== 'undefined' && FLOOR_MAPS[selectedFloor] && mapImg) {
+    mapImg.src = FLOOR_MAPS[selectedFloor];
+  }
+
+  if (pinsLayer) {
+    pinsLayer.innerHTML = "";
+
+    const filteredReports = globalBocorReportsData.filter(item => {
+      const floorMatch = String(item.lantai || item.floor || '').toUpperCase() === selectedFloor.toUpperCase();
+      const hasPin = item.marking_x && item.marking_y;
+      return floorMatch && hasPin;
+    });
+
+    filteredReports.forEach(item => {
+      const pin = document.createElement("div");
+      pin.className = "bocor-pin";
+      pin.style.left = `${item.marking_x}%`;
+      pin.style.top = `${item.marking_y}%`;
+      pin.title = `${item.detail_lokasi || 'Lokasi Kebocoran'}`;
+      pin.innerHTML = `<i class="bi bi-droplet-fill"></i>`;
+
+      pin.onclick = () => showBocorDetailPopup(item);
+      pinsLayer.appendChild(pin);
+    });
+  }
+}
+
+// 4. FUNGSI POPUP CARD DETAIL LAPORAN BOCOR
+function showBocorDetailPopup(item) {
+  let photosHtml = '';
+  if (item.url_foto) {
+    const photoUrls = item.url_foto.split(", ");
+    photosHtml = `<div class="d-flex gap-2 overflow-auto mb-2 py-1">` +
+      photoUrls.map(url => `<img src="${url}" class="rounded border" style="height: 100px; width: 100px; object-fit: cover; cursor: pointer;" onclick="openImageModal('${url}')">`).join('') +
+      `</div>`;
+  }
+
+  Swal.fire({
+    title: `<strong class="text-primary">${item.detail_lokasi || 'Kebocoran Air'}</strong>`,
+    html: `
+      <div class="text-start small">
+        <div class="mb-2">
+          <span class="badge bg-warning text-dark mb-1">DEBIT: ${item.tingkat_keparahan || 'SEDANG'}</span>
+          <span class="badge bg-secondary mb-1">${item.lantai || '-'} - ${item.sumber_bocor || 'Air'}</span>
+        </div>
+        <p class="mb-2"><strong>Keterangan:</strong> ${item.keterangan || '-'}</p>
+        ${photosHtml}
+        <div class="text-muted mt-2 border-top pt-2 d-flex justify-content-between align-items-center">
+          <small><i class="bi bi-person me-1"></i>${item.pelapor || 'Petugas'}</small>
+          <small><i class="bi bi-clock me-1"></i>${item.timestamp ? new Date(item.timestamp).toLocaleDateString() : '-'}</small>
+        </div>
+      </div>
+    `,
+    showCloseButton: true,
+    confirmButtonText: 'Tutup',
+    confirmButtonColor: '#4361ee'
+  });
+}
+
+// =======================================================
+
 function updateDashboardStats(reports) {
   if (!Array.isArray(reports)) return;
 

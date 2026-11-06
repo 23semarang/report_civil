@@ -26,10 +26,10 @@
   pointer-events: none;
 }
 
-/* Styling Pin Kebocoran Animasi Kedip */
+/* Styling Pin Kebocoran Animasi Kedip pulse-pin */
 .bocor-pin {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(var(--pin-scale, 1));
   width: 30px;
   height: 30px;
   background-color: #ef4444;
@@ -44,11 +44,10 @@
   pointer-events: auto;
   z-index: 10;
   animation: pulse-pin 1.8s infinite;
-  transition: transform 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .bocor-pin:hover {
-  transform: translate(-50%, -50%) scale(1.25);
   background-color: #dc2626;
   z-index: 20;
 }
@@ -174,7 +173,7 @@
     .status-PROGRESS { border-left-color: #f59e0b !important; }
     .status-RESOLVED { border-left-color: #10b981 !important; }
 
-    /* KARTU STATISTIK PASTEL (LIKE REFERENSI) */
+    /* KARTU STATISTIK PASTEL */
     .card-pastel-blue {
       background: #eef4ff !important;
       border: none !important;
@@ -324,10 +323,10 @@
       user-select: none;
     }
     #viewMapContainer, .map-container {
-  transition: none !important; /* Mencegah Panzoom terkunci oleh CSS transition */
-  touch-action: none !important;
-  user-select: none !important;
-}
+      transition: none !important;
+      touch-action: none !important;
+      user-select: none !important;
+    }
     .map-image { 
       width: 100%;
       height: 100%;
@@ -491,429 +490,405 @@
   </div>
 
   <!-- MAIN APP SECTION -->
-<div id="appSection" class="d-none">
+  <div id="appSection" class="d-none">
 
-  <!-- 1. STICKY HEADER (AUTO HIDE NAMA AKUN SAAT SCROLL) -->
-  <div id="topHeader" class="card p-3 mb-3 border-0 shadow-sm sticky-header" style="background: #ffffff; border-radius: 16px !important;">
-    <div class="d-flex justify-content-between align-items-center">
-      
-      <!-- Sisi Kiri: Tombol Menu Sidebar (Drawer) -->
-      <button class="btn btn-light border-0 p-2 me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
-        <i class="bi bi-list fs-4"></i>
-      </button>
-
-      <!-- Tengah: User Greeting (Bisa ter-hide saat scroll) -->
-      <div class="d-flex align-items-center gap-2 flex-grow-1 user-text-group">
-        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
-          <i class="bi bi-person-fill fs-5"></i>
-        </div>
-        <div>
-          <small class="text-muted d-block" style="font-size: 0.7rem;">Selamat Datang,</small>
-          <span id="userGreeting" class="fw-bold text-dark" style="font-size: 0.9rem;">-</span>
-        </div>
-      </div>
-
-      <!-- Sisi Kanan: Tombol Logout -->
-      <button onclick="logout()" class="btn btn-sm btn-outline-danger border-0 rounded-circle p-2 ms-auto" title="Logout">
-        <i class="bi bi-box-arrow-right fs-5"></i>
-      </button>
-    </div>
-  </div>
-
-  <!-- PEMBUNGKUS GRID DUA KARTU SEJAJAR -->
-<div class="row g-2 mb-3">
-
-  <!-- KARTU 1: LAPOR DIRECT (WITH 3 STATS BREAKDOWN EQUAL WIDTH) -->
-<div class="col-6">
-  <div class="card p-2 p-md-3 shadow-sm border-0 bg-white cursor-pointer h-100" onclick="openDirectHistoryTab()">
-    <div class="d-flex justify-content-between align-items-center mb-1">
-      <div class="small text-muted fw-bold">Lapor Direct</div>
-      <div class="fs-5 text-primary"><i class="bi bi-megaphone-fill"></i></div>
-    </div>
-    <!-- 3 ANGKA BREAKDOWN STATUS DENGAN LEBAR SAMA RATA (FLEX-FILL & W-100) -->
-    <div class="d-flex justify-content-between align-items-center text-center bg-light rounded p-1 mt-1 w-100">
-      <div class="flex-fill">
-        <span class="d-block text-danger fw-bold" style="font-size: 0.6rem;">REPORT</span>
-        <span class="fw-bold text-danger fs-6" id="statDirectReported">0</span>
-      </div>
-      <div class="flex-fill border-start border-end px-1">
-        <span class="d-block text-warning fw-bold" style="font-size: 0.6rem;">PROG</span>
-        <span class="fw-bold text-warning-emphasis fs-6" id="statDirectProgress">0</span>
-      </div>
-      <div class="flex-fill">
-        <span class="d-block text-success fw-bold" style="font-size: 0.6rem;">DONE</span>
-        <span class="fw-bold text-success fs-6" id="statDirectResolved">0</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-  <!-- KARTU 2: LAPOR BOCOR (KANAN) -->
-  <div class="col-6">
-    <div class="card p-3 shadow-sm border-0 bg-warning-subtle cursor-pointer h-100" onclick="openBocorHistoryTab()">
+    <!-- 1. STICKY HEADER -->
+    <div id="topHeader" class="card p-3 mb-3 border-0 shadow-sm sticky-header" style="background: #ffffff; border-radius: 16px !important;">
       <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <div class="small text-muted fw-bold">Lapor Bocor</div>
-          <h3 class="fw-bold mb-0 text-warning-emphasis" id="statBocorReport">0</h3>
-        </div>
-        <div class="fs-4 text-warning"><i class="bi bi-droplet-fill"></i></div>
-      </div>
-    </div>
-  </div>
-
-</div> <!-- PENUTUP ROW -->
-
-  <!-- 3. SIDEBAR MENUS (OFFCANVAS DRAWER) -->
-  <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
-    <div class="offcanvas-header border-bottom">
-      <h5 class="offcanvas-title fw-bold text-primary" id="sidebarMenuLabel">
-        <i class="bi bi-building-gear me-2"></i>Civil Maintenance
-      </h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-    </div>
-    <div class="offcanvas-body">
-      <ul class="nav nav-pills flex-column" id="mainTab" role="tablist">
-        <li class="nav-item">
-          <button class="nav-link w-100 text-start active" id="tab-laporan" data-bs-toggle="pill" data-bs-target="#listTab" data-bs-dismiss="offcanvas">
-            <i class="bi bi-grid-fill me-2"></i> Laporan
-          </button>
-        </li>
-        <li class="nav-item">
-          <button class="nav-link w-100 text-start" id="tab-inspeksi" data-bs-toggle="pill" data-bs-target="#checklistTab" data-bs-dismiss="offcanvas">
-            <i class="bi bi-clipboard-check-fill me-2"></i> Inspeksi Area
-          </button>
-        </li>
-        <li class="nav-item">
-  <button class="nav-link w-100 text-start disabled text-muted opacity-50" 
-          id="tab-direct" 
-          type="button"
-          disabled
-          style="pointer-events: none; cursor: not-allowed;">
-    <i class="bi bi-plus-circle-fill me-2 text-muted"></i> Lapor Direct
-  </button>
-</li>
-        <li class="nav-item">
-          <button class="nav-link w-100 text-start text-warning" id="tab-bocor" data-bs-toggle="pill" data-bs-target="#bocorTab" data-bs-dismiss="offcanvas">
-            <i class="bi bi-droplet-fill me-2 text-warning"></i> Lapor Kebocoran Air
-          </button>
-        </li>
-      </ul>
-    </div>
-  </div>
-  
-
-  <!-- TAB CONTENT WRAPPER -->
-<div class="tab-content">
-  
-  <!-- 1. TAB CHECKLIST INSPEKSI (BERDASARKAN MIND MAP DINAMIS) -->
-<div id="checklistTab" class="tab-pane fade card p-3 shadow-sm">
-  <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Inspeksi Rutin Area & Sanitary</h5>
-  
-  <form id="checklistForm">
-    <div class="row g-2 mb-2">
-      <div class="col-6">
-        <label class="form-label small fw-bold">Lantai</label>
-        <select id="chkFloor" class="form-select" onchange="handleFloorChange()" required>
-          <option value="">-- Pilih Lantai --</option>
-          <option value="LG">LG</option>
-          <option value="L1">L1</option>
-          <option value="L2">L2</option>
-          <option value="L3">L3</option>
-          <option value="ROOFTOP">ROOFTOP</option>
-          <option value="FACADE">FACADE</option>
-        </select>
-      </div>
-      <div class="col-6">
-        <label class="form-label small fw-bold">Zone</label>
-        <select id="chkZone" class="form-select" onchange="handleZoneChange()" required disabled>
-          <option value="">-- Pilih Zone --</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label small fw-bold">Nama Area / Ruangan</label>
-      <select id="chkArea" class="form-select" onchange="handleAreaChange()" required disabled>
-        <option value="">-- Pilih Area / Ruangan --</option>
-      </select>
-    </div>
-
-    <h6 class="mt-3 mb-2 text-primary fw-bold d-flex justify-content-between align-items-center">
-      <span>Daftar Komponen Pemeriksaan:</span>
-      <span id="itemCountBadge" class="badge bg-secondary">0 Item</span>
-    </h6>
-    <div id="checklistItemsContainer">
-      <div class="text-center text-muted py-4 border rounded bg-light">
-        <i class="bi bi-arrow-up-circle fs-3 d-block mb-1"></i>
-        <small>Silakan pilih <strong>Lantai</strong>, <strong>Zone</strong>, dan <strong>Area/Ruangan</strong> di atas terlebih dahulu.</small>
-      </div>
-    </div>
-
-    <button type="submit" id="btnSubmitChecklist" class="btn btn-success w-100 mt-3" disabled>Simpan Hasil Inspeksi</button>
-  </form>
-
-  <!-- BANNER STATUS PROGRESS & TOMBOL CETAK PDF (KHUSUS SUPERUSER / ADMIN) -->
-  <div id="pdfExportContainer" class="card p-3 mt-4 bg-light border-0 shadow-sm d-none">
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Cetak Laporan PDF Per Lantai</h6>
-      <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetCompletedInspections()">
-        <i class="bi bi-arrow-counterclockwise"></i> Reset Lock
-      </button>
-    </div>
-    <div class="d-flex flex-wrap gap-2">
-      <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('LG')"><i class="bi bi-download"></i> PDF LG</button>
-      <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('L1')"><i class="bi bi-download"></i> PDF L1</button>
-      <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('L2')"><i class="bi bi-download"></i> PDF L2</button>
-      <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('L3')"><i class="bi bi-download"></i> PDF L3</button>
-      <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('ROOFTOP')"><i class="bi bi-download"></i> PDF ROOFTOP</button>
-      <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('FACADE')"><i class="bi bi-download"></i> PDF FACADE</button>
-    </div>
-  </div>
-</div>
-
-  <!-- 2. CREATE REPORT FORM (DIRECT) -->
-  <div id="createTab" class="tab-pane fade card p-3 shadow-sm">
-    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-megaphone me-2"></i>Lapor Kerusakan Direct</h5>
-    <form id="reportForm">
-      <div class="mb-2">
-        <label class="form-label small fw-bold">Lantai</label>
-        <select id="floor" class="form-select" onchange="updateFloorMap()" required>
-          <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
-        </select>
-      </div>
-
-      <div class="mb-3">
-        <label class="fw-bold text-primary small">Marking Titik Lokasi Pada Denah:</label>
-        <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kerusakan untuk menandai titik.</small>
-        
-        <div class="map-outer-wrapper" id="mapWrapper">
-          <div class="map-controls">
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomIn()"><i class="bi bi-zoom-in"></i></button>
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomOut()"><i class="bi bi-zoom-out"></i></button>
-            <button type="button" class="btn btn-sm btn-light border" onclick="resetMapAndPin()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
-          </div>
-          <div class="map-container" id="mapContainer">
-            <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
-            <div id="mapPin" class="map-pin d-none"></div>
-          </div>
-        </div>
-        <small id="mapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
-      </div>
-
-      <div class="mb-2">
-        <label class="form-label small fw-bold">Zone</label>
-        <select id="zone" class="form-select" required>
-          <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
-        </select>
-      </div>
-      <div class="mb-2">
-        <label class="form-label small fw-bold">Tipe Area</label>
-        <select id="area_type" class="form-select" required>
-          <option value="Public Area">Public Area</option>
-          <option value="Service Area">Service Area</option>
-        </select>
-      </div>
-      <div class="mb-2">
-        <label class="form-label small fw-bold">Detail Lokasi/Tenant</label>
-        <input type="text" id="location_detail" class="form-control" placeholder="Contoh: Depan MO / Atrium" required>
-      </div>
-      <div class="mb-2">
-        <label class="form-label small fw-bold">Detail Kerusakan</label>
-        <textarea id="issue" class="form-control" rows="2" required></textarea>
-      </div>
-      <div class="mb-3">
-        <label class="form-label small fw-bold">Foto Bukti Kerusakan</label>
-        <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('photoCamera').click()"><i class="bi bi-camera me-1"></i> Buka Kamera HP</button>
-        <input type="file" id="photoCamera" class="d-none" accept="image/*" capture="environment">
-        <small id="photoStatus" class="text-muted d-block"></small>
-      </div>
-      <button type="submit" id="btnSubmitReport" class="btn btn-success w-100">Kirim Laporan</button>
-    </form>
-  </div>
-
-  <!-- 3. TAB FORM: LAPOR KEBOCORAN AIR (KHUSUS FORM INPUT) -->
-  <div id="bocorTab" class="tab-pane fade card p-3 shadow-sm">
-    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-droplet-half me-2"></i>Laporan Kebocoran Air</h5>
-    <form id="bocorForm">
-      <div class="row g-2 mb-2">
-        <div class="col-6">
-          <label class="form-label small fw-bold">Lantai</label>
-          <select id="bocorFloor" class="form-select" onchange="updateBocorFloorMap()" required>
-            <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
-          </select>
-        </div>
-        <div class="col-6">
-          <label class="form-label small fw-bold">Sumber Bocor</label>
-          <select id="bocorSource" class="form-select" required>
-            <option value="Plafon / Ceiling">Plafon / Ceiling</option>
-            <option value="Fasad / Kaca Outer">Fasad / Kaca Outer</option>
-            <option value="Rooftop / Canopy">Rooftop / Canopy</option>
-            <option value="Pipa AC / Drainase">Pipa AC / Drainase</option>
-            <option value="Lantai / Dinding">Lantai / Dinding Merembes</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="mb-3">
-        <label class="fw-bold text-primary small">Marking Titik Kebocoran Pada Denah:</label>
-        <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kebocoran untuk menandai titik.</small>
-        
-        <div class="map-outer-wrapper" id="bocorMapWrapper">
-          <div class="map-controls">
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomIn()"><i class="bi bi-zoom-in"></i></button>
-            <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomOut()"><i class="bi bi-zoom-out"></i></button>
-            <button type="button" class="btn btn-sm btn-light border" onclick="resetBocorMapAndPin()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
-          </div>
-          <div class="map-container" id="bocorMapContainer">
-            <img src="" id="bocorMapImage" class="map-image" alt="Denah Lantai Bocor">
-            <div id="bocorMapPin" class="map-pin map-pin-water d-none"></div>
-          </div>
-        </div>
-        <small id="bocorMapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
-      </div>
-
-      <div class="mb-3">
-  <label class="form-label small fw-bold">Tingkat Keparahan / Debit Air</label>
-  <div class="d-flex gap-2">
-    <!-- OP Tetesan (Cyan bila dipilih) -->
-    <input type="radio" class="btn-check" name="debitAir" id="debit1" value="RINGAN" autocomplete="off">
-    <label class="btn btn-debit-info btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" for="debit1">
-      <i class="bi bi-droplet"></i> <span>Tetesan</span>
-    </label>
-
-    <!-- OP Merembes (Kuning bila dipilih) -->
-    <input type="radio" class="btn-check" name="debitAir" id="debit2" value="SEDANG" autocomplete="off">
-    <label class="btn btn-debit-warning btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" for="debit2">
-      <i class="bi bi-cloud-rain"></i> <span>Merembes</span>
-    </label>
-
-    <!-- OP Deras (Merah bila dipilih) -->
-    <input type="radio" class="btn-check" name="debitAir" id="debit3" value="DARURAT" autocomplete="off">
-    <label class="btn btn-debit-danger btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" for="debit3">
-      <i class="bi bi-tsunami"></i> <span>Deras</span>
-    </label>
-  </div>
-</div>
-
-      <div class="mb-2">
-        <label class="form-label small fw-bold">Detail Lokasi Kebocoran</label>
-        <input type="text" id="bocorLocation" class="form-control" placeholder="Contoh: Depan Tenant X / Koridor Barat" required>
-      </div>
-
-      <div class="mb-2">
-        <label class="form-label small fw-bold">Keterangan Tambahan</label>
-        <textarea id="bocorIssue" class="form-control" rows="2" placeholder="Penjelasan temuan titik rembesan/aliran air..." required></textarea>
-      </div>
-
-      <div class="mb-3">
-  <label class="form-label small fw-bold text-secondary">Foto Dokumen Kebocoran</label>
-  <div class="d-flex gap-2 mb-1">
-    <!-- Tombol Kamera (Modern SVG Icon) -->
-    <button type="button" class="btn btn-outline-primary btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold" onclick="document.getElementById('bocorPhotoCameraOnly').click()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera-fill" viewBox="0 0 16 16">
-        <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
-        <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 7.172 2H8.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 5.172 4H2zm0.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"/>
-      </svg>
-      Ambil Foto
-    </button>
-
-    <!-- Tombol Galeri Multiple (Modern SVG Icon) -->
-    <button type="button" class="btn btn-outline-secondary btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold" onclick="document.getElementById('bocorPhotoCamera').click()">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-images" viewBox="0 0 16 16">
-        <path d="M4.5 3a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-5 0zm0 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
-        <path d="M14.002 2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10zm-10-1a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V4a3 3 0 0 0-3-3h-10z"/>
-        <path d="M10.648 7.646a.5.5 0 0 1 .577-.093l3.777 2.158a.5.5 0 1 1-.492.87L11 8.611l-2.58 2.553a.5.5 0 0 1-.722-.016l-1.62-1.8-2.324 2.324a.5.5 0 0 1-.707-.707l2.677-2.677a.5.5 0 0 1 .715.013l1.583 1.76 2.308-2.285z"/>
-      </svg>
-      Pilih Galeri
-    </button>
-  </div>
-
-  <!-- Hidden Inputs -->
-  <input type="file" id="bocorPhotoCameraOnly" class="d-none" accept="image/*" capture="environment">
-  <input type="file" id="bocorPhotoCamera" class="d-none" accept="image/*" multiple>
-
-  <small id="bocorPhotoStatus" class="text-muted d-block mt-1"></small>
-</div>
-
-      <button type="submit" id="btnSubmitBocor" class="btn btn-primary w-100">Kirim Laporan Kebocoran</button>
-    </form>
-  </div>
-
-  <!-- TAB RIWAYAT LAPORAN KEBOCORAN AIR -->
-<div id="bocorHistoryTab" class="tab-pane fade card p-3 shadow-sm">
-  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-    <h5 class="fw-bold text-primary mb-0">
-      <i class="bi bi-droplet-half me-1"></i>Riwayat Laporan Kebocoran Air
-    </h5>
-    <div class="d-flex gap-2">
-      <!-- Toggle Switch List vs Denah -->
-      <div class="btn-group btn-group-sm" role="group">
-        <button type="button" class="btn btn-outline-primary active" id="btnViewList" onclick="switchBocorView('list')">
-          <i class="bi bi-list-task"></i> List
+        <button class="btn btn-light border-0 p-2 me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+          <i class="bi bi-list fs-4"></i>
         </button>
-        <button type="button" class="btn btn-outline-primary" id="btnViewMap" onclick="switchBocorView('map')">
-          <i class="bi bi-map"></i> Denah
+
+        <div class="d-flex align-items-center gap-2 flex-grow-1 user-text-group">
+          <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 38px; height: 38px;">
+            <i class="bi bi-person-fill fs-5"></i>
+          </div>
+          <div>
+            <small class="text-muted d-block" style="font-size: 0.7rem;">Selamat Datang,</small>
+            <span id="userGreeting" class="fw-bold text-dark" style="font-size: 0.9rem;">-</span>
+          </div>
+        </div>
+
+        <button onclick="logout()" class="btn btn-sm btn-outline-danger border-0 rounded-circle p-2 ms-auto" title="Logout">
+          <i class="bi bi-box-arrow-right fs-5"></i>
         </button>
       </div>
-      <button class="btn btn-sm btn-outline-secondary" onclick="loadBocorReports()">
-        <i class="bi bi-arrow-clockwise"></i> Refresh
-      </button>
-    </div>
-  </div>
-
-  <!-- VIEW 1: MODE LIST (DEFAULT) -->
-  <div id="bocorListViewContainer">
-    <div id="bocorReportsContainer"></div>
-  </div>
-
-  <!-- VIEW 2: MODE DENAH -->
-  <div id="bocorMapViewContainer" class="d-none">
-    <div class="mb-3">
-      <label class="form-label fw-bold small">Pilih Denah Lantai:</label>
-      <select id="bocorMapFloorSelect" class="form-select form-select-sm" onchange="renderBocorMapPins()">
-        <option value="LG">LG - Lower Ground</option>
-        <option value="L1">L1 - Floor 1</option>
-        <option value="L2">L2 - Floor 2</option>
-        <option value="L3" selected>L3 - Floor 3</option>
-        <option value="ROOFTOP">ROOFTOP</option>
-        <option value="FACADE">FACADE</option>
-      </select>
     </div>
 
-    <!-- Container Gambar Denah -->
-    <div class="border rounded overflow-hidden bg-light text-center position-relative" style="min-height: 300px;">
-      <div id="bocorMapWrapper" class="d-inline-block position-relative">
-        <img id="bocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
-        <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100 style-pointer-events-none"></div>
+    <!-- PEMBUNGKUS GRID DUA KARTU SEJAJAR -->
+    <div class="row g-2 mb-3">
+      <div class="col-6">
+        <div class="card p-2 p-md-3 shadow-sm border-0 bg-white cursor-pointer h-100" onclick="openDirectHistoryTab()">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <div class="small text-muted fw-bold">Lapor Direct</div>
+            <div class="fs-5 text-primary"><i class="bi bi-megaphone-fill"></i></div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center text-center bg-light rounded p-1 mt-1 w-100">
+            <div class="flex-fill">
+              <span class="d-block text-danger fw-bold" style="font-size: 0.6rem;">REPORT</span>
+              <span class="fw-bold text-danger fs-6" id="statDirectReported">0</span>
+            </div>
+            <div class="flex-fill border-start border-end px-1">
+              <span class="d-block text-warning fw-bold" style="font-size: 0.6rem;">PROG</span>
+              <span class="fw-bold text-warning-emphasis fs-6" id="statDirectProgress">0</span>
+            </div>
+            <div class="flex-fill">
+              <span class="d-block text-success fw-bold" style="font-size: 0.6rem;">DONE</span>
+              <span class="fw-bold text-success fs-6" id="statDirectResolved">0</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    <small class="text-muted d-block mt-2 text-center">* Klik pada ikon pin tetesan air untuk melihat detail laporan kebocoran.</small>
-  </div>
-</div>
 
-  <!-- 5. TAB UTAMA DEFAULT: RIWAYAT LAPORAN DIRECT -->
-  <div id="listTab" class="tab-pane fade show active">
-
-    <!-- GANTI BAGIAN DENGAN DROPDOWN FILTER INI -->
-    <div class="card p-2 mb-3 shadow-sm border-0">
-      <div class="d-flex align-items-center justify-content-between gap-2">
-        <label class="small fw-bold text-muted mb-0"><i class="bi bi-funnel-fill me-1"></i>Filter Status:</label>
-        <select id="filterStatusSelect" class="form-select form-select-sm w-auto flex-grow-1 fw-bold text-primary" onchange="setFilter(this.value)">
-          <option value="ALL">Semua Laporan</option>
-          <option value="REPORTED">🔴 Reported (Baru)</option>
-          <option value="PROGRESS">🟡 Progress (Dikerjakan)</option>
-          <option value="RESOLVED">🟢 Resolved (Selesai)</option>
-        </select>
+      <div class="col-6">
+        <div class="card p-3 shadow-sm border-0 bg-warning-subtle cursor-pointer h-100" onclick="openBocorHistoryTab()">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div class="small text-muted fw-bold">Lapor Bocor</div>
+              <h3 class="fw-bold mb-0 text-warning-emphasis" id="statBocorReport">0</h3>
+            </div>
+            <div class="fs-4 text-warning"><i class="bi bi-droplet-fill"></i></div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div id="reportsContainer">Memuat data...</div>
-  </div>
+    <!-- 3. SIDEBAR MENUS (OFFCANVAS DRAWER) -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+      <div class="offcanvas-header border-bottom">
+        <h5 class="offcanvas-title fw-bold text-primary" id="sidebarMenuLabel">
+          <i class="bi bi-building-gear me-2"></i>Civil Maintenance
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+      </div>
+      <div class="offcanvas-body">
+        <ul class="nav nav-pills flex-column" id="mainTab" role="tablist">
+          <li class="nav-item">
+            <button class="nav-link w-100 text-start active" id="tab-laporan" data-bs-toggle="pill" data-bs-target="#listTab" data-bs-dismiss="offcanvas">
+              <i class="bi bi-grid-fill me-2"></i> Laporan
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link w-100 text-start" id="tab-inspeksi" data-bs-toggle="pill" data-bs-target="#checklistTab" data-bs-dismiss="offcanvas">
+              <i class="bi bi-clipboard-check-fill me-2"></i> Inspeksi Area
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link w-100 text-start disabled text-muted opacity-50" id="tab-direct" type="button" disabled style="pointer-events: none; cursor: not-allowed;">
+              <i class="bi bi-plus-circle-fill me-2 text-muted"></i> Lapor Direct
+            </button>
+          </li>
+          <li class="nav-item">
+            <button class="nav-link w-100 text-start text-warning" id="tab-bocor" data-bs-toggle="pill" data-bs-target="#bocorTab" data-bs-dismiss="offcanvas">
+              <i class="bi bi-droplet-fill me-2 text-warning"></i> Lapor Kebocoran Air
+            </button>
+          </li>
+        </ul>
+      </div>
+    </div>
+    
+    <!-- TAB CONTENT WRAPPER -->
+    <div class="tab-content">
+      
+      <!-- 1. TAB CHECKLIST INSPEKSI -->
+      <div id="checklistTab" class="tab-pane fade card p-3 shadow-sm">
+        <h5 class="fw-bold text-primary mb-3"><i class="bi bi-clipboard-check me-2"></i>Inspeksi Rutin Area & Sanitary</h5>
+        
+        <form id="checklistForm">
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label small fw-bold">Lantai</label>
+              <select id="chkFloor" class="form-select" onchange="handleFloorChange()" required>
+                <option value="">-- Pilih Lantai --</option>
+                <option value="LG">LG</option>
+                <option value="L1">L1</option>
+                <option value="L2">L2</option>
+                <option value="L3">L3</option>
+                <option value="ROOFTOP">ROOFTOP</option>
+                <option value="FACADE">FACADE</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Zone</label>
+              <select id="chkZone" class="form-select" onchange="handleZoneChange()" required disabled>
+                <option value="">-- Pilih Zone --</option>
+              </select>
+            </div>
+          </div>
 
-</div> <!-- PENUTUP UTAMA TAB CONTENT -->
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Nama Area / Ruangan</label>
+            <select id="chkArea" class="form-select" onchange="handleAreaChange()" required disabled>
+              <option value="">-- Pilih Area / Ruangan --</option>
+            </select>
+          </div>
+
+          <h6 class="mt-3 mb-2 text-primary fw-bold d-flex justify-content-between align-items-center">
+            <span>Daftar Komponen Pemeriksaan:</span>
+            <span id="itemCountBadge" class="badge bg-secondary">0 Item</span>
+          </h6>
+          <div id="checklistItemsContainer">
+            <div class="text-center text-muted py-4 border rounded bg-light">
+              <i class="bi bi-arrow-up-circle fs-3 d-block mb-1"></i>
+              <small>Silakan pilih <strong>Lantai</strong>, <strong>Zone</strong>, dan <strong>Area/Ruangan</strong> di atas terlebih dahulu.</small>
+            </div>
+          </div>
+
+          <button type="submit" id="btnSubmitChecklist" class="btn btn-success w-100 mt-3" disabled>Simpan Hasil Inspeksi</button>
+        </form>
+
+        <div id="pdfExportContainer" class="card p-3 mt-4 bg-light border-0 shadow-sm d-none">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-file-earmark-pdf me-2 text-danger"></i>Cetak Laporan PDF Per Lantai</h6>
+            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetCompletedInspections()">
+              <i class="bi bi-arrow-counterclockwise"></i> Reset Lock
+            </button>
+          </div>
+          <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('LG')"><i class="bi bi-download"></i> PDF LG</button>
+            <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('L1')"><i class="bi bi-download"></i> PDF L1</button>
+            <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('L2')"><i class="bi bi-download"></i> PDF L2</button>
+            <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('L3')"><i class="bi bi-download"></i> PDF L3</button>
+            <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('ROOFTOP')"><i class="bi bi-download"></i> PDF ROOFTOP</button>
+            <button type="button" class="btn btn-sm btn-outline-danger flex-fill" onclick="exportPDFByFloor('FACADE')"><i class="bi bi-download"></i> PDF FACADE</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. CREATE REPORT FORM (DIRECT) -->
+      <div id="createTab" class="tab-pane fade card p-3 shadow-sm">
+        <h5 class="fw-bold text-primary mb-3"><i class="bi bi-megaphone me-2"></i>Lapor Kerusakan Direct</h5>
+        <form id="reportForm">
+          <div class="mb-2">
+            <label class="form-label small fw-bold">Lantai</label>
+            <select id="floor" class="form-select" onchange="updateFloorMap()" required>
+              <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-bold text-primary small">Marking Titik Lokasi Pada Denah:</label>
+            <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kerusakan untuk menandai titik.</small>
+            
+            <div class="map-outer-wrapper" id="mapWrapper">
+              <div class="map-controls">
+                <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomIn()"><i class="bi bi-zoom-in"></i></button>
+                <button type="button" class="btn btn-sm btn-light border" onclick="pzCreate && pzCreate.zoomOut()"><i class="bi bi-zoom-out"></i></button>
+                <button type="button" class="btn btn-sm btn-light border" onclick="resetMapAndPin()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+              </div>
+              <div class="map-container" id="mapContainer">
+                <img src="" id="mapImage" class="map-image" alt="Denah Lantai">
+                <div id="mapPin" class="map-pin d-none"></div>
+              </div>
+            </div>
+            <small id="mapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label small fw-bold">Zone</label>
+            <select id="zone" class="form-select" required>
+              <option value="Zone A">Zone A</option><option value="Zone B">Zone B</option><option value="Zone C">Zone C</option><option value="Zone D">Zone D</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold">Tipe Area</label>
+            <select id="area_type" class="form-select" required>
+              <option value="Public Area">Public Area</option>
+              <option value="Service Area">Service Area</option>
+            </select>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold">Detail Lokasi/Tenant</label>
+            <input type="text" id="location_detail" class="form-control" placeholder="Contoh: Depan MO / Atrium" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold">Detail Kerusakan</label>
+            <textarea id="issue" class="form-control" rows="2" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Foto Bukti Kerusakan</label>
+            <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="document.getElementById('photoCamera').click()"><i class="bi bi-camera me-1"></i> Buka Kamera HP</button>
+            <input type="file" id="photoCamera" class="d-none" accept="image/*" capture="environment">
+            <small id="photoStatus" class="text-muted d-block"></small>
+          </div>
+          <button type="submit" id="btnSubmitReport" class="btn btn-success w-100">Kirim Laporan</button>
+        </form>
+      </div>
+
+      <!-- 3. TAB FORM: LAPOR KEBOCORAN AIR -->
+      <div id="bocorTab" class="tab-pane fade card p-3 shadow-sm">
+        <h5 class="fw-bold text-primary mb-3"><i class="bi bi-droplet-half me-2"></i>Laporan Kebocoran Air</h5>
+        <form id="bocorForm">
+          <div class="row g-2 mb-2">
+            <div class="col-6">
+              <label class="form-label small fw-bold">Lantai</label>
+              <select id="bocorFloor" class="form-select" onchange="updateBocorFloorMap()" required>
+                <option value="LG">LG</option><option value="L1">L1</option><option value="L2">L2</option><option value="L3">L3</option><option value="Rooftop">Rooftop</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Sumber Bocor</label>
+              <select id="bocorSource" class="form-select" required>
+                <option value="Plafon / Ceiling">Plafon / Ceiling</option>
+                <option value="Fasad / Kaca Outer">Fasad / Kaca Outer</option>
+                <option value="Rooftop / Canopy">Rooftop / Canopy</option>
+                <option value="Pipa AC / Drainase">Pipa AC / Drainase</option>
+                <option value="Lantai / Dinding">Lantai / Dinding Merembes</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-bold text-primary small">Marking Titik Kebocoran Pada Denah:</label>
+            <small class="d-block text-muted mb-1">Drag/geser untuk navigasi. Klik 1x di lokasi kebocoran untuk menandai titik.</small>
+            
+            <div class="map-outer-wrapper" id="bocorMapWrapper">
+              <div class="map-controls">
+                <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomIn()"><i class="bi bi-zoom-in"></i></button>
+                <button type="button" class="btn btn-sm btn-light border" onclick="pzBocor && pzBocor.zoomOut()"><i class="bi bi-zoom-out"></i></button>
+                <button type="button" class="btn btn-sm btn-light border" onclick="resetBocorMapAndPin()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
+              </div>
+              <div class="map-container" id="bocorMapContainer">
+                <img src="" id="bocorMapImage" class="map-image" alt="Denah Lantai Bocor">
+                <div id="bocorMapPin" class="map-pin map-pin-water d-none"></div>
+              </div>
+            </div>
+            <small id="bocorMapStatus" class="text-danger small mt-1 d-block">* Belum menandai titik pada denah</small>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Tingkat Keparahan / Debit Air</label>
+            <div class="d-flex gap-2">
+              <input type="radio" class="btn-check" name="debitAir" id="debit1" value="RINGAN" autocomplete="off">
+              <label class="btn btn-debit-info btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" for="debit1">
+                <i class="bi bi-droplet"></i> <span>Tetesan</span>
+              </label>
+
+              <input type="radio" class="btn-check" name="debitAir" id="debit2" value="SEDANG" autocomplete="off">
+              <label class="btn btn-debit-warning btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" for="debit2">
+                <i class="bi bi-cloud-rain"></i> <span>Merembes</span>
+              </label>
+
+              <input type="radio" class="btn-check" name="debitAir" id="debit3" value="DARURAT" autocomplete="off">
+              <label class="btn btn-debit-danger btn-sm flex-fill d-flex align-items-center justify-content-center gap-1 py-2" for="debit3">
+                <i class="bi bi-tsunami"></i> <span>Deras</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label small fw-bold">Detail Lokasi Kebocoran</label>
+            <input type="text" id="bocorLocation" class="form-control" placeholder="Contoh: Depan Tenant X / Koridor Barat" required>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label small fw-bold">Keterangan Tambahan</label>
+            <textarea id="bocorIssue" class="form-control" rows="2" placeholder="Penjelasan temuan titik rembesan/aliran air..." required></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label small fw-bold text-secondary">Foto Dokumen Kebocoran</label>
+            <div class="d-flex gap-2 mb-1">
+              <button type="button" class="btn btn-outline-primary btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold" onclick="document.getElementById('bocorPhotoCameraOnly').click()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-camera-fill" viewBox="0 0 16 16">
+                  <path d="M10.5 8.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/>
+                  <path d="M2 4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-1.172a2 2 0 0 1-1.414-.586l-.828-.828A2 2 0 0 0 7.172 2H8.828a2 2 0 0 0-1.414.586l-.828.828A2 2 0 0 1 5.172 4H2zm0.5 2a.5.5 0 1 1 0-1 .5.5 0 0 1 0 1zm9 2.5a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z"/>
+                </svg>
+                Ambil Foto
+              </button>
+
+              <button type="button" class="btn btn-outline-secondary btn-sm flex-fill d-flex align-items-center justify-content-center gap-2 py-2 fw-semibold" onclick="document.getElementById('bocorPhotoCamera').click()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-images" viewBox="0 0 16 16">
+                  <path d="M4.5 3a2.5 2.5 0 0 1 5 0 2.5 2.5 0 0 1-5 0zm0 1a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/>
+                  <path d="M14.002 2a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-10a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10zm-10-1a3 3 0 0 0-3 3v8a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V4a3 3 0 0 0-3-3h-10z"/>
+                  <path d="M10.648 7.646a.5.5 0 0 1 .577-.093l3.777 2.158a.5.5 0 1 1-.492.87L11 8.611l-2.58 2.553a.5.5 0 0 1-.722-.016l-1.62-1.8-2.324 2.324a.5.5 0 0 1-.707-.707l2.677-2.677a.5.5 0 0 1 .715.013l1.583 1.76 2.308-2.285z"/>
+                </svg>
+                Pilih Galeri
+              </button>
+            </div>
+
+            <input type="file" id="bocorPhotoCameraOnly" class="d-none" accept="image/*" capture="environment">
+            <input type="file" id="bocorPhotoCamera" class="d-none" accept="image/*" multiple>
+
+            <small id="bocorPhotoStatus" class="text-muted d-block mt-1"></small>
+          </div>
+
+          <button type="submit" id="btnSubmitBocor" class="btn btn-primary w-100">Kirim Laporan Kebocoran</button>
+        </form>
+      </div>
+
+      <!-- 4. TAB RIWAYAT LAPORAN KEBOCORAN AIR -->
+      <div id="bocorHistoryTab" class="tab-pane fade card p-3 shadow-sm">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+          <h5 class="fw-bold text-primary mb-0">
+            <i class="bi bi-droplet-half me-1"></i>Riwayat Laporan Kebocoran Air
+          </h5>
+          <div class="d-flex gap-2">
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-outline-primary active" id="btnViewList" onclick="switchBocorView('list')">
+                <i class="bi bi-list-task"></i> List
+              </button>
+              <button type="button" class="btn btn-outline-primary" id="btnViewMap" onclick="switchBocorView('map')">
+                <i class="bi bi-map"></i> Denah
+              </button>
+            </div>
+            <button class="btn btn-sm btn-outline-secondary" onclick="loadBocorReports()">
+              <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <!-- VIEW 1: MODE LIST (DEFAULT) -->
+        <div id="bocorListViewContainer">
+          <div id="bocorReportsContainer"></div>
+        </div>
+
+        <!-- VIEW 2: MODE DENAH INTERAKTIF -->
+        <div id="bocorMapViewContainer" class="d-none">
+          <div class="mb-3">
+            <label class="form-label fw-bold small">Pilih Denah Lantai:</label>
+            <select id="bocorMapFloorSelect" class="form-select form-select-sm" onchange="renderBocorMapPins()">
+              <option value="LG">LG - Lower Ground</option>
+              <option value="L1">L1 - Floor 1</option>
+              <option value="L2">L2 - Floor 2</option>
+              <option value="L3" selected>L3 - Floor 3</option>
+              <option value="ROOFTOP">ROOFTOP</option>
+              <option value="FACADE">FACADE</option>
+            </select>
+          </div>
+
+          <div class="border rounded overflow-hidden bg-light text-center position-relative" style="min-height: 300px;">
+            <div id="bocorMapHistoryWrapper" class="d-inline-block position-relative">
+              <img id="bocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
+              <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
+            </div>
+          </div>
+          <small class="text-muted d-block mt-2 text-center">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
+        </div>
+      </div>
+
+      <!-- 5. TAB UTAMA DEFAULT: RIWAYAT LAPORAN DIRECT -->
+      <div id="listTab" class="tab-pane fade show active">
+        <div class="card p-2 mb-3 shadow-sm border-0">
+          <div class="d-flex align-items-center justify-content-between gap-2">
+            <label class="small fw-bold text-muted mb-0"><i class="bi bi-funnel-fill me-1"></i>Filter Status:</label>
+            <select id="filterStatusSelect" class="form-select form-select-sm w-auto flex-grow-1 fw-bold text-primary" onchange="setFilter(this.value)">
+              <option value="ALL">Semua Laporan</option>
+              <option value="REPORTED">🔴 Reported (Baru)</option>
+              <option value="PROGRESS">🟡 Progress (Dikerjakan)</option>
+              <option value="RESOLVED">🟢 Resolved (Selesai)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="reportsContainer">Memuat data...</div>
+      </div>
+
+    </div>
+  </div>
 </div>
 
-<!-- MODAL DENAH VIEW WITH ZOOM & PAN (ID DISESUAIKAN UNTUK VIEW DENAH) -->
+<!-- MODAL DENAH VIEW WITH ZOOM & PAN -->
 <div class="modal fade" id="mapModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
@@ -924,15 +899,9 @@
       <div class="modal-body p-2">
         <div class="map-outer-wrapper" id="viewMapWrapper">
           <div class="map-controls">
-            <button type="button" class="btn btn-sm btn-light border" onclick="zoomInMap()">
-  <i class="bi bi-zoom-in"></i> +
-</button>
-<button type="button" class="btn btn-sm btn-light border" onclick="zoomOutMap()">
-  <i class="bi bi-zoom-out"></i> -
-</button>
-<button type="button" class="btn btn-sm btn-light border" onclick="resetMapZoom()">
-  <i class="bi bi-arrow-counterclockwise"></i> Reset
-</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="zoomInMap()"><i class="bi bi-zoom-in"></i> +</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="zoomOutMap()"><i class="bi bi-zoom-out"></i> -</button>
+            <button type="button" class="btn btn-sm btn-light border" onclick="resetMapZoom()"><i class="bi bi-arrow-counterclockwise"></i> Reset</button>
           </div>
           <div class="map-container" id="viewMapContainer">
             <img src="" id="viewMapImage" class="map-image" alt="Denah Lantai View">
@@ -994,12 +963,10 @@
     "L1": "L1.jpg",
     "L2": "L2.jpg",
     "L3": "L3.jpg",
+    "ROOFTOP": "Rooftop.jpg",
     "Rooftop": "Rooftop.jpg"
   };
 
-  // ==========================================
-  // DATA MIND MAP DENGAN HIRARKI PRESIASI 100%
-  // ==========================================
   const INSPECTION_DATA = {
     "LG": {
       "A": {
@@ -1201,18 +1168,10 @@
       }
     },
     "ROOFTOP": {
-      "A": {
-        "DAK": ["DINDING DAN PARAPET", "ROOFDRAIN DAN GUTTER", "KOLOM BAJA", "LISPLANG DAN PLAFON", "PEDESTAL", "DAK BETON"]
-      },
-      "B": {
-        "DAK": ["DINDING DAN PARAPET", "ROOFDRAIN DAN GUTTER", "KOLOM BAJA", "LISPLANG DAN PLAFON", "PEDESTAL", "DAK BETON"]
-      },
-      "C": {
-        "DAK": ["DINDING DAN PARAPET", "ROOFDRAIN DAN GUTTER", "KOLOM BAJA", "LISPLANG DAN PLAFON", "PEDESTAL", "DAK BETON"]
-      },
-      "D": {
-        "DAK": ["DINDING DAN PARAPET", "ROOFDRAIN DAN GUTTER", "KOLOM BAJA", "LISPLANG DAN PLAFON", "PEDESTAL", "DAK BETON"]
-      }
+      "A": { "DAK": ["DINDING DAN PARAPET", "ROOFDRAIN DAN GUTTER", "KOLOM BAJA", "LISPLANG DAN PLAFON", "PEDESTAL", "DAK BETON"] },
+      "B": { "DAK": ["DINDING DAN PARAPET", "ROOFDRAIN DAN GUTTER", "KOLOM BAJA", "LISPLANG DAN PLAFON", "PEDESTAL", "DAK BETON"] },
+      "C": { "DAK": ["DINDING DAN PARAPET", "ROOFDRAIN DAN GUTTER", "KOLOM BAJA", "LISPLANG DAN PLAFON", "PEDESTAL", "DAK BETON"] },
+      "D": { "DAK": ["DINDING DAN PARAPET", "ROOFDRAIN DAN GUTTER", "KOLOM BAJA", "LISPLANG DAN PLAFON", "PEDESTAL", "DAK BETON"] }
     },
     "FACADE": {
       "FACADE": {
@@ -1225,6 +1184,7 @@
   };
 
   let currentUser = JSON.parse(localStorage.getItem("user_civil")) || null;
+  let globalBocorReportsData = [];
   let selectedFile = null;
   let updateFile = null;
   let activeUpdateData = null;
@@ -1238,6 +1198,7 @@
 
   let pzCreate = null;
   let pzView = null;
+  let pzBocorHistory = null;
 
   const mapContainer = document.getElementById('mapContainer');
   const viewMapContainer = document.getElementById('viewMapContainer');
@@ -1250,37 +1211,37 @@
   if (currentUser) showApp();
 
   function initPanzoom() {
-  const container = document.getElementById("viewMapContainer");
-  if (!container) return;
+    const container = document.getElementById("viewMapContainer");
+    if (!container) return;
 
-  container.style.transition = "none";
-  container.style.touchAction = "none";
+    container.style.transition = "none";
+    container.style.touchAction = "none";
 
-  if (window.pzView && typeof window.pzView.destroy === 'function') {
-    window.pzView.destroy();
+    if (window.pzView && typeof window.pzView.destroy === 'function') {
+      window.pzView.destroy();
+    }
+
+    if (typeof Panzoom !== 'undefined') {
+      window.pzView = Panzoom(container, {
+        maxScale: 5,
+        minScale: 1,
+        contain: 'outside',
+        startScale: 1,
+        animate: true,
+        duration: 200
+      });
+
+      container.parentElement.addEventListener('wheel', window.pzView.zoomWithWheel);
+
+      container.addEventListener('panzoomchange', (event) => {
+        const scale = event.detail.scale;
+        const viewPin = document.getElementById("viewMapPin");
+        if (viewPin) {
+          viewPin.style.transform = `translate(-50%, -50%) scale(${1 / scale})`;
+        }
+      });
+    }
   }
-
-  if (typeof Panzoom !== 'undefined') {
-    window.pzView = Panzoom(container, {
-      maxScale: 5,
-      minScale: 1,
-      contain: 'outside',
-      startScale: 1,
-      animate: true,
-      duration: 200
-    });
-
-    container.parentElement.addEventListener('wheel', window.pzView.zoomWithWheel);
-
-    container.addEventListener('panzoomchange', (event) => {
-      const scale = event.detail.scale;
-      const viewPin = document.getElementById("viewMapPin");
-      if (viewPin) {
-        viewPin.style.transform = `translate(-50%, -50%) scale(${1 / scale})`;
-      }
-    });
-  }
-}
 
   function showAuthCard(cardId) {
     document.getElementById("loginCard").classList.add("d-none");
@@ -1291,699 +1252,580 @@
   }
 
   function checkLoginSession() {
-  // Pindahkan deklarasi konstanta ke dalam paling atas fungsi
-  const SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000; // 8 Jam
+    const SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000;
+    const loginTime = localStorage.getItem("user_civil_login_time");
+    const now = new Date().getTime();
 
-  const loginTime = localStorage.getItem("user_civil_login_time");
-  const now = new Date().getTime();
+    if (currentUser && loginTime) {
+      if (now - parseInt(loginTime) > SESSION_TIMEOUT_MS) {
+        localStorage.removeItem("user_civil");
+        localStorage.removeItem("user_civil_login_time");
+        currentUser = null;
+        
+        Swal.fire({
+          title: 'Sesi Berakhir!',
+          text: 'Waktu login Anda telah habis. Silakan login kembali.',
+          icon: 'warning',
+          confirmButtonColor: '#4361ee'
+        });
 
-  if (currentUser && loginTime) {
-    if (now - parseInt(loginTime) > SESSION_TIMEOUT_MS) {
-      // Sesi Kadaluwarsa
-      localStorage.removeItem("user_civil");
-      localStorage.removeItem("user_civil_login_time");
-      currentUser = null;
-      
-      Swal.fire({
-        title: 'Sesi Berakhir!',
-        text: 'Waktu login Anda telah habis. Silakan login kembali demi keamanan.',
-        icon: 'warning',
-        confirmButtonColor: '#4361ee'
-      });
+        document.getElementById("appSection").classList.add("d-none");
+        document.getElementById("authContainer").classList.remove("d-none");
+        showAuthCard("loginCard");
+        return false;
+      }
+    }
+    return true;
+  }
 
-      document.getElementById("appSection").classList.add("d-none");
-      document.getElementById("authContainer").classList.remove("d-none");
-      showAuthCard("loginCard");
-      return false;
+  function showApp() {
+    if (!checkLoginSession()) return;
+
+    document.getElementById("authContainer").classList.add("d-none");
+    document.getElementById("appSection").classList.remove("d-none");
+    document.getElementById("userGreeting").innerText = `Halo, ${currentUser.fullname || currentUser.username}`;
+    
+    if (typeof renderPDFButtonsByRole === 'function') {
+      renderPDFButtonsByRole();
+    }
+
+    initPanzoom();
+    loadReports();
+  }
+
+  function logout() {
+    localStorage.removeItem("user_civil");
+    localStorage.removeItem("user_civil_login_time");
+    currentUser = null;
+    document.getElementById("appSection").classList.add("d-none");
+    document.getElementById("authContainer").classList.remove("d-none");
+    showAuthCard("loginCard");
+  }
+
+  function renderPDFButtonsByRole() {
+    const role = (currentUser && currentUser.role) ? String(currentUser.role).trim().toLowerCase() : "";
+    const username = (currentUser && currentUser.username) ? String(currentUser.username).trim().toLowerCase() : "";
+
+    const isSuperUser = 
+      role === "superuser" || 
+      role === "admin" || 
+      currentUser?.is_superuser === true ||
+      username === "vandi" ||
+      username === "spv_civil";
+
+    const pdfContainer = document.getElementById("pdfExportContainer");
+    if (pdfContainer) {
+      if (isSuperUser) {
+        pdfContainer.classList.remove("d-none");
+      } else {
+        pdfContainer.classList.add("d-none");
+      }
     }
   }
-  return true;
-}
 
-// FUNGSI showApp YANG SUDAH DIPERBARUI
-function showApp() {
-  if (!checkLoginSession()) return; // Cek timeout sebelum membuka aplikasi
+  function togglePasswordVisibility(inputId, iconId) {
+    const passwordInput = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
 
-  document.getElementById("authContainer").classList.add("d-none");
-  document.getElementById("appSection").classList.remove("d-none");
-  document.getElementById("userGreeting").innerText = `Halo, ${currentUser.fullname || currentUser.username}`;
-  
-  // Tampilkan / Sembunyikan Tombol PDF berdasarkan Role User
-  if (typeof renderPDFButtonsByRole === 'function') {
-    renderPDFButtonsByRole();
-  }
+    if (!passwordInput) return;
 
-  initPanzoom();
-  loadReports();
-}
-
-function logout() {
-  localStorage.removeItem("user_civil");
-  localStorage.removeItem("user_civil_login_time");
-  currentUser = null;
-  document.getElementById("appSection").classList.add("d-none");
-  document.getElementById("authContainer").classList.remove("d-none");
-  showAuthCard("loginCard");
-}
-
-// === FUNGSI PENGECEKAN HAK AKSES DAN TAMPILAN PDF ===
-function renderPDFButtonsByRole() {
-  const role = (currentUser && currentUser.role) ? String(currentUser.role).trim().toLowerCase() : "";
-  const username = (currentUser && currentUser.username) ? String(currentUser.username).trim().toLowerCase() : "";
-
-  // Superuser divalidasi jika role 'superuser'/'admin' ATAU username-nya 'vandi'/'spv_civil'
-  const isSuperUser = 
-    role === "superuser" || 
-    role === "admin" || 
-    currentUser?.is_superuser === true ||
-    username === "vandi" ||
-    username === "spv_civil";
-
-  const pdfContainer = document.getElementById("pdfExportContainer");
-  if (pdfContainer) {
-    if (isSuperUser) {
-      pdfContainer.classList.remove("d-none"); // Tampilkan tombol PDF di bawah form
+    if (passwordInput.type === "password") {
+      passwordInput.type = "text";
+      if (icon) {
+        if (icon.classList.contains("bi")) {
+          icon.classList.replace("bi-eye", "bi-eye-slash");
+        } else if (icon.classList.contains("fa") || icon.classList.contains("fas")) {
+          icon.classList.replace("fa-eye", "fa-eye-slash");
+        }
+      }
     } else {
-      pdfContainer.classList.add("d-none");    // Sembunyikan untuk user biasa
-    }
-  }
-}
-
-// === FUNGSI TOGGLE SHOW/HIDE PASSWORD ===
-function togglePasswordVisibility(inputId, iconId) {
-  const passwordInput = document.getElementById(inputId);
-  const icon = document.getElementById(iconId);
-
-  if (!passwordInput) return;
-
-  if (passwordInput.type === "password") {
-    passwordInput.type = "text";
-    if (icon) {
-      if (icon.classList.contains("bi")) {
-        icon.classList.replace("bi-eye", "bi-eye-slash");
-      } else if (icon.classList.contains("fa") || icon.classList.contains("fas")) {
-        icon.classList.replace("fa-eye", "fa-eye-slash");
-      }
-    }
-  } else {
-    passwordInput.type = "password";
-    if (icon) {
-      if (icon.classList.contains("bi")) {
-        icon.classList.replace("bi-eye-slash", "bi-eye");
-      } else if (icon.classList.contains("fa") || icon.classList.contains("fas")) {
-        icon.classList.replace("fa-eye-slash", "fa-eye");
+      passwordInput.type = "password";
+      if (icon) {
+        if (icon.classList.contains("bi")) {
+          icon.classList.replace("bi-eye-slash", "bi-eye");
+        } else if (icon.classList.contains("fa") || icon.classList.contains("fas")) {
+          icon.classList.replace("fa-eye-slash", "fa-eye");
+        }
       }
     }
   }
-}
 
-function updateFloorMap() {
-  const floor = document.getElementById("floor").value;
-  const mapImg = document.getElementById("mapImage");
-  mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
-  
-  mapImg.onload = () => {
+  function updateFloorMap() {
+    const floor = document.getElementById("floor").value;
+    const mapImg = document.getElementById("mapImage");
+    mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+    
+    mapImg.onload = () => {
+      if (pzCreate) pzCreate.reset();
+      updatePinPosition();
+    };
+
+    resetMapAndPin();
+  }
+
+  function resetMapAndPin() {
     if (pzCreate) pzCreate.reset();
-    updatePinPosition();
-  };
+    markedX = null; markedY = null;
+    document.getElementById("mapPin").classList.add("d-none");
+    document.getElementById("mapStatus").className = "text-danger small mt-1 d-block";
+    document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
+  }
 
-  resetMapAndPin();
-}
-
-function resetMapAndPin() {
-  if (pzCreate) pzCreate.reset();
-  markedX = null; markedY = null;
-  document.getElementById("mapPin").classList.add("d-none");
-  document.getElementById("mapStatus").className = "text-danger small mt-1 d-block";
-  document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
-}
-
-function openImageModal(imgUrl) {
-  if (!imgUrl) return;
-
-  const modalImg = document.getElementById("previewModalImage");
-  const modalEl = document.getElementById("imagePreviewModal");
-
-  if (modalImg && modalEl) {
+  function openImageModal(imgUrl) {
+    if (!imgUrl) return;
     let directUrl = imgUrl;
 
     if (imgUrl.includes("drive.google.com")) {
       const match = imgUrl.match(/\/d\/([^\/]+)/) || imgUrl.match(/id=([^&]+)/);
       if (match && match[1]) {
-        const fileId = match[1];
-        directUrl = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1600`;
+        directUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600`;
       }
     }
 
-    modalImg.src = directUrl;
-    const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
-    bsModal.show();
-  }
-}
-
-let pzBocor = null;
-let bocorMarkingX = null;
-let bocorMarkingY = null;
-
-function initBocorPanzoom() {
-  const container = document.getElementById("bocorMapContainer");
-  if (!container || typeof Panzoom === 'undefined') return;
-
-  if (pzBocor && typeof pzBocor.destroy === 'function') {
-    pzBocor.destroy();
-    pzBocor = null;
+    fullImageEl.src = directUrl;
+    imageModal.show();
   }
 
-  container.style.transition = "none";
-  container.style.touchAction = "none";
+  let pzBocor = null;
+  let bocorMarkingX = null;
+  let bocorMarkingY = null;
 
-  pzBocor = Panzoom(container, {
-    maxScale: 5,
-    minScale: 1,
-    contain: 'outside',
-    animate: true,
-    duration: 200
-  });
+  function initBocorPanzoom() {
+    const container = document.getElementById("bocorMapContainer");
+    if (!container || typeof Panzoom === 'undefined') return;
 
-  const wrapper = document.getElementById("bocorMapWrapper") || container.parentElement;
-  if (wrapper) {
-    wrapper.removeEventListener('wheel', pzBocor.zoomWithWheel);
-    wrapper.addEventListener('wheel', pzBocor.zoomWithWheel);
-  }
+    if (pzBocor && typeof pzBocor.destroy === 'function') {
+      pzBocor.destroy();
+      pzBocor = null;
+    }
 
-  container.removeEventListener('panzoomchange', updateBocorPinPosition);
-  container.addEventListener('panzoomchange', updateBocorPinPosition);
-}
+    container.style.transition = "none";
+    container.style.touchAction = "none";
 
-function updateBocorFloorMap() {
-  const floorEl = document.getElementById("bocorFloor");
-  if (!floorEl) return;
-  
-  const floor = floorEl.value;
-  const mapImg = document.getElementById("bocorMapImage");
-
-  if (mapImg && typeof FLOOR_MAPS !== 'undefined') {
-    mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
-    mapImg.onload = () => {
-      initBocorPanzoom();
-      if (pzBocor) pzBocor.reset({ animate: true, duration: 200 });
-      updateBocorPinPosition();
-    };
-  }
-  resetBocorMapAndPin();
-}
-
-function resetBocorMapAndPin() {
-  if (pzBocor) pzBocor.reset({ animate: true, duration: 200 });
-  bocorMarkingX = null;
-  bocorMarkingY = null;
-  const pin = document.getElementById("bocorMapPin");
-  if (pin) pin.classList.add("d-none");
-  const status = document.getElementById("bocorMapStatus");
-  if (status) {
-    status.innerText = "* Belum menandai titik pada denah";
-    status.className = "text-danger small mt-1 d-block";
-  }
-}
-
-function updateBocorPinPosition() {
-  const pin = document.getElementById("bocorMapPin");
-  if (!bocorMarkingX || !bocorMarkingY || !pin || pin.classList.contains("d-none")) return;
-  
-  const scale = pzBocor ? pzBocor.getScale() : 1;
-  const invScale = 1 / scale;
-  
-  pin.style.left = bocorMarkingX + "%";
-  pin.style.top = bocorMarkingY + "%";
-  pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
-}
-
-function zoomInBocor() {
-  if (pzBocor) pzBocor.zoomIn({ animate: true, duration: 200 });
-}
-
-function zoomOutBocor() {
-  if (pzBocor) pzBocor.zoomOut({ animate: true, duration: 200 });
-}
-
-let startBocorX = 0, startBocorY = 0;
-
-document.addEventListener("DOMContentLoaded", function () {
-  const mapImg = document.getElementById("mapImage");
-  if (mapImg) {
-    mapImg.addEventListener("click", function (e) {
-      const rect = mapImg.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      const clickY = e.clientY - rect.top;
-
-      const xPercent = ((clickX / rect.width) * 100).toFixed(2);
-      const yPercent = ((clickY / rect.height) * 100).toFixed(2);
-
-      if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
-        markedX = xPercent;
-        markedY = yPercent;
-
-        const pin = document.getElementById("mapPin");
-        if (pin) {
-          pin.className = "map-pin";
-          pin.classList.remove("d-none");
-          updatePinPosition();
-        }
-
-        const status = document.getElementById("mapStatus");
-        if (status) {
-          status.innerText = `✓ Titik lokasi marked (${markedX}%, ${markedY}%)`;
-          status.className = "text-success small mt-1 d-block fw-bold";
-        }
-      }
-    });
-  }
-
-  const bocorMapImg = document.getElementById("bocorMapImage");
-  if (bocorMapImg) {
-    bocorMapImg.addEventListener('pointerdown', (e) => { 
-      startBocorX = e.clientX; 
-      startBocorY = e.clientY; 
+    pzBocor = Panzoom(container, {
+      maxScale: 5,
+      minScale: 1,
+      contain: 'outside',
+      animate: true,
+      duration: 200
     });
 
-    bocorMapImg.addEventListener('pointerup', (e) => {
-      const diffX = Math.abs(e.clientX - startBocorX);
-      const diffY = Math.abs(e.clientY - startBocorY);
+    const wrapper = document.getElementById("bocorMapWrapper") || container.parentElement;
+    if (wrapper) {
+      wrapper.removeEventListener('wheel', pzBocor.zoomWithWheel);
+      wrapper.addEventListener('wheel', pzBocor.zoomWithWheel);
+    }
 
-      if (diffX < 10 && diffY < 10) {
-        const rect = bocorMapImg.getBoundingClientRect();
+    container.removeEventListener('panzoomchange', updateBocorPinPosition);
+    container.addEventListener('panzoomchange', updateBocorPinPosition);
+  }
+
+  function updateBocorFloorMap() {
+    const floorEl = document.getElementById("bocorFloor");
+    if (!floorEl) return;
+    
+    const floor = floorEl.value;
+    const mapImg = document.getElementById("bocorMapImage");
+
+    if (mapImg && typeof FLOOR_MAPS !== 'undefined') {
+      mapImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+      mapImg.onload = () => {
+        initBocorPanzoom();
+        if (pzBocor) pzBocor.reset({ animate: true, duration: 200 });
+        updateBocorPinPosition();
+      };
+    }
+    resetBocorMapAndPin();
+  }
+
+  function resetBocorMapAndPin() {
+    if (pzBocor) pzBocor.reset({ animate: true, duration: 200 });
+    bocorMarkingX = null;
+    bocorMarkingY = null;
+    const pin = document.getElementById("bocorMapPin");
+    if (pin) pin.classList.add("d-none");
+    const status = document.getElementById("bocorMapStatus");
+    if (status) {
+      status.innerText = "* Belum menandai titik pada denah";
+      status.className = "text-danger small mt-1 d-block";
+    }
+  }
+
+  function updateBocorPinPosition() {
+    const pin = document.getElementById("bocorMapPin");
+    if (!bocorMarkingX || !bocorMarkingY || !pin || pin.classList.contains("d-none")) return;
+    
+    const scale = pzBocor ? pzBocor.getScale() : 1;
+    const invScale = 1 / scale;
+    
+    pin.style.left = bocorMarkingX + "%";
+    pin.style.top = bocorMarkingY + "%";
+    pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
+  }
+
+  let startBocorX = 0, startBocorY = 0;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const mapImg = document.getElementById("mapImage");
+    if (mapImg) {
+      mapImg.addEventListener("click", function (e) {
+        const rect = mapImg.getBoundingClientRect();
         const clickX = e.clientX - rect.left;
         const clickY = e.clientY - rect.top;
 
-        const xPercent = (clickX / rect.width) * 100;
-        const yPercent = (clickY / rect.height) * 100;
+        const xPercent = ((clickX / rect.width) * 100).toFixed(2);
+        const yPercent = ((clickY / rect.height) * 100).toFixed(2);
 
         if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
-          window.bocorMarkingX = xPercent.toFixed(2);
-          window.bocorMarkingY = yPercent.toFixed(2);
-          bocorMarkingX = window.bocorMarkingX;
-          bocorMarkingY = window.bocorMarkingY;
+          markedX = xPercent;
+          markedY = yPercent;
 
-          const pin = document.getElementById("bocorMapPin");
+          const pin = document.getElementById("mapPin");
           if (pin) {
-            pin.className = "map-pin map-pin-water";
+            pin.className = "map-pin";
             pin.classList.remove("d-none");
-            updateBocorPinPosition();
+            updatePinPosition();
           }
 
-          const status = document.getElementById("bocorMapStatus");
+          const status = document.getElementById("mapStatus");
           if (status) {
-            status.innerText = `✓ Titik lokasi marked (${bocorMarkingX}%, ${bocorMarkingY}%)`;
+            status.innerText = `✓ Titik lokasi marked (${markedX}%, ${markedY}%)`;
             status.className = "text-success small mt-1 d-block fw-bold";
           }
         }
-      }
-    });
-  }
+      });
+    }
 
-  initBocorPanzoom();
-  if (currentUser) showApp();
-});
+    const bocorMapImg = document.getElementById("bocorMapImage");
+    if (bocorMapImg) {
+      bocorMapImg.addEventListener('pointerdown', (e) => { 
+        startBocorX = e.clientX; 
+        startBocorY = e.clientY; 
+      });
 
-document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function () {
-  initBocorPanzoom();
-  updateBocorFloorMap();
-});
+      bocorMapImg.addEventListener('pointerup', (e) => {
+        const diffX = Math.abs(e.clientX - startBocorX);
+        const diffY = Math.abs(e.clientY - startBocorY);
 
-// ==========================================
-// LOGIKA DROPDOWN DINAMIS (CASCADING FORM INSPEKSI)
-// ==========================================
-function handleFloorChange() {
-  const floor = document.getElementById("chkFloor").value;
-  const zoneSelect = document.getElementById("chkZone");
-  const areaSelect = document.getElementById("chkArea");
-  
-  zoneSelect.innerHTML = '<option value="">-- Pilih Zone --</option>';
-  areaSelect.innerHTML = '<option value="">-- Pilih Area / Ruangan --</option>';
-  areaSelect.disabled = true;
-  document.getElementById("btnSubmitChecklist").disabled = true;
+        if (diffX < 10 && diffY < 10) {
+          const rect = bocorMapImg.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const clickY = e.clientY - rect.top;
 
-  document.getElementById("checklistItemsContainer").innerHTML = `
-    <div class="text-center text-muted py-4 border rounded bg-light">
-      <small>Silakan pilih <strong>Zone</strong> dan <strong>Area/Ruangan</strong>.</small>
-    </div>
-  `;
-  document.getElementById("itemCountBadge").innerText = "0 Item";
+          const xPercent = (clickX / rect.width) * 100;
+          const yPercent = (clickY / rect.height) * 100;
 
-  if (floor && INSPECTION_DATA[floor]) {
-    zoneSelect.disabled = false;
-    Object.keys(INSPECTION_DATA[floor]).forEach(z => {
-      zoneSelect.add(new Option(floor === "FACADE" ? z : `Zone ${z}`, z));
-    });
-  } else {
-    zoneSelect.disabled = true;
-  }
-}
+          if (xPercent >= 0 && xPercent <= 100 && yPercent >= 0 && yPercent <= 100) {
+            window.bocorMarkingX = xPercent.toFixed(2);
+            window.bocorMarkingY = yPercent.toFixed(2);
+            bocorMarkingX = window.bocorMarkingX;
+            bocorMarkingY = window.bocorMarkingY;
 
-// =========================================================
-// 1. TAMBAHKAN SISTEM PENGUNCIAN AREA & LOCALSTORAGE
-// =========================================================
-const STORAGE_KEY_COMPLETED = "completed_inspections_v1";
-const STORAGE_KEY_RESULTS = "inspection_results_data_v1";
+            const pin = document.getElementById("bocorMapPin");
+            if (pin) {
+              pin.className = "map-pin map-pin-water";
+              pin.classList.remove("d-none");
+              updateBocorPinPosition();
+            }
 
-function getCompletedAreas() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY_COMPLETED)) || [];
-}
+            const status = document.getElementById("bocorMapStatus");
+            if (status) {
+              status.innerText = `✓ Titik lokasi marked (${bocorMarkingX}%, ${bocorMarkingY}%)`;
+              status.className = "text-success small mt-1 d-block fw-bold";
+            }
+          }
+        }
+      });
+    }
 
-function getInspectionResults() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY_RESULTS)) || {};
-}
+    initBocorPanzoom();
+    if (currentUser) showApp();
+  });
 
-// 1. DROPDOWN ZONE: MENAMPILKAN AREA SELESAI DENGAN STATUS EDITABLE
-function handleZoneChange() {
-  const floor = document.getElementById("chkFloor").value;
-  const zone = document.getElementById("chkZone").value;
-  const areaSelect = document.getElementById("chkArea");
+  document.getElementById("tab-bocor")?.addEventListener("shown.bs.tab", function () {
+    initBocorPanzoom();
+    updateBocorFloorMap();
+  });
 
-  areaSelect.innerHTML = '<option value="">-- Pilih Area / Ruangan --</option>';
-  document.getElementById("btnSubmitChecklist").disabled = true;
-  
-  document.getElementById("checklistItemsContainer").innerHTML = `
-    <div class="text-center text-muted py-4 border rounded bg-light">
-      <small>Silakan pilih <strong>Area/Ruangan</strong>.</small>
-    </div>
-  `;
-  document.getElementById("itemCountBadge").innerText = "0 Item";
-
-  const completedList = getCompletedAreas();
-
-  if (floor && zone && INSPECTION_DATA[floor] && INSPECTION_DATA[floor][zone]) {
-    areaSelect.disabled = false;
-    Object.keys(INSPECTION_DATA[floor][zone]).forEach(area => {
-      const areaKey = `${floor}_${zone}_${area}`;
-      const isCompleted = completedList.includes(areaKey);
-      
-      const option = document.createElement("option");
-      option.value = area;
-      option.innerText = isCompleted ? `✓ ${area} (Selesai - Klik utk Edit)` : area;
-      
-      // Opsi tetap aktif (tidak disabled) agar bisa diklik
-      if (isCompleted) {
-        option.style.color = "#0d6efd"; // Warna biru penanda sudah diisi
-        option.style.fontWeight = "bold";
-      }
-      areaSelect.appendChild(option);
-    });
-  } else {
+  function handleFloorChange() {
+    const floor = document.getElementById("chkFloor").value;
+    const zoneSelect = document.getElementById("chkZone");
+    const areaSelect = document.getElementById("chkArea");
+    
+    zoneSelect.innerHTML = '<option value="">-- Pilih Zone --</option>';
+    areaSelect.innerHTML = '<option value="">-- Pilih Area / Ruangan --</option>';
     areaSelect.disabled = true;
+    document.getElementById("btnSubmitChecklist").disabled = true;
+
+    document.getElementById("checklistItemsContainer").innerHTML = `
+      <div class="text-center text-muted py-4 border rounded bg-light">
+        <small>Silakan pilih <strong>Zone</strong> dan <strong>Area/Ruangan</strong>.</small>
+      </div>
+    `;
+    document.getElementById("itemCountBadge").innerText = "0 Item";
+
+    if (floor && INSPECTION_DATA[floor]) {
+      zoneSelect.disabled = false;
+      Object.keys(INSPECTION_DATA[floor]).forEach(z => {
+        zoneSelect.add(new Option(floor === "FACADE" ? z : `Zone ${z}`, z));
+      });
+    } else {
+      zoneSelect.disabled = true;
+    }
   }
-}
 
-// 2. DROPDOWN AREA: CEK DATA LAMA & SWEETALERT KONFIRMASI EDIT
-async function handleAreaChange() {
-  const floor = document.getElementById("chkFloor").value;
-  const zone = document.getElementById("chkZone").value;
-  const area = document.getElementById("chkArea").value;
-  const container = document.getElementById("checklistItemsContainer");
-  const btnSubmit = document.getElementById("btnSubmitChecklist");
-  const countBadge = document.getElementById("itemCountBadge");
+  const STORAGE_KEY_COMPLETED = "completed_inspections_v1";
+  const STORAGE_KEY_RESULTS = "inspection_results_data_v1";
 
-  container.innerHTML = "";
-  if (!area) {
-    btnSubmit.disabled = true;
-    countBadge.innerText = "0 Item";
-    return;
+  function getCompletedAreas() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY_COMPLETED)) || [];
   }
 
-  const areaKey = `${floor}_${zone}_${area}`;
-  const completedList = getCompletedAreas();
-  const isCompleted = completedList.includes(areaKey);
+  function getInspectionResults() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY_RESULTS)) || {};
+  }
 
-  // Jika area sudah pernah diisi, tampilkan konfirmasi SweetAlert2
-  if (isCompleted) {
-    const result = await Swal.fire({
-      title: 'Area Sudah Diinspeksi',
-      text: `Area "${area}" sudah memiliki data inspeksi. Apakah Anda ingin mengedit atau memperbarui hasilnya?`,
-      icon: 'info',
-      showCancelButton: true,
-      confirmButtonColor: '#4361ee',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Ya, Edit Data',
-      cancelButtonText: 'Batal'
-    });
+  function handleZoneChange() {
+    const floor = document.getElementById("chkFloor").value;
+    const zone = document.getElementById("chkZone").value;
+    const areaSelect = document.getElementById("chkArea");
 
-    if (!result.isConfirmed) {
-      document.getElementById("chkArea").value = "";
+    areaSelect.innerHTML = '<option value="">-- Pilih Area / Ruangan --</option>';
+    document.getElementById("btnSubmitChecklist").disabled = true;
+    
+    document.getElementById("checklistItemsContainer").innerHTML = `
+      <div class="text-center text-muted py-4 border rounded bg-light">
+        <small>Silakan pilih <strong>Area/Ruangan</strong>.</small>
+      </div>
+    `;
+    document.getElementById("itemCountBadge").innerText = "0 Item";
+
+    const completedList = getCompletedAreas();
+
+    if (floor && zone && INSPECTION_DATA[floor] && INSPECTION_DATA[floor][zone]) {
+      areaSelect.disabled = false;
+      Object.keys(INSPECTION_DATA[floor][zone]).forEach(area => {
+        const areaKey = `${floor}_${zone}_${area}`;
+        const isCompleted = completedList.includes(areaKey);
+        
+        const option = document.createElement("option");
+        option.value = area;
+        option.innerText = isCompleted ? `✓ ${area} (Selesai - Klik utk Edit)` : area;
+        
+        if (isCompleted) {
+          option.style.color = "#0d6efd";
+          option.style.fontWeight = "bold";
+        }
+        areaSelect.appendChild(option);
+      });
+    } else {
+      areaSelect.disabled = true;
+    }
+  }
+
+  async function handleAreaChange() {
+    const floor = document.getElementById("chkFloor").value;
+    const zone = document.getElementById("chkZone").value;
+    const area = document.getElementById("chkArea").value;
+    const container = document.getElementById("checklistItemsContainer");
+    const btnSubmit = document.getElementById("btnSubmitChecklist");
+    const countBadge = document.getElementById("itemCountBadge");
+
+    container.innerHTML = "";
+    if (!area) {
       btnSubmit.disabled = true;
       countBadge.innerText = "0 Item";
-      container.innerHTML = `
-        <div class="text-center text-muted py-4 border rounded bg-light">
-          <small>Silakan pilih <strong>Area/Ruangan</strong>.</small>
-        </div>
-      `;
       return;
     }
-  }
 
-  const items = INSPECTION_DATA[floor]?.[zone]?.[area] || [];
-  countBadge.innerText = `${items.length} Item`;
-  btnSubmit.disabled = false;
+    const areaKey = `${floor}_${zone}_${area}`;
+    const completedList = getCompletedAreas();
+    const isCompleted = completedList.includes(areaKey);
 
-  // Ambil data hasil inspeksi lama jika ada
-  const allResults = getInspectionResults();
-  const existingFloorData = allResults[floor] || [];
-  const existingRecord = existingFloorData.find(r => r.zone === zone && r.area === area);
-
-  items.forEach((item, idx) => {
-    let savedStatus = "PASS";
-    if (existingRecord && existingRecord.details) {
-      const match = existingRecord.details.find(d => d.item_name.startsWith(item));
-      if (match) savedStatus = match.status;
-    }
-
-    container.innerHTML += `
-      <div class="chk-item-card p-3 mb-2 card border-0 shadow-sm">
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="fw-bold small pe-2 text-dark text-uppercase">${idx + 1}. ${item}</div>
-          <div class="btn-group" role="group">
-            <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" ${savedStatus === 'PASS' ? 'checked' : ''} onchange="toggleFailDetail(${idx}, false)">
-            <label class="btn btn-sm btn-outline-success" for="pass_${idx}">NORMAL</label>
-            
-            <input type="radio" class="btn-check" name="chk_${idx}" id="fail_${idx}" value="FAIL" ${savedStatus === 'FAIL' ? 'checked' : ''} onchange="toggleFailDetail(${idx}, true)">
-            <label class="btn btn-sm btn-outline-danger" for="fail_${idx}">RUSAK</label>
-          </div>
-        </div>
-
-        <div id="fail_box_${idx}" class="d-none mt-2 pt-2 border-top">
-          <div id="fail_list_${idx}"></div>
-          <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-2" onclick="addSubFailItem(${idx})">+ Tambah Detail Kerusakan</button>
-        </div>
-      </div>
-    `;
-
-    if (savedStatus === "FAIL") {
-      setTimeout(() => toggleFailDetail(idx, true), 50);
-    }
-  });
-
-  // Ubah teks tombol submit jika sedang dalam mode Edit
-  if (isCompleted) {
-    btnSubmit.innerText = "Update Hasil Inspeksi";
-    btnSubmit.className = "btn btn-warning w-100 mt-3";
-  } else {
-    btnSubmit.innerText = "Simpan Hasil Inspeksi";
-    btnSubmit.className = "btn btn-success w-100 mt-3";
-  }
-}
-
-// =========================================================
-// 2. FUNGSI RESET LOCK & EXPORT PDF PER LANTAI
-// =========================================================
-function resetCompletedInspections() {
-  Swal.fire({
-    title: 'Reset Status Inspeksi?',
-    text: "Semua area yang sudah dikunci akan terbuka kembali untuk diisi.",
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#ef4444',
-    cancelButtonColor: '#6c757d',
-    confirmButtonText: 'Ya, Reset!',
-    cancelButtonText: 'Batal'
-  }).then((result) => {
-    if (result.isConfirmed) {
-      localStorage.removeItem(STORAGE_KEY_COMPLETED);
-      localStorage.removeItem(STORAGE_KEY_RESULTS);
-      
-      Swal.fire({
-        title: 'Di-reset!',
-        text: 'Status inspeksi berhasil di-reset.',
-        icon: 'success',
-        confirmButtonColor: '#4361ee'
+    if (isCompleted) {
+      const result = await Swal.fire({
+        title: 'Area Sudah Diinspeksi',
+        text: `Area "${area}" sudah memiliki data inspeksi. Edit data?`,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonColor: '#4361ee',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Edit Data',
+        cancelButtonText: 'Batal'
       });
-      
-      handleFloorChange();
+
+      if (!result.isConfirmed) {
+        document.getElementById("chkArea").value = "";
+        btnSubmit.disabled = true;
+        countBadge.innerText = "0 Item";
+        container.innerHTML = `
+          <div class="text-center text-muted py-4 border rounded bg-light">
+            <small>Silakan pilih <strong>Area/Ruangan</strong>.</small>
+          </div>
+        `;
+        return;
+      }
     }
-  });
-}
 
-function exportPDFByFloor(selectedFloor) {
-  // Validasi Hak Akses Super User / Admin
-  const userRole = (currentUser && currentUser.role) ? currentUser.role.toLowerCase() : "";
-  const isSuperUser = userRole === "superuser" || userRole === "admin" || currentUser?.is_superuser === true;
+    const items = INSPECTION_DATA[floor]?.[zone]?.[area] || [];
+    countBadge.innerText = `${items.length} Item`;
+    btnSubmit.disabled = false;
 
-  if (!isSuperUser) {
-    Swal.fire({
-      title: 'Akses Ditolak!',
-      text: 'Fitur cetak rekap PDF ini hanya dapat diakses oleh Super User / Admin.',
-      icon: 'error',
-      confirmButtonColor: '#ef4444'
-    });
-    return;
-  }
+    const allResults = getInspectionResults();
+    const existingFloorData = allResults[floor] || [];
+    const existingRecord = existingFloorData.find(r => r.zone === zone && r.area === area);
 
-  const allResults = getInspectionResults();
-  const floorData = allResults[selectedFloor] || [];
+    items.forEach((item, idx) => {
+      let savedStatus = "PASS";
+      if (existingRecord && existingRecord.details) {
+        const match = existingRecord.details.find(d => d.item_name.startsWith(item));
+        if (match) savedStatus = match.status;
+      }
 
-  if (floorData.length === 0) {
-  Swal.fire({
-    title: 'Data Belum Ada',
-    text: `Belum ada data inspeksi yang disimpan untuk LANTAI ${selectedFloor}. Silakan selesaikan inspeksi terlebih dahulu.`,
-    icon: 'info',
-    confirmButtonColor: '#4361ee'
-  });
-  return;
-}
+      container.innerHTML += `
+        <div class="chk-item-card p-3 mb-2 card border-0 shadow-sm">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="fw-bold small pe-2 text-dark text-uppercase">${idx + 1}. ${item}</div>
+            <div class="btn-group" role="group">
+              <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" ${savedStatus === 'PASS' ? 'checked' : ''} onchange="toggleFailDetail(${idx}, false)">
+              <label class="btn btn-sm btn-outline-success" for="pass_${idx}">NORMAL</label>
+              
+              <input type="radio" class="btn-check" name="chk_${idx}" id="fail_${idx}" value="FAIL" ${savedStatus === 'FAIL' ? 'checked' : ''} onchange="toggleFailDetail(${idx}, true)">
+              <label class="btn btn-sm btn-outline-danger" for="fail_${idx}">RUSAK</label>
+            </div>
+          </div>
 
-  const printWindow = window.open('', '_blank');
-  let rowsHtml = '';
-  let no = 1;
-
-  floorData.forEach(res => {
-    res.details.forEach(item => {
-      const statusBadge = item.status === 'PASS' 
-        ? '<span style="color: green; font-weight: bold;">NORMAL (PASS)</span>' 
-        : '<span style="color: red; font-weight: bold;">RUSAK (FAIL)</span>';
-
-      rowsHtml += `
-        <tr>
-          <td style="text-align: center;">${no++}</td>
-          <td><b>Zone ${res.zone}</b> - ${res.area}</td>
-          <td>${item.item_name}</td>
-          <td style="text-align: center;">${statusBadge}</td>
-          <td>${item.note || '-'}</td>
-          <td style="font-size: 11px;">${res.inspector} (${res.date})</td>
-        </tr>
-      `;
-    });
-  });
-
-  const pdfContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>Form Inspeksi Civil - Lantai ${selectedFloor}</title>
-      <style>
-        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
-        .header h2 { margin: 0; color: #1d3557; }
-        .header p { margin: 4px 0 0 0; font-size: 14px; color: #666; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
-        th, td { border: 1px solid #ccc; padding: 8px 10px; text-align: left; }
-        th { background-color: #f2f2f2; font-weight: bold; }
-        tr:nth-child(even) { background-color: #fafafa; }
-        .footer { margin-top: 30px; display: flex; justify-content: space-between; font-size: 12px; }
-        .sign-box { text-align: center; width: 200px; }
-        .sign-space { height: 60px; }
-        @media print {
-          @page { size: A4 portrait; margin: 15mm; }
-        }
-      </style>
-    </head>
-    <body>
-      <div class="header">
-        <h2>LAPORAN INSPEKSI ROUTINE CIVIL & SANITARY</h2>
-        <p>MAL 23 SEMARANG - LANTAI ${selectedFloor}</p>
-      </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th style="width: 5%;">No</th>
-            <th style="width: 25%;">Zone & Area</th>
-            <th style="width: 25%;">Komponen Inspeksi</th>
-            <th style="width: 15%;">Status</th>
-            <th style="width: 18%;">Keterangan Kerusakan</th>
-            <th style="width: 12%;">Inspector</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${rowsHtml}
-        </tbody>
-      </table>
-
-      <div class="footer">
-        <div class="sign-box">
-          <p>Dibuat Oleh,</p>
-          <div class="sign-space"></div>
-          <p><b>( Petugas Civil )</b></p>
-        </div>
-        <div class="sign-box">
-          <p>Disetujui Oleh,</p>
-          <div class="sign-space"></div>
-          <p><b>( Spv / Chief Engineering )</b></p>
-        </div>
-      </div>
-
-      <script>
-        window.onload = function() {
-          window.print();
-        };
-      <\/script>
-    </body>
-    </html>
-  `;
-
-  printWindow.document.open();
-  printWindow.document.write(pdfContent);
-  printWindow.document.close();
-}
-
-function handleAreaChange() {
-  const floor = document.getElementById("chkFloor").value;
-  const zone = document.getElementById("chkZone").value;
-  const area = document.getElementById("chkArea").value;
-  const container = document.getElementById("checklistItemsContainer");
-  const btnSubmit = document.getElementById("btnSubmitChecklist");
-  const countBadge = document.getElementById("itemCountBadge");
-
-  container.innerHTML = "";
-  if (!area) {
-    btnSubmit.disabled = true;
-    countBadge.innerText = "0 Item";
-    return;
-  }
-
-  const items = INSPECTION_DATA[floor]?.[zone]?.[area] || ["LANTAI", "DINDING", "PLAFON", "PINTU"];
-  countBadge.innerText = `${items.length} Item`;
-  btnSubmit.disabled = false;
-
-  items.forEach((item, idx) => {
-    container.innerHTML += `
-      <div class="chk-item-card p-3 mb-2 card border-0 shadow-sm">
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="fw-bold small pe-2 text-dark text-uppercase">${idx + 1}. ${item}</div>
-          <div class="btn-group" role="group">
-            <input type="radio" class="btn-check" name="chk_${idx}" id="pass_${idx}" value="PASS" checked onchange="toggleFailDetail(${idx}, false)">
-            <label class="btn btn-sm btn-outline-success" for="pass_${idx}">NORMAL</label>
-            
-            <input type="radio" class="btn-check" name="chk_${idx}" id="fail_${idx}" value="FAIL" onchange="toggleFailDetail(${idx}, true)">
-            <label class="btn btn-sm btn-outline-danger" for="fail_${idx}">RUSAK</label>
+          <div id="fail_box_${idx}" class="d-none mt-2 pt-2 border-top">
+            <div id="fail_list_${idx}"></div>
+            <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-2" onclick="addSubFailItem(${idx})">+ Tambah Detail Kerusakan</button>
           </div>
         </div>
+      `;
 
-        <div id="fail_box_${idx}" class="d-none mt-2 pt-2 border-top">
-          <div id="fail_list_${idx}"></div>
-          <button type="button" class="btn btn-sm btn-outline-danger w-100 mt-2" onclick="addSubFailItem(${idx})">+ Tambah Detail Kerusakan</button>
+      if (savedStatus === "FAIL") {
+        setTimeout(() => toggleFailDetail(idx, true), 50);
+      }
+    });
+
+    if (isCompleted) {
+      btnSubmit.innerText = "Update Hasil Inspeksi";
+      btnSubmit.className = "btn btn-warning w-100 mt-3";
+    } else {
+      btnSubmit.innerText = "Simpan Hasil Inspeksi";
+      btnSubmit.className = "btn btn-success w-100 mt-3";
+    }
+  }
+
+  function resetCompletedInspections() {
+    Swal.fire({
+      title: 'Reset Status Inspeksi?',
+      text: "Semua area yang sudah dikunci akan terbuka kembali.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Ya, Reset!',
+      cancelButtonText: 'Batal'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        localStorage.removeItem(STORAGE_KEY_COMPLETED);
+        localStorage.removeItem(STORAGE_KEY_RESULTS);
+        Swal.fire('Di-reset!', 'Status inspeksi berhasil di-reset.', 'success');
+        handleFloorChange();
+      }
+    });
+  }
+
+  function exportPDFByFloor(selectedFloor) {
+    const userRole = (currentUser && currentUser.role) ? currentUser.role.toLowerCase() : "";
+    const isSuperUser = userRole === "superuser" || userRole === "admin" || currentUser?.is_superuser === true;
+
+    if (!isSuperUser) {
+      Swal.fire('Akses Ditolak!', 'Hanya Super User / Admin yang dapat mencetak PDF.', 'error');
+      return;
+    }
+
+    const allResults = getInspectionResults();
+    const floorData = allResults[selectedFloor] || [];
+
+    if (floorData.length === 0) {
+      Swal.fire('Data Belum Ada', `Belum ada data inspeksi yang disimpan untuk LANTAI ${selectedFloor}.`, 'info');
+      return;
+    }
+
+    const printWindow = window.open('', '_blank');
+    let rowsHtml = '';
+    let no = 1;
+
+    floorData.forEach(res => {
+      res.details.forEach(item => {
+        const statusBadge = item.status === 'PASS' 
+          ? '<span style="color: green; font-weight: bold;">NORMAL (PASS)</span>' 
+          : '<span style="color: red; font-weight: bold;">RUSAK (FAIL)</span>';
+
+        rowsHtml += `
+          <tr>
+            <td style="text-align: center;">${no++}</td>
+            <td><b>Zone ${res.zone}</b> - ${res.area}</td>
+            <td>${item.item_name}</td>
+            <td style="text-align: center;">${statusBadge}</td>
+            <td>${item.note || '-'}</td>
+            <td style="font-size: 11px;">${res.inspector} (${res.date})</td>
+          </tr>
+        `;
+      });
+    });
+
+    const pdfContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Form Inspeksi Civil - Lantai ${selectedFloor}</title>
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+          .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+          .header h2 { margin: 0; color: #1d3557; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+          th, td { border: 1px solid #ccc; padding: 8px 10px; text-align: left; }
+          th { background-color: #f2f2f2; font-weight: bold; }
+          tr:nth-child(even) { background-color: #fafafa; }
+          .footer { margin-top: 30px; display: flex; justify-content: space-between; font-size: 12px; }
+          .sign-box { text-align: center; width: 200px; }
+          .sign-space { height: 60px; }
+          @media print { @page { size: A4 portrait; margin: 15mm; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h2>LAPORAN INSPEKSI ROUTINE CIVIL & SANITARY</h2>
+          <p>MAL 23 SEMARANG - LANTAI ${selectedFloor}</p>
         </div>
-      </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 5%;">No</th>
+              <th style="width: 25%;">Zone & Area</th>
+              <th style="width: 25%;">Komponen Inspeksi</th>
+              <th style="width: 15%;">Status</th>
+              <th style="width: 18%;">Keterangan Kerusakan</th>
+              <th style="width: 12%;">Inspector</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+        <div class="footer">
+          <div class="sign-box"><p>Dibuat Oleh,</p><div class="sign-space"></div><p><b>( Petugas Civil )</b></p></div>
+          <div class="sign-box"><p>Disetujui Oleh,</p><div class="sign-space"></div><p><b>( Spv / Chief Engineering )</b></p></div>
+        </div>
+        <script>window.onload = function() { window.print(); };<\/script>
+      </body>
+      </html>
     `;
-  });
-}
+
+    printWindow.document.open();
+    printWindow.document.write(pdfContent);
+    printWindow.document.close();
+  }
 
   function toggleFailDetail(idx, isFail) {
     const box = document.getElementById(`fail_box_${idx}`);
@@ -2000,29 +1842,28 @@ function handleAreaChange() {
   }
 
   function addSubFailItem(idx) {
-  const failList = document.getElementById(`fail_list_${idx}`);
-  const subIdx = failList.getElementsByClassName('fail-sub-item').length;
-  
-  const newItem = document.createElement('div');
-  newItem.className = 'fail-sub-item mb-2 p-2 bg-light rounded border';
-  newItem.innerHTML = `
-    <div class="d-flex justify-content-between align-items-center mb-1">
-      <label class="small fw-bold text-danger">Titik Kerusakan #${subIdx + 1}</label>
-      <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none" onclick="this.parentElement.parentElement.remove()">
-        <i class="bi bi-trash me-1"></i>Hapus
+    const failList = document.getElementById(`fail_list_${idx}`);
+    const subIdx = failList.getElementsByClassName('fail-sub-item').length;
+    
+    const newItem = document.createElement('div');
+    newItem.className = 'fail-sub-item mb-2 p-2 bg-light rounded border';
+    newItem.innerHTML = `
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <label class="small fw-bold text-danger">Titik Kerusakan #${subIdx + 1}</label>
+        <button type="button" class="btn btn-sm btn-link text-danger p-0 text-decoration-none" onclick="this.parentElement.parentElement.remove()">
+          <i class="bi bi-trash me-1"></i>Hapus
+        </button>
+      </div>
+      <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Selatan)">
+      <textarea class="form-control form-control-sm mb-2 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
+      <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="triggerSubCam('${idx}', ${subIdx})">
+        <i class="bi bi-camera-fill me-1"></i> Ambil Foto
       </button>
-    </div>
-    <input type="text" class="form-control form-control-sm mb-1 sub-loc-${idx}" placeholder="Detail lokasi spesifik (misal: Sisi Selatan)">
-    <textarea class="form-control form-control-sm mb-2 sub-note-${idx}" placeholder="Deskripsi kerusakan..."></textarea>
-
-    <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-1" onclick="triggerSubCam('${idx}', ${subIdx})">
-      <i class="bi bi-camera-fill me-1"></i> Ambil Foto
-    </button>
-    <input type="file" class="d-none sub-cam-${idx}" accept="image/*" capture="environment" onchange="handleSubFileSelect(this, '${idx}', ${subIdx})">
-    <small class="text-muted d-block sub-status-${idx}" style="font-size:0.75rem;"></small>
-  `;
-  failList.appendChild(newItem);
-}
+      <input type="file" class="d-none sub-cam-${idx}" accept="image/*" capture="environment" onchange="handleSubFileSelect(this, '${idx}', ${subIdx})">
+      <small class="text-muted d-block sub-status-${idx}" style="font-size:0.75rem;"></small>
+    `;
+    failList.appendChild(newItem);
+  }
 
   function triggerSubCam(itemIdx, subIdx) {
     const container = document.getElementById(`fail_list_${itemIdx}`).getElementsByClassName('fail-sub-item')[subIdx];
@@ -2051,7 +1892,6 @@ function handleAreaChange() {
     const failedReports = [];
 
     btn.disabled = true; btn.innerText = "Proses Watermark & Mengirim...";
-
     const baseLocation = `${area} (${floor} - ${zone})`;
 
     for (let i = 0; i < items.length; i++) {
@@ -2063,7 +1903,6 @@ function handleAreaChange() {
         chkData.push({ item_name: items[i], status: "PASS", note: "-" });
       } else {
         const subItems = document.getElementById(`fail_list_${i}`).getElementsByClassName('fail-sub-item');
-
         if (subItems.length === 0) {
           totalFail++;
           chkData.push({ item_name: items[i], status: "FAIL", note: "Kerusakan ditemukan." });
@@ -2074,7 +1913,6 @@ function handleAreaChange() {
             const noteVal = subItems[k].querySelector(`.sub-note-${i}`).value || "Kerusakan ditemukan saat inspeksi rutin.";
             const subLocText = locVal ? ` - ${locVal}` : '';
             const fullLocation = `${baseLocation}${subLocText}`;
-
             const camInput = subItems[k].querySelector(`.sub-cam-${i}`);
             const targetFile = (camInput && camInput.files && camInput.files[0]) ? camInput.files[0] : null;
 
@@ -2107,24 +1945,14 @@ function handleAreaChange() {
 
     try {
       const res = await fetchAPI(payload);
-      
-      // POPUP MODERN SWEETALERT2
-      Swal.fire({
-        title: 'Berhasil!',
-        text: res.message || 'Hasil inspeksi area berhasil disimpan!',
-        icon: 'success',
-        confirmButtonColor: '#4361ee',
-        confirmButtonText: 'Lanjut Inspeksi'
-      });
+      Swal.fire('Berhasil!', res.message || 'Hasil inspeksi area berhasil disimpan!', 'success');
 
-      // 1. Simpan status lock ke LocalStorage agar area ini bertanda selesai
       const completed = getCompletedAreas();
       if (!completed.includes(areaKey)) {
         completed.push(areaKey);
         localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify(completed));
       }
 
-      // 2. Simpan / Update rekap data per lantai untuk kebutuhan Cetak PDF
       const allResults = getInspectionResults();
       if (!allResults[floor]) allResults[floor] = [];
       
@@ -2140,41 +1968,29 @@ function handleAreaChange() {
       };
 
       if (existingIdx !== -1) {
-        allResults[floor][existingIdx] = newRecord; // Update data lama
+        allResults[floor][existingIdx] = newRecord;
       } else {
-        allResults[floor].push(newRecord); // Tambah data baru
+        allResults[floor].push(newRecord);
       }
       
       localStorage.setItem(STORAGE_KEY_RESULTS, JSON.stringify(allResults));
-
     } catch (err) {
       console.error(err);
-      Swal.fire({
-        title: 'Gagal Simpan!',
-        text: 'Gagal mengirim ke server, namun data tersimpan di perangkat.',
-        icon: 'warning',
-        confirmButtonColor: '#f59e0b'
-      });
+      Swal.fire('Gagal Simpan!', 'Gagal mengirim ke server, namun data tersimpan di perangkat.', 'warning');
     }
 
-    // Reset tombol & form kembali bersih (tetap di halaman inspeksi)
     btn.disabled = false; 
     btn.innerText = "Simpan Hasil Inspeksi";
-    
     document.getElementById("checklistForm").reset();
-    
-    // Trigger perubahan dropdown agar area yang baru diisi langsung terkunci (✓ Selesai)
     handleFloorChange();
   });
 
   function setFilter(filterType) {
     currentFilter = filterType;
-
     const selectEl = document.getElementById("filterStatusSelect");
     if (selectEl && selectEl.value !== filterType) {
       selectEl.value = filterType;
     }
-
     if (typeof renderReports === 'function') {
       renderReports();
     }
@@ -2256,38 +2072,22 @@ function handleAreaChange() {
     btn.disabled = true; btn.innerText = "Memproses...";
 
     const res = await fetchAPI({
-    action: "login",
-    username: document.getElementById("loginUser").value,
-    password: document.getElementById("loginPass").value
-  });
-
-  btn.disabled = false; 
-  btn.innerText = "Login";
-
-  if (res.status === "success") {
-    currentUser = res.user;
-    localStorage.setItem("user_civil", JSON.stringify(currentUser));
-    localStorage.setItem("user_civil_login_time", new Date().getTime().toString());
-
-    // Notifikasi sukses yang rapi (akan hilang otomatis dalam 1.5 detik)
-    Swal.fire({
-      title: 'Selamat Datang!',
-      text: res.message || 'Login berhasil.',
-      icon: 'success',
-      timer: 1500,
-      showConfirmButton: false
+      action: "login",
+      username: document.getElementById("loginUser").value,
+      password: document.getElementById("loginPass").value
     });
 
-    showApp();
-  } else {
-    // Notifikasi jika login gagal
-    Swal.fire({
-      title: 'Gagal Login!',
-      text: res.message || 'Username atau password salah.',
-      icon: 'error',
-      confirmButtonColor: '#ef4444'
-    });
-  }
+    btn.disabled = false; btn.innerText = "Login";
+
+    if (res.status === "success") {
+      currentUser = res.user;
+      localStorage.setItem("user_civil", JSON.stringify(currentUser));
+      localStorage.setItem("user_civil_login_time", new Date().getTime().toString());
+      Swal.fire({ title: 'Selamat Datang!', text: res.message || 'Login berhasil.', icon: 'success', timer: 1500, showConfirmButton: false });
+      showApp();
+    } else {
+      Swal.fire('Gagal Login!', res.message || 'Username atau password salah.', 'error');
+    }
   });
 
   document.getElementById("registerForm").addEventListener("submit", async (e) => {
@@ -2303,7 +2103,7 @@ function handleAreaChange() {
       password: document.getElementById("regPass").value
     });
 
-    Swal.fire({   title: 'Notifikasi',   text: res.message,   icon: 'info',   confirmButtonColor: '#4361ee' });
+    Swal.fire('Notifikasi', res.message, 'info');
     btn.disabled = false; btn.innerText = "Daftar Akun";
 
     if (res.status === "success") {
@@ -2319,7 +2119,7 @@ function handleAreaChange() {
     targetResetUsername = document.getElementById("otpTarget").value;
 
     const res = await fetchAPI({ action: "requestOTP", target: targetResetUsername });
-    Swal.fire({   title: 'Notifikasi',   text: res.message,   icon: 'info',   confirmButtonColor: '#4361ee' });
+    Swal.fire('Notifikasi', res.message, 'info');
     btn.disabled = false; btn.innerText = "Kirim Kode OTP Ke Email";
 
     if (res.status === "success") {
@@ -2340,7 +2140,7 @@ function handleAreaChange() {
       new_password: document.getElementById("otpNewPass").value
     });
 
-    Swal.fire({   title: 'Notifikasi',   text: res.message,   icon: 'info',   confirmButtonColor: '#4361ee' });
+    Swal.fire('Notifikasi', res.message, 'info');
     btn.disabled = false; btn.innerText = "Simpan Password Baru";
 
     if (res.status === "success") {
@@ -2352,14 +2152,9 @@ function handleAreaChange() {
   document.getElementById("reportForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!markedX || !markedY) { 
-  Swal.fire({
-    title: 'Peringatan!',
-    text: 'Silakan berikan tanda titik lokasi pada denah layout!',
-    icon: 'warning',
-    confirmButtonColor: '#ef4444'
-  });
-  return; 
-}
+      Swal.fire('Peringatan!', 'Silakan berikan tanda titik lokasi pada denah layout!', 'warning');
+      return; 
+    }
     const fileCam = document.getElementById("photoCamera").files[0];
     if (!fileCam) { alert("Ambil foto bukti laporan!"); return; }
 
@@ -2383,7 +2178,7 @@ function handleAreaChange() {
     };
 
     const res = await fetchAPI(payload);
-    Swal.fire({   title: 'Notifikasi',   text: res.message,   icon: 'info',   confirmButtonColor: '#4361ee' });
+    Swal.fire('Notifikasi', res.message, 'info');
     btn.disabled = false; btn.innerText = "Kirim Laporan";
 
     if (res.status === "success") {
@@ -2395,213 +2190,288 @@ function handleAreaChange() {
   });
 
   async function loadReports() {
-  const container = document.getElementById("reportsContainer");
-  container.innerHTML = "Memuat data...";
-  const res = await fetchAPI({ action: "getReports" });
-  if (res.status === "success") { 
-    allReports = res.data || []; 
-    updateDashboardStats(allReports); 
-    renderReports(); 
-  }
-  else container.innerHTML = "<div class='text-center text-danger py-4'>Gagal memuat data.</div>";
-}
-
-// =======================================================
-// === LANGKAH 3: FITUR VIEW DENAH & MAP PINS BOCOR ======
-// =======================================================
-
-let pzBocorHistory = null;
-
-function renderBocorMapPins() {
-  const floorSelect = document.getElementById("bocorMapFloorSelect");
-  if (!floorSelect) return;
-  
-  const selectedFloorRaw = floorSelect.value;
-  const selectedFloor = selectedFloorRaw.toUpperCase();
-  const mapImg = document.getElementById("bocorFloorMapImage");
-  const pinsLayer = document.getElementById("bocorPinsLayer");
-  const panzoomElem = document.getElementById("bocorPanzoomWrapper");
-
-  // Deteksi Denah Lantai (Termasuk Support Rooftop fleksibel)
-  if (typeof FLOOR_MAPS !== 'undefined' && mapImg) {
-    const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
-    mapImg.src = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
-  }
-
-  // Pemicu saat gambar denah selesai di-load
-  mapImg.onload = () => {
-    // 1. Inisialisasi Panzoom dan tangani pembatasan ukuran pin (Counter Scale)
-    if (typeof Panzoom !== 'undefined' && panzoomElem) {
-      if (!pzBocorHistory) {
-        pzBocorHistory = Panzoom(panzoomElem, {
-          maxScale: 4,
-          minScale: 1,
-          contain: 'outside',
-          cursor: 'grab'
-        });
-        
-        // Event Listener agar pin TIDAK ikut membesar saat gambar di-zoom
-        panzoomElem.addEventListener('panzoomchange', (e) => {
-          const currentScale = e.detail.scale || 1;
-          const pinScale = 1 / currentScale; // Kebalikan dari skala zoom
-          document.querySelectorAll('.bocor-pin').forEach(pin => {
-            pin.style.setProperty('--pin-scale', pinScale);
-          });
-        });
-
-        panzoomElem.parentElement.addEventListener('wheel', pzBocorHistory.zoomWithWheel);
-      } else {
-        pzBocorHistory.reset();
-      }
+    const container = document.getElementById("reportsContainer");
+    container.innerHTML = "Memuat data...";
+    const res = await fetchAPI({ action: "getReports" });
+    if (res.status === "success") { 
+      allReports = res.data || []; 
+      updateDashboardStats(allReports); 
+      renderReports(); 
+    } else {
+      container.innerHTML = "<div class='text-center text-danger py-4'>Gagal memuat data.</div>";
     }
+  }
 
-    // 2. Clear & Render Pin
-    if (pinsLayer) {
-      pinsLayer.innerHTML = "";
+  // =======================================================
+  // === FITUR RIWAYAT KEBOCORAN AIR (LIST & DENAH MAP) ====
+  // =======================================================
 
-      // Filter laporan kebocoran untuk lantai ini
-      const filteredReports = globalBocorReportsData.filter(item => {
-        const itemFloor = String(item.lantai || item.floor || '').toUpperCase();
-        const posX = item.marking_x ?? item.markingX ?? item.x;
-        const posY = item.marking_y ?? item.markingY ?? item.y;
-        
-        // Normalisasi pengecekan lantai (misal ROOFTOP / RF)
-        const isFloorMatch = itemFloor === selectedFloor || 
-                             (selectedFloor.includes("ROOF") && itemFloor.includes("ROOF"));
-                             
-        return isFloorMatch && posX !== undefined && posY !== undefined && posX !== "" && posY !== "";
-      });
+  function switchBocorView(mode) {
+    const listView = document.getElementById("bocorListViewContainer");
+    const mapView = document.getElementById("bocorMapViewContainer");
+    const btnList = document.getElementById("btnViewList");
+    const btnMap = document.getElementById("btnViewMap");
 
-      // Plot Pin ke Denah
-      filteredReports.forEach(item => {
-        const posX = item.marking_x ?? item.markingX ?? item.x;
-        const posY = item.marking_y ?? item.markingY ?? item.y;
+    if (mode === 'map') {
+      if (listView) listView.classList.add("d-none");
+      if (mapView) mapView.classList.remove("d-none");
+      if (btnList) btnList.classList.remove("active");
+      if (btnMap) btnMap.classList.add("active");
+      renderBocorMapPins();
+    } else {
+      if (mapView) mapView.classList.add("d-none");
+      if (listView) listView.classList.remove("d-none");
+      if (btnMap) btnMap.classList.remove("active");
+      if (btnList) btnList.classList.add("active");
+    }
+  }
 
-        const pin = document.createElement("div");
-        pin.className = "bocor-pin";
-        pin.style.left = `${posX}%`;
-        pin.style.top = `${posY}%`;
-        pin.title = `${item.detail_lokasi || 'Lokasi Kebocoran'}`;
-        pin.innerHTML = `<i class="bi bi-droplet-fill"></i>`;
+  async function loadBocorReports() {
+    const container = document.getElementById("bocorReportsContainer") || document.getElementById("bocorReportsList");
+    if (!container) return;
 
-        // Atur skala pin awal sesuai zoom saat ini
-        if (pzBocorHistory) {
-          const currentScale = pzBocorHistory.getScale() || 1;
-          pin.style.setProperty('--pin-scale', 1 / currentScale);
+    container.innerHTML = `<div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data...</div>`;
+
+    try {
+      const res = await fetchAPI({ action: "getBocorReports" });
+      const bocorList = (res && res.data) ? res.data : [];
+      globalBocorReportsData = bocorList;
+
+      const elBocor = document.getElementById("statBocorReport");
+      if (elBocor) elBocor.innerText = bocorList.length;
+
+      if (bocorList.length === 0) {
+        container.innerHTML = `<div class="text-center text-muted py-4">Belum ada riwayat laporan kebocoran air.</div>`;
+        return;
+      }
+
+      container.innerHTML = "";
+      bocorList.forEach(item => {
+        const idLaporan = item.id_laporan || "-";
+        const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString("id-ID") : "-";
+        const lantai = item.lantai || "-";
+        const sumberBocor = item.sumber_bocor || "-";
+        const keparahan = item.tingkat_keparahan || "RINGAN";
+        const detailLokasi = item.detail_lokasi || "-";
+        const keterangan = item.keterangan || "-";
+
+        let badgeColor = "bg-info";
+        if (keparahan.toUpperCase() === "SEDANG") badgeColor = "bg-warning text-dark";
+        if (keparahan.toUpperCase() === "BERAT" || keparahan.toUpperCase() === "TINGGI" || keparahan.toUpperCase() === "DARURAT") badgeColor = "bg-danger";
+
+        const rawPhoto = item.url_foto || item.foto || item.urlFoto || "";
+        let photosHtml = "";
+        if (rawPhoto && rawPhoto !== "-") {
+          const photos = String(rawPhoto).split(",");
+          photosHtml = `<div class="d-flex gap-2 overflow-auto mb-2">` +
+            photos.map(u => `<img src="${u.trim()}" class="rounded border" style="width:70px; height:70px; object-fit:cover; cursor:pointer;" onclick="openImageModal('${u.trim()}')">`).join("") +
+            `</div>`;
         }
 
-        pin.onclick = (e) => {
-          e.stopPropagation();
-          showBocorDetailPopup(item);
-        };
-
-        pinsLayer.appendChild(pin);
+        const card = document.createElement("div");
+        card.className = "card mb-3 border-0 shadow-sm border-start border-4 border-danger";
+        card.innerHTML = `
+          <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <span class="badge ${badgeColor} fw-bold">DEBIT: ${keparahan}</span>
+              <span class="badge bg-secondary">${lantai} - ${sumberBocor}</span>
+            </div>
+            <h6 class="fw-bold mb-1">${detailLokasi}</h6>
+            <p class="small text-muted mb-2">${keterangan}</p>
+            ${photosHtml}
+            <div class="d-flex justify-content-between align-items-center text-muted small border-top pt-2 mt-2">
+              <span><i class="bi bi-clock me-1"></i>${timestamp}</span>
+              <span class="badge bg-light text-dark border">${idLaporan}</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
       });
+
+      const mapView = document.getElementById("bocorMapViewContainer");
+      if (mapView && !mapView.classList.contains("d-none")) {
+        renderBocorMapPins();
+      }
+
+    } catch (err) {
+      console.error("Gagal memuat laporan bocor:", err);
+      container.innerHTML = `<div class="text-center text-danger py-4">Gagal memuat data laporan kebocoran.</div>`;
     }
-  };
-}
-
-// 3. FUNGSI POPUP CARD DETAIL (Dukungan Deteksi Foto Fleksibel)
-function showBocorDetailPopup(item) {
-  // Ambil data foto dari berbagai kemungkinan nama properti backend
-  const rawPhoto = item.url_foto || item.foto || item.urlFoto || item.photo || item.url_foto_1 || "";
-  let photosHtml = '';
-
-  if (rawPhoto && rawPhoto !== "-") {
-    const photoUrls = String(rawPhoto).split(",");
-    photosHtml = `<div class="d-flex gap-2 overflow-auto mb-2 py-1 justify-content-center">` +
-      photoUrls.map(url => {
-        const cleanUrl = url.trim();
-        return `<img src="${cleanUrl}" class="rounded border shadow-sm" style="height: 110px; width: 110px; object-fit: cover; cursor: pointer;" onclick="openImageModal('${cleanUrl}')" title="Klik untuk memperbesar">`;
-      }).join('') +
-      `</div>`;
-  } else {
-    photosHtml = `<div class="alert alert-light text-muted small text-center py-2 border mb-2">Tidak ada foto terlampir</div>`;
   }
 
-  Swal.fire({
-    title: `<strong class="text-primary">${item.detail_lokasi || item.lokasi || 'Kebocoran Air'}</strong>`,
-    html: `
-      <div class="text-start small">
-        <div class="mb-2 text-center">
-          <span class="badge bg-warning text-dark me-1">DEBIT: ${item.tingkat_keparahan || item.keparahan || 'SEDANG'}</span>
-          <span class="badge bg-secondary">${item.lantai || '-'} - ${item.sumber_bocor || 'Air'}</span>
-        </div>
-        ${photosHtml}
-        <p class="mb-2"><strong>Keterangan:</strong> ${item.keterangan || '-'}</p>
-        <div class="text-muted mt-2 border-top pt-2 d-flex justify-content-between align-items-center">
-          <small><i class="bi bi-person me-1"></i>${item.pelapor || item.username || 'Petugas'}</small>
-          <small><i class="bi bi-clock me-1"></i>${item.timestamp ? new Date(item.timestamp).toLocaleDateString("id-ID") : '-'}</small>
-        </div>
-      </div>
-    `,
-    showCloseButton: true,
-    confirmButtonText: 'Tutup',
-    confirmButtonColor: '#4361ee'
-  });
-}
+  function renderBocorMapPins() {
+    const floorSelect = document.getElementById("bocorMapFloorSelect");
+    if (!floorSelect) return;
+    
+    const selectedFloorRaw = floorSelect.value;
+    const selectedFloor = selectedFloorRaw.toUpperCase();
+    const mapImg = document.getElementById("bocorFloorMapImage");
+    const pinsLayer = document.getElementById("bocorPinsLayer");
+    const panzoomElem = document.getElementById("bocorMapHistoryWrapper");
 
-// =======================================================
-
-function updateDashboardStats(reports) {
-  if (!Array.isArray(reports)) return;
-
-  const directReports = reports.filter(r => !r.source && !r.severity && (r.type === 'DIRECT' || !r.type || r.issue));
-
-  const reportedCount = directReports.filter(r => (r.status || 'REPORTED').toUpperCase() === 'REPORTED').length;
-  const progressCount = directReports.filter(r => {
-    const st = (r.status || '').toUpperCase();
-    return st === 'PROGRESS' || st === 'IN_PROGRESS';
-  }).length;
-  const resolvedCount = directReports.filter(r => {
-    const st = (r.status || '').toUpperCase();
-    return st === 'RESOLVED' || st === 'DONE';
-  }).length;
-
-  const elReported = document.getElementById("statDirectReported");
-  const elProgress = document.getElementById("statDirectProgress");
-  const elResolved = document.getElementById("statDirectResolved");
-
-  if (elReported) elReported.innerText = reportedCount;
-  if (elProgress) elProgress.innerText = progressCount;
-  if (elResolved) elResolved.innerText = resolvedCount;
-
-  fetchAPI({ action: "getBocorReports" }).then(res => {
-    if (res && res.data) {
-      const elBocor = document.getElementById("statStatBocorReport");
-      const elBocorMain = document.getElementById("statBocorReport");
-      if (elBocorMain) elBocorMain.innerText = res.data.length;
+    if (typeof FLOOR_MAPS !== 'undefined' && mapImg) {
+      const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
+      mapImg.src = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
     }
-  }).catch(err => console.log(err));
-}
 
-function switchTab(tabId) {
-  document.querySelectorAll('.tab-pane').forEach(el => {
-    el.classList.remove('show', 'active');
-  });
-  const targetTab = document.getElementById(tabId + 'Tab') || document.getElementById(tabId);
-  if (targetTab) {
-    targetTab.classList.add('show', 'active');
-  }
-}
+    mapImg.onload = () => {
+      if (typeof Panzoom !== 'undefined' && panzoomElem) {
+        if (!pzBocorHistory) {
+          pzBocorHistory = Panzoom(panzoomElem, {
+            maxScale: 4,
+            minScale: 1,
+            contain: 'outside',
+            cursor: 'grab'
+          });
+          
+          panzoomElem.addEventListener('panzoomchange', (e) => {
+            const currentScale = e.detail.scale || 1;
+            const pinScale = 1 / currentScale;
+            document.querySelectorAll('.bocor-pin').forEach(pin => {
+              pin.style.setProperty('--pin-scale', pinScale);
+            });
+          });
 
-function openBocorHistoryTab() {
-  switchTab('bocorHistoryTab');
-  if (typeof loadBocorReports === 'function') {
-    loadBocorReports();
-  }
-}
+          panzoomElem.parentElement.addEventListener('wheel', pzBocorHistory.zoomWithWheel);
+        } else {
+          pzBocorHistory.reset();
+        }
+      }
 
-function openDirectHistoryTab() {
-  switchTab('listTab');
-  if (typeof loadReports === 'function') {
-    loadReports();
+      if (pinsLayer) {
+        pinsLayer.innerHTML = "";
+
+        const filteredReports = globalBocorReportsData.filter(item => {
+          const itemFloor = String(item.lantai || item.floor || '').toUpperCase();
+          const posX = item.marking_x ?? item.markingX ?? item.x;
+          const posY = item.marking_y ?? item.markingY ?? item.y;
+          
+          const isFloorMatch = itemFloor === selectedFloor || 
+                               (selectedFloor.includes("ROOF") && itemFloor.includes("ROOF"));
+                               
+          return isFloorMatch && posX !== undefined && posY !== undefined && posX !== "" && posY !== "";
+        });
+
+        filteredReports.forEach(item => {
+          const posX = item.marking_x ?? item.markingX ?? item.x;
+          const posY = item.marking_y ?? item.markingY ?? item.y;
+
+          const pin = document.createElement("div");
+          pin.className = "bocor-pin";
+          pin.style.left = `${posX}%`;
+          pin.style.top = `${posY}%`;
+          pin.title = `${item.detail_lokasi || 'Lokasi Kebocoran'}`;
+          pin.innerHTML = `<i class="bi bi-droplet-fill"></i>`;
+
+          if (pzBocorHistory) {
+            const currentScale = pzBocorHistory.getScale() || 1;
+            pin.style.setProperty('--pin-scale', 1 / currentScale);
+          }
+
+          pin.onclick = (e) => {
+            e.stopPropagation();
+            showBocorDetailPopup(item);
+          };
+
+          pinsLayer.appendChild(pin);
+        });
+      }
+    };
   }
-}
-  
+
+  function showBocorDetailPopup(item) {
+    const rawPhoto = item.url_foto || item.foto || item.urlFoto || item.photo || "";
+    let photosHtml = '';
+
+    if (rawPhoto && rawPhoto !== "-") {
+      const photoUrls = String(rawPhoto).split(",");
+      photosHtml = `<div class="d-flex gap-2 overflow-auto mb-2 py-1 justify-content-center">` +
+        photoUrls.map(url => `<img src="${url.trim()}" class="rounded border shadow-sm" style="height: 100px; width: 100px; object-fit: cover; cursor: pointer;" onclick="openImageModal('${url.trim()}')">`).join('') +
+        `</div>`;
+    } else {
+      photosHtml = `<div class="alert alert-light text-muted small text-center py-2 border mb-2">Tidak ada foto terlampir</div>`;
+    }
+
+    Swal.fire({
+      title: `<strong class="text-primary">${item.detail_lokasi || 'Kebocoran Air'}</strong>`,
+      html: `
+        <div class="text-start small">
+          <div class="mb-2 text-center">
+            <span class="badge bg-warning text-dark me-1">DEBIT: ${item.tingkat_keparahan || 'SEDANG'}</span>
+            <span class="badge bg-secondary">${item.lantai || '-'} - ${item.sumber_bocor || 'Air'}</span>
+          </div>
+          ${photosHtml}
+          <p class="mb-2"><strong>Keterangan:</strong> ${item.keterangan || '-'}</p>
+          <div class="text-muted mt-2 border-top pt-2 d-flex justify-content-between align-items-center">
+            <small><i class="bi bi-person me-1"></i>${item.pelapor || item.username || 'Petugas'}</small>
+            <small><i class="bi bi-clock me-1"></i>${item.timestamp ? new Date(item.timestamp).toLocaleDateString("id-ID") : '-'}</small>
+          </div>
+        </div>
+      `,
+      showCloseButton: true,
+      confirmButtonText: 'Tutup',
+      confirmButtonColor: '#4361ee'
+    });
+  }
+
+  function updateDashboardStats(reports) {
+    if (!Array.isArray(reports)) return;
+
+    const directReports = reports.filter(r => !r.source && !r.severity && (r.type === 'DIRECT' || !r.type || r.issue));
+
+    const reportedCount = directReports.filter(r => (r.status || 'REPORTED').toUpperCase() === 'REPORTED').length;
+    const progressCount = directReports.filter(r => {
+      const st = (r.status || '').toUpperCase();
+      return st === 'PROGRESS' || st === 'IN_PROGRESS';
+    }).length;
+    const resolvedCount = directReports.filter(r => {
+      const st = (r.status || '').toUpperCase();
+      return st === 'RESOLVED' || st === 'DONE';
+    }).length;
+
+    const elReported = document.getElementById("statDirectReported");
+    const elProgress = document.getElementById("statDirectProgress");
+    const elResolved = document.getElementById("statDirectResolved");
+
+    if (elReported) elReported.innerText = reportedCount;
+    if (elProgress) elProgress.innerText = progressCount;
+    if (elResolved) elResolved.innerText = resolvedCount;
+
+    fetchAPI({ action: "getBocorReports" }).then(res => {
+      if (res && res.data) {
+        const elBocorMain = document.getElementById("statBocorReport");
+        if (elBocorMain) elBocorMain.innerText = res.data.length;
+      }
+    }).catch(err => console.log(err));
+  }
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-pane').forEach(el => {
+      el.classList.remove('show', 'active');
+    });
+    const targetTab = document.getElementById(tabId + 'Tab') || document.getElementById(tabId);
+    if (targetTab) {
+      targetTab.classList.add('show', 'active');
+    }
+  }
+
+  function openBocorHistoryTab() {
+    switchTab('bocorHistoryTab');
+    if (typeof loadBocorReports === 'function') {
+      loadBocorReports();
+    }
+  }
+
+  function openDirectHistoryTab() {
+    switchTab('listTab');
+    if (typeof loadReports === 'function') {
+      loadReports();
+    }
+  }
+    
   function renderReports() {
-  const container = document.getElementById("reportsContainer");
-  container.innerHTML = "";
+    const container = document.getElementById("reportsContainer");
+    container.innerHTML = "";
 
     const filtered = allReports.filter(item => {
       if (currentFilter === "ALL") return true;
@@ -2661,202 +2531,126 @@ function openDirectHistoryTab() {
     });
   }
 
-async function loadBocorReports() {
-  const container = document.getElementById("bocorReportsContainer") || document.getElementById("bocorReportsList");
-  if (!container) return;
+  function openUpdateModal(id, targetStatus, locationDetail) {
+    activeUpdateData = { id, targetStatus, locationDetail };
+    updateFile = null;
+    document.getElementById("progressNote").value = "";
+    document.getElementById("updatePhotoStatus").innerText = "";
+    document.getElementById("updateModalTitle").innerText = targetStatus === "PROGRESS" ? "Update Ke Status PROGRESS" : "Update Ke Status RESOLVED";
+    updateModal.show();
+  }
 
-  container.innerHTML = `<div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data...</div>`;
+  async function submitUpdateProgress() {
+    const note = document.getElementById("progressNote").value;
+    if (!note) { alert("Isi deskripsi progress perbaikan!"); return; }
+    if (!updateFile) { alert("Ambil foto bukti perbaikan!"); return; }
 
-  try {
-    const res = await fetchAPI({ action: "getBocorReports" });
-    const bocorList = res.data || [];
-    
-    // Simpan ke variabel global untuk kebutuhan Denah Map
-    globalBocorReportsData = bocorList;
+    const btn = document.getElementById("btnSaveUpdate");
+    btn.disabled = true;
 
-    const elBocor = document.getElementById("statBocorReport");
-    if (elBocor) elBocor.innerText = bocorList.length;
+    const watermarkedBase64 = await applyWatermark(updateFile, currentUser.username, activeUpdateData.targetStatus, activeUpdateData.locationDetail);
 
-    if (bocorList.length === 0) {
-      container.innerHTML = `<div class="text-center text-muted py-4">Belum ada riwayat laporan kebocoran air.</div>`;
-      return;
-    }
-
-    // Render Kartu List Riwayat Laporan Kebocoran
-    container.innerHTML = "";
-    bocorList.forEach(item => {
-      const idLaporan = item.id_laporan || "-";
-      const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString("id-ID") : "-";
-      const lantai = item.lantai || "-";
-      const sumberBocor = item.sumber_bocor || "-";
-      const keparahan = item.tingkat_keparahan || "RINGAN";
-      const detailLokasi = item.detail_lokasi || "-";
-      const keterangan = item.keterangan || "-";
-
-      let badgeColor = "bg-info";
-      if (keparahan.toUpperCase() === "SEDANG") badgeColor = "bg-warning text-dark";
-      if (keparahan.toUpperCase() === "BERAT" || keparahan.toUpperCase() === "TINGGI") badgeColor = "bg-danger";
-
-      let photosHtml = "";
-      if (item.url_foto) {
-        const photos = item.url_foto.split(", ");
-        photosHtml = `<div class="d-flex gap-2 overflow-auto mb-2">` +
-          photos.map(u => `<img src="${u}" class="rounded border" style="width:70px; height:70px; object-fit:cover; cursor:pointer;" onclick="openImageModal('${u}')">`).join("") +
-          `</div>`;
-      }
-
-      const card = document.createElement("div");
-      card.className = "card mb-3 border-0 shadow-sm border-start border-4 border-danger";
-      card.innerHTML = `
-        <div class="card-body p-3">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="badge ${badgeColor} fw-bold">DEBIT: ${keparahan}</span>
-            <span class="badge bg-secondary">${lantai} - ${sumberBocor}</span>
-          </div>
-          <h6 class="fw-bold mb-1">${detailLokasi}</h6>
-          <p class="small text-muted mb-2">${keterangan}</p>
-          ${photosHtml}
-          <div class="d-flex justify-content-between align-items-center text-muted small border-top pt-2 mt-2">
-            <span><i class="bi bi-clock me-1"></i>${timestamp}</span>
-            <span class="badge bg-light text-dark border">${idLaporan}</span>
-          </div>
-        </div>
-      `;
-      container.appendChild(card);
+    const res = await fetchAPI({
+      action: "updateProgress",
+      report_id: activeUpdateData.id,
+      new_status: activeUpdateData.targetStatus,
+      progress_note: note,
+      photo: watermarkedBase64
     });
 
-    // Jika sedang di mode denah, perbarui juga titik pin-nya
-    const mapView = document.getElementById("bocorMapViewContainer");
-    if (mapView && !mapView.classList.contains("d-none")) {
-      renderBocorMapPins();
-    }
-
-  } catch (err) {
-    console.error("Gagal memuat laporan bocor:", err);
-    container.innerHTML = `<div class="text-center text-danger py-4">Gagal memuat data laporan kebocoran.</div>`;
+    Swal.fire('Notifikasi', res.message, 'info');
+    btn.disabled = false;
+    updateModal.hide();
+    loadReports();
   }
-}
 
-function openUpdateModal(id, targetStatus, locationDetail) {
-  activeUpdateData = { id, targetStatus, locationDetail };
-  updateFile = null;
-  document.getElementById("progressNote").value = "";
-  document.getElementById("updatePhotoStatus").innerText = "";
-  document.getElementById("updateModalTitle").innerText = targetStatus === "PROGRESS" ? "Update Ke Status PROGRESS" : "Update Ke Status RESOLVED";
-  updateModal.show();
-}
-
-async function submitUpdateProgress() {
-  const note = document.getElementById("progressNote").value;
-  if (!note) { alert("Isi deskripsi progress perbaikan!"); return; }
-  if (!updateFile) { alert("Ambil foto bukti perbaikan!"); return; }
-
-  const btn = document.getElementById("btnSaveUpdate");
-  btn.disabled = true;
-
-  const watermarkedBase64 = await applyWatermark(updateFile, currentUser.username, activeUpdateData.targetStatus, activeUpdateData.locationDetail);
-
-  const res = await fetchAPI({
-    action: "updateProgress",
-    report_id: activeUpdateData.id,
-    new_status: activeUpdateData.targetStatus,
-    progress_note: note,
-    photo: watermarkedBase64
-  });
-
-  Swal.fire({   title: 'Notifikasi',   text: res.message,   icon: 'info',   confirmButtonColor: '#4361ee' });
-  btn.disabled = false;
-  updateModal.hide();
-  loadReports();
-}
-
-function updateViewPinPosition() {
-  const viewPin = document.getElementById("viewMapPin");
-  if (!viewPin || typeof viewMarkedX === 'undefined' || typeof viewMarkedY === 'undefined') return;
-
-  viewPin.style.left = viewMarkedX + "%";
-  viewPin.style.top = viewMarkedY + "%";
-
-  const currentScale = window.pzView ? window.pzView.getScale() : 1;
-  viewPin.style.transform = `translate(-50%, -50%) scale(${1 / currentScale})`;
-}
-
-function openMapModal(floor, x, y) {
-  viewMarkedX = parseFloat(x);
-  viewMarkedY = parseFloat(y);
-
-  const viewImg = document.getElementById("viewMapImage");
-  if (!viewImg) return;
-
-  viewImg.style.touchAction = "none";
-  viewImg.style.userSelect = "none";
-  viewImg.style.webkitUserDrag = "none";
-
-  viewImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
-
-  viewImg.onload = () => {
-    const container = document.getElementById("viewMapContainer");
-    const wrapper = document.getElementById("viewMapWrapper") || container?.parentElement;
-
-    if (container && typeof Panzoom !== 'undefined') {
-      container.style.transition = "none";
-      container.style.touchAction = "none";
-
-      if (window.pzView && typeof window.pzView.destroy === 'function') {
-        window.pzView.destroy();
-      }
-
-      window.pzView = Panzoom(container, {
-        maxScale: 5,
-        minScale: 1,
-        contain: 'outside',
-        animate: true,
-        duration: 200
-      });
-
-      if (wrapper) {
-        wrapper.removeEventListener('wheel', window.pzView.zoomWithWheel);
-        wrapper.addEventListener('wheel', (e) => {
-          e.preventDefault();
-          window.pzView.zoomWithWheel(e);
-        }, { passive: false });
-      }
-
-      container.removeEventListener('panzoomchange', updateViewPinPosition);
-      container.addEventListener('panzoomchange', updateViewPinPosition);
-    }
-
-    if (window.pzView) window.pzView.reset({ animate: true, duration: 200 });
-
+  function updateViewPinPosition() {
     const viewPin = document.getElementById("viewMapPin");
-    if (viewPin) {
-      viewPin.classList.remove("d-none");
-      updateViewPinPosition();
-    }
-  };
+    if (!viewPin || typeof viewMarkedX === 'undefined' || typeof viewMarkedY === 'undefined') return;
 
-  const titleEl = document.getElementById("mapModalTitle");
-  if (titleEl) titleEl.innerText = `Denah Kerusakan (${floor})`;
+    viewPin.style.left = viewMarkedX + "%";
+    viewPin.style.top = viewMarkedY + "%";
 
-  if (typeof mapModal !== 'undefined' && mapModal.show) {
-    mapModal.show();
-  } else {
-    const mapModalEl = document.getElementById("mapModal");
-    if (mapModalEl) new bootstrap.Modal(mapModalEl).show();
+    const currentScale = window.pzView ? window.pzView.getScale() : 1;
+    viewPin.style.transform = `translate(-50%, -50%) scale(${1 / currentScale})`;
   }
-}
 
-function zoomInMap() {
-  if (window.pzView) window.pzView.zoomIn({ animate: true, duration: 200 });
-}
+  function openMapModal(floor, x, y) {
+    viewMarkedX = parseFloat(x);
+    viewMarkedY = parseFloat(y);
 
-function zoomOutMap() {
-  if (window.pzView) window.pzView.zoomOut({ animate: true, duration: 200 });
-}
+    const viewImg = document.getElementById("viewMapImage");
+    if (!viewImg) return;
 
-function resetMapZoom() {
-  if (window.pzView) window.pzView.reset({ animate: true, duration: 200 });
-}
+    viewImg.style.touchAction = "none";
+    viewImg.style.userSelect = "none";
+    viewImg.style.webkitUserDrag = "none";
+
+    viewImg.src = FLOOR_MAPS[floor] || FLOOR_MAPS["LG"];
+
+    viewImg.onload = () => {
+      const container = document.getElementById("viewMapContainer");
+      const wrapper = document.getElementById("viewMapWrapper") || container?.parentElement;
+
+      if (container && typeof Panzoom !== 'undefined') {
+        container.style.transition = "none";
+        container.style.touchAction = "none";
+
+        if (window.pzView && typeof window.pzView.destroy === 'function') {
+          window.pzView.destroy();
+        }
+
+        window.pzView = Panzoom(container, {
+          maxScale: 5,
+          minScale: 1,
+          contain: 'outside',
+          animate: true,
+          duration: 200
+        });
+
+        if (wrapper) {
+          wrapper.removeEventListener('wheel', window.pzView.zoomWithWheel);
+          wrapper.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            window.pzView.zoomWithWheel(e);
+          }, { passive: false });
+        }
+
+        container.removeEventListener('panzoomchange', updateViewPinPosition);
+        container.addEventListener('panzoomchange', updateViewPinPosition);
+      }
+
+      if (window.pzView) window.pzView.reset({ animate: true, duration: 200 });
+
+      const viewPin = document.getElementById("viewMapPin");
+      if (viewPin) {
+        viewPin.classList.remove("d-none");
+        updateViewPinPosition();
+      }
+    };
+
+    const titleEl = document.getElementById("mapModalTitle");
+    if (titleEl) titleEl.innerText = `Denah Kerusakan (${floor})`;
+
+    if (typeof mapModal !== 'undefined' && mapModal.show) {
+      mapModal.show();
+    } else {
+      const mapModalEl = document.getElementById("mapModal");
+      if (mapModalEl) new bootstrap.Modal(mapModalEl).show();
+    }
+  }
+
+  function zoomInMap() {
+    if (window.pzView) window.pzView.zoomIn({ animate: true, duration: 200 });
+  }
+
+  function zoomOutMap() {
+    if (window.pzView) window.pzView.zoomOut({ animate: true, duration: 200 });
+  }
+
+  function resetMapZoom() {
+    if (window.pzView) window.pzView.reset({ animate: true, duration: 200 });
+  }
 
   function getGoogleThumbnailUrl(driveUrl) {
     if (!driveUrl) return "";
@@ -2906,320 +2700,289 @@ function resetMapZoom() {
     return fetch(API_URL, { method: "POST", body: JSON.stringify(body) }).then(r => r.json());
   }
      
-let bocorBase64Photos = [];
+  let bocorBase64Photos = [];
 
-const bocorPhotoInput = document.getElementById("bocorPhotoCamera");
-if (bocorPhotoInput) {
-  bocorPhotoInput.addEventListener("change", async function (e) {
-    const files = e.target.files;
-    const statusElement = document.getElementById("bocorPhotoStatus");
+  const bocorPhotoInput = document.getElementById("bocorPhotoCamera");
+  if (bocorPhotoInput) {
+    bocorPhotoInput.addEventListener("change", async function (e) {
+      const files = e.target.files;
+      const statusElement = document.getElementById("bocorPhotoStatus");
 
-    if (!files || files.length === 0) {
-      if (statusElement) statusElement.innerText = "";
-      bocorBase64Photos = [];
-      return;
-    }
-
-    if (statusElement) {
-      statusElement.innerText = `⏳ Memproses ${files.length} foto & menambahkan watermark...`;
-      statusElement.className = "text-warning small d-block mt-1 fw-bold";
-    }
-
-    bocorBase64Photos = [];
-
-    const processWatermark = (file) => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = function (evt) {
-          const img = new Image();
-          img.onload = function () {
-            const MAX_WIDTH = 1280;
-            let width = img.width;
-            let height = img.height;
-
-            if (width > MAX_WIDTH) {
-              height = Math.round((height * MAX_WIDTH) / width);
-              width = MAX_WIDTH;
-            }
-
-            const canvas = document.createElement("canvas");
-            canvas.width = width;
-            canvas.height = height;
-            const ctx = canvas.getContext("2d");
-
-            ctx.drawImage(img, 0, 0, width, height);
-
-            const now = new Date();
-            const timeString = now.toLocaleDateString('id-ID', {
-              day: '2-digit', month: 'short', year: 'numeric',
-              hour: '2-digit', minute: '2-digit'
-            });
-
-            const userName = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : "Petugas";
-            const floorVal = document.getElementById("bocorFloor") ? document.getElementById("bocorFloor").value : "-";
-            const locationVal = document.getElementById("bocorLocation") ? document.getElementById("bocorLocation").value : "-";
-            const fullLocation = `${floorVal} - ${locationVal}`;
-
-            const baseFontSize = Math.max(16, Math.floor(canvas.width / 30));
-            const padding = Math.floor(baseFontSize * 0.8);
-            const startX = Math.floor(canvas.width * 0.04);
-            let startY = canvas.height - Math.floor(baseFontSize * 6);
-
-            ctx.font = `bold ${baseFontSize}px sans-serif`;
-            const statusText = "STATUS: REPORTED";
-            const statusWidth = ctx.measureText(statusText).width + (padding * 2);
-            const statusHeight = baseFontSize + padding;
-
-            ctx.fillStyle = "#DC3545";
-            ctx.fillRect(startX, startY, statusWidth, statusHeight);
-
-            ctx.fillStyle = "#FFFFFF";
-            ctx.fillText(statusText, startX + padding, startY + statusHeight - Math.floor(padding / 2));
-
-            startY += statusHeight;
-            const lineGap = Math.floor(baseFontSize * 1.3);
-            const boxHeight = (lineGap * 3) + padding;
-            const boxWidth = Math.max(statusWidth * 1.3, Math.floor(canvas.width * 0.5));
-
-            ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
-            ctx.fillRect(startX, startY, boxWidth, boxHeight);
-
-            ctx.fillStyle = "#FFFFFF";
-            ctx.font = `bold ${Math.floor(baseFontSize * 0.85)}px sans-serif`;
-
-            ctx.fillText(`User: ${userName}`, startX + padding, startY + lineGap);
-            ctx.fillText(`Lokasi: ${fullLocation}`, startX + padding, startY + (lineGap * 2));
-            ctx.fillText(`Waktu: ${timeString}`, startX + padding, startY + (lineGap * 3));
-
-            resolve(canvas.toDataURL("image/jpeg", 0.7));
-          };
-          img.src = evt.target.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    };
-
-    for (let i = 0; i < files.length; i++) {
-      const watermarkedBase64 = await processWatermark(files[i]);
-      if (watermarkedBase64) bocorBase64Photos.push(watermarkedBase64);
-    }
-
-    if (statusElement) {
-      statusElement.innerText = `✓ ${bocorBase64Photos.length} foto ber-watermark siap dikirim!`;
-      statusElement.className = "text-success small d-block mt-1 fw-bold";
-    }
-  });
-}
-
-const cameraOnlyInput = document.getElementById("bocorPhotoCameraOnly");
-if (cameraOnlyInput) {
-  cameraOnlyInput.addEventListener("change", function (e) {
-    const galleryInput = document.getElementById("bocorPhotoCamera");
-    if (galleryInput && e.target.files.length > 0) {
-      const dataTransfer = new DataTransfer();
-      for (let i = 0; i < e.target.files.length; i++) {
-        dataTransfer.items.add(e.target.files[i]);
-      }
-      galleryInput.files = dataTransfer.files;
-      galleryInput.dispatchEvent(new Event("change"));
-    }
-  });
-}
-
-const bocorForm = document.getElementById("bocorForm");
-if (bocorForm) {
-  bocorForm.addEventListener("submit", async function (e) {
-    e.preventDefault();
-
-    const currentX = window.bocorMarkingX || bocorMarkingX || "";
-    const currentY = window.bocorMarkingY || bocorMarkingY || "";
-
-    if (!currentX || !currentY) {
-      alert("Silakan tandai titik lokasi kebocoran pada denah terlebih dahulu!");
-      return;
-    }
-
-    const btnSubmit = document.getElementById("btnSubmitBocor");
-    btnSubmit.disabled = true;
-    btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...`;
-
-    const finalPhotos = (typeof bocorBase64Photos !== 'undefined' && Array.isArray(bocorBase64Photos)) ? bocorBase64Photos : [];
-
-    const payload = {
-      action: "saveLaporBocor",
-      username: (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : "Petugas",
-      floor: document.getElementById("bocorFloor").value,
-      source: document.getElementById("bocorSource").value,
-      severity: document.querySelector('input[name="debitAir"]:checked') ? document.querySelector('input[name="debitAir"]:checked').value : "RINGAN",
-      location_detail: document.getElementById("bocorLocation").value,
-      issue: document.getElementById("bocorIssue").value,
-      marking_x: String(currentX),
-      marking_y: String(currentY),
-      photos: finalPhotos
-    };
-
-    try {
-      const response = await fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify(payload)
-      });
-      const res = await response.json();
-
-      btnSubmit.disabled = false;
-      btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
-
-      if (res.status === "success") {
-        showToast("✓ " + res.message, "success");
-        
-        bocorForm.reset();
-        window.bocorMarkingX = null;
-        window.bocorMarkingY = null;
-        bocorMarkingX = null;
-        bocorMarkingY = null;
+      if (!files || files.length === 0) {
+        if (statusElement) statusElement.innerText = "";
         bocorBase64Photos = [];
-
-        const statusText = document.getElementById("bocorPhotoStatus");
-        if (statusText) statusText.innerText = "";
-
-        if (typeof resetBocorMapAndPin === 'function') resetBocorMapAndPin();
-        const tabLaporanBtn = document.getElementById("tab-laporan");
-        if (tabLaporanBtn) tabLaporanBtn.click();
-        if (typeof loadReports === "function") loadReports();
-      } else {
-        showToast("Gagal: " + res.message, "error");
+        return;
       }
-    } catch (err) {
-      btnSubmit.disabled = false;
-      btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
-      alert("Terjadi kesalahan koneksi saat mengirim laporan kebocoran.");
-      console.error(err);
-    }
-  });
-}
-  
-window.addEventListener('scroll', function () {
-  const header = document.getElementById('topHeader');
-  if (header) {
-    if (window.scrollY > 40) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
-    }
+
+      if (statusElement) {
+        statusElement.innerText = `⏳ Memproses ${files.length} foto & menambahkan watermark...`;
+        statusElement.className = "text-warning small d-block mt-1 fw-bold";
+      }
+
+      bocorBase64Photos = [];
+
+      const processWatermark = (file) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onload = function (evt) {
+            const img = new Image();
+            img.onload = function () {
+              const MAX_WIDTH = 1280;
+              let width = img.width;
+              let height = img.height;
+
+              if (width > MAX_WIDTH) {
+                height = Math.round((height * MAX_WIDTH) / width);
+                width = MAX_WIDTH;
+              }
+
+              const canvas = document.createElement("canvas");
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext("2d");
+
+              ctx.drawImage(img, 0, 0, width, height);
+
+              const now = new Date();
+              const timeString = now.toLocaleDateString('id-ID', {
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+              });
+
+              const userName = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : "Petugas";
+              const floorVal = document.getElementById("bocorFloor") ? document.getElementById("bocorFloor").value : "-";
+              const locationVal = document.getElementById("bocorLocation") ? document.getElementById("bocorLocation").value : "-";
+              const fullLocation = `${floorVal} - ${locationVal}`;
+
+              const baseFontSize = Math.max(16, Math.floor(canvas.width / 30));
+              const padding = Math.floor(baseFontSize * 0.8);
+              const startX = Math.floor(canvas.width * 0.04);
+              let startY = canvas.height - Math.floor(baseFontSize * 6);
+
+              ctx.font = `bold ${baseFontSize}px sans-serif`;
+              const statusText = "STATUS: REPORTED";
+              const statusWidth = ctx.measureText(statusText).width + (padding * 2);
+              const statusHeight = baseFontSize + padding;
+
+              ctx.fillStyle = "#DC3545";
+              ctx.fillRect(startX, startY, statusWidth, statusHeight);
+
+              ctx.fillStyle = "#FFFFFF";
+              ctx.fillText(statusText, startX + padding, startY + statusHeight - Math.floor(padding / 2));
+
+              startY += statusHeight;
+              const lineGap = Math.floor(baseFontSize * 1.3);
+              const boxHeight = (lineGap * 3) + padding;
+              const boxWidth = Math.max(statusWidth * 1.3, Math.floor(canvas.width * 0.5));
+
+              ctx.fillStyle = "rgba(0, 0, 0, 0.75)";
+              ctx.fillRect(startX, startY, boxWidth, boxHeight);
+
+              ctx.fillStyle = "#FFFFFF";
+              ctx.font = `bold ${Math.floor(baseFontSize * 0.85)}px sans-serif`;
+
+              ctx.fillText(`User: ${userName}`, startX + padding, startY + lineGap);
+              ctx.fillText(`Lokasi: ${fullLocation}`, startX + padding, startY + (lineGap * 2));
+              ctx.fillText(`Waktu: ${timeString}`, startX + padding, startY + (lineGap * 3));
+
+              resolve(canvas.toDataURL("image/jpeg", 0.7));
+            };
+            img.src = evt.target.result;
+          };
+          reader.readAsDataURL(file);
+        });
+      };
+
+      for (let i = 0; i < files.length; i++) {
+        const watermarkedBase64 = await processWatermark(files[i]);
+        if (watermarkedBase64) bocorBase64Photos.push(watermarkedBase64);
+      }
+
+      if (statusElement) {
+        statusElement.innerText = `✓ ${bocorBase64Photos.length} foto ber-watermark siap dikirim!`;
+        statusElement.className = "text-success small d-block mt-1 fw-bold";
+      }
+    });
   }
-});
 
-const bocorRiwayatTabBtn = document.getElementById("tab-bocor-riwayat");
-if (bocorRiwayatTabBtn) {
-  bocorRiwayatTabBtn.addEventListener("shown.bs.tab", function () {
-    loadBocorReports();
-  });
-}
-
-function switchTabToBocor() {
-  const bocorTabBtn = document.getElementById("tab-bocor");
-  if (bocorTabBtn) {
-    const tab = new bootstrap.Tab(bocorTabBtn);
-    tab.show();
-    
-    if (typeof renderBocorReports === 'function') {
-      renderBocorReports();
-    }
-  }
-}
-
-function updatePinPosition() {
-  const pin = document.getElementById("mapPin");
-  if (!markedX || !markedY || !pin) return;
-  pin.style.left = markedX + "%";
-  pin.style.top = markedY + "%";
-}
-
-function updateBocorPinPosition() {
-  const pin = document.getElementById("bocorMapPin");
-  if (!bocorMarkingX || !bocorMarkingY || !pin || pin.classList.contains("d-none")) return;
-  
-  const scale = (typeof pzBocor !== 'undefined' && pzBocor) ? pzBocor.getScale() : 1;
-  const invScale = 1 / scale;
-  
-  pin.style.left = bocorMarkingX + "%";
-  pin.style.top = bocorMarkingY + "%";
-  pin.style.transform = `translate(-50%, -50%) scale(${invScale})`;
-}
-  
-document.addEventListener("DOMContentLoaded", function () {
-  const sidebarButtons = document.querySelectorAll('#mainTab button[data-bs-toggle="pill"]');
-  sidebarButtons.forEach(btn => {
-    btn.addEventListener('shown.bs.tab', function (e) {
-      document.querySelectorAll('.tab-pane').forEach(el => {
-        if (el !== document.querySelector(e.target.getAttribute('data-bs-target'))) {
-          el.classList.remove('show', 'active');
+  const cameraOnlyInput = document.getElementById("bocorPhotoCameraOnly");
+  if (cameraOnlyInput) {
+    cameraOnlyInput.addEventListener("change", function (e) {
+      const galleryInput = document.getElementById("bocorPhotoCamera");
+      if (galleryInput && e.target.files.length > 0) {
+        const dataTransfer = new DataTransfer();
+        for (let i = 0; i < e.target.files.length; i++) {
+          dataTransfer.items.add(e.target.files[i]);
         }
+        galleryInput.files = dataTransfer.files;
+        galleryInput.dispatchEvent(new Event("change"));
+      }
+    });
+  }
+
+  const bocorForm = document.getElementById("bocorForm");
+  if (bocorForm) {
+    bocorForm.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const currentX = window.bocorMarkingX || bocorMarkingX || "";
+      const currentY = window.bocorMarkingY || bocorMarkingY || "";
+
+      if (!currentX || !currentY) {
+        alert("Silakan tandai titik lokasi kebocoran pada denah terlebih dahulu!");
+        return;
+      }
+
+      const btnSubmit = document.getElementById("btnSubmitBocor");
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Mengirim...`;
+
+      const finalPhotos = (typeof bocorBase64Photos !== 'undefined' && Array.isArray(bocorBase64Photos)) ? bocorBase64Photos : [];
+
+      const payload = {
+        action: "saveLaporBocor",
+        username: (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : "Petugas",
+        floor: document.getElementById("bocorFloor").value,
+        source: document.getElementById("bocorSource").value,
+        severity: document.querySelector('input[name="debitAir"]:checked') ? document.querySelector('input[name="debitAir"]:checked').value : "RINGAN",
+        location_detail: document.getElementById("bocorLocation").value,
+        issue: document.getElementById("bocorIssue").value,
+        marking_x: String(currentX),
+        marking_y: String(currentY),
+        photos: finalPhotos
+      };
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
+
+        if (res.status === "success") {
+          showToast("✓ " + res.message, "success");
+          
+          bocorForm.reset();
+          window.bocorMarkingX = null;
+          window.bocorMarkingY = null;
+          bocorMarkingX = null;
+          bocorMarkingY = null;
+          bocorBase64Photos = [];
+
+          const statusText = document.getElementById("bocorPhotoStatus");
+          if (statusText) statusText.innerText = "";
+
+          if (typeof resetBocorMapAndPin === 'function') resetBocorMapAndPin();
+          const tabLaporanBtn = document.getElementById("tab-laporan");
+          if (tabLaporanBtn) tabLaporanBtn.click();
+          if (typeof loadReports === "function") loadReports();
+        } else {
+          showToast("Gagal: " + res.message, "error");
+        }
+      } catch (err) {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = "Kirim Laporan Kebocoran 🌧️";
+        alert("Terjadi kesalahan koneksi saat mengirim laporan kebocoran.");
+        console.error(err);
+      }
+    });
+  }
+    
+  window.addEventListener('scroll', function () {
+    const header = document.getElementById('topHeader');
+    if (header) {
+      if (window.scrollY > 40) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
+    }
+  });
+
+  function updatePinPosition() {
+    const pin = document.getElementById("mapPin");
+    if (!markedX || !markedY || !pin) return;
+    pin.style.left = markedX + "%";
+    pin.style.top = markedY + "%";
+  }
+    
+  document.addEventListener("DOMContentLoaded", function () {
+    const sidebarButtons = document.querySelectorAll('#mainTab button[data-bs-toggle="pill"]');
+    sidebarButtons.forEach(btn => {
+      btn.addEventListener('shown.bs.tab', function (e) {
+        document.querySelectorAll('.tab-pane').forEach(el => {
+          if (el !== document.querySelector(e.target.getAttribute('data-bs-target'))) {
+            el.classList.remove('show', 'active');
+          }
+        });
       });
     });
   });
-});
 
-function openQuickBocorForm() {
-  switchTab('bocorTab');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function reinitMapZoom() {
-  const mapImages = document.querySelectorAll("#mapImage, #bocorMapImage, .floor-plan-img, img[src*='denah'], img[src*='floor']");
-  mapImages.forEach(img => {
-    img.style.touchAction = "none";
-    img.style.userSelect = "none";
-    img.style.webkitUserDrag = "none";
-  });
-
-  if (window.panzoomInstance && typeof window.panzoomInstance.reset === 'function') {
-    window.panzoomInstance.reset();
-  }
-}
-
-function triggerMapReload() {
-  const directFloorSelect = document.getElementById("directFloor") || document.querySelector("#directFormSelectFloor") || document.getElementById("floor");
-  if (directFloorSelect) {
-    directFloorSelect.dispatchEvent(new Event('change'));
+  function openQuickBocorForm() {
+    switchTab('bocorTab');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  const bocorFloorSelect = document.getElementById("bocorFloor") || document.getElementById("floorSelect");
-  if (bocorFloorSelect) {
-    bocorFloorSelect.dispatchEvent(new Event('change'));
+  function reinitMapZoom() {
+    const mapImages = document.querySelectorAll("#mapImage, #bocorMapImage, .floor-plan-img, img[src*='denah'], img[src*='floor']");
+    mapImages.forEach(img => {
+      img.style.touchAction = "none";
+      img.style.userSelect = "none";
+      img.style.webkitUserDrag = "none";
+    });
+
+    if (window.panzoomInstance && typeof window.panzoomInstance.reset === 'function') {
+      window.panzoomInstance.reset();
+    }
   }
 
-  setTimeout(reinitMapZoom, 150);
-}
+  function triggerMapReload() {
+    const directFloorSelect = document.getElementById("directFloor") || document.querySelector("#directFormSelectFloor") || document.getElementById("floor");
+    if (directFloorSelect) {
+      directFloorSelect.dispatchEvent(new Event('change'));
+    }
 
-document.addEventListener("DOMContentLoaded", function () {
-  const allTabButtons = document.querySelectorAll('button[data-bs-toggle="pill"], button[data-bs-toggle="tab"], .nav-link');
-  allTabButtons.forEach(btn => {
-    btn.addEventListener('shown.bs.tab', function () {
-      setTimeout(triggerMapReload, 100);
+    const bocorFloorSelect = document.getElementById("bocorFloor") || document.getElementById("floorSelect");
+    if (bocorFloorSelect) {
+      bocorFloorSelect.dispatchEvent(new Event('change'));
+    }
+
+    setTimeout(reinitMapZoom, 150);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const allTabButtons = document.querySelectorAll('button[data-bs-toggle="pill"], button[data-bs-toggle="tab"], .nav-link');
+    allTabButtons.forEach(btn => {
+      btn.addEventListener('shown.bs.tab', function () {
+        setTimeout(triggerMapReload, 100);
+      });
     });
   });
-});
 
-const originalSwitchTab = typeof switchTab === 'function' ? switchTab : null;
-if (originalSwitchTab) {
-  switchTab = function(tabId) {
-    originalSwitchTab(tabId);
-    setTimeout(triggerMapReload, 100);
-  };
-}
+  const originalSwitchTab = typeof switchTab === 'function' ? switchTab : null;
+  if (originalSwitchTab) {
+    switchTab = function(tabId) {
+      originalSwitchTab(tabId);
+      setTimeout(triggerMapReload, 100);
+    };
+  }
 
-function showToast(message, type = 'success') {
-  const toastEl = document.getElementById('appToast');
-  const toastText = document.getElementById('toastText');
-  if (!toastEl || !toastText) return;
+  function showToast(message, type = 'success') {
+    const toastEl = document.getElementById('appToast');
+    const toastText = document.getElementById('toastText');
+    if (!toastEl || !toastText) return;
 
-  toastText.innerText = message;
-  toastEl.className = `toast align-items-center text-white border-0 shadow-lg ${type === 'success' ? 'bg-success' : 'bg-danger'}`;
+    toastText.innerText = message;
+    toastEl.className = `toast align-items-center text-white border-0 shadow-lg ${type === 'success' ? 'bg-success' : 'bg-danger'}`;
 
-  const bsToast = new bootstrap.Toast(toastEl, { delay: 3500 });
-  bsToast.show();
-}
-  </script>
+    const bsToast = new bootstrap.Toast(toastEl, { delay: 3500 });
+    bsToast.show();
+  }
+</script>
 
 <!-- TOMBOL FLOATING LAPOR BOCOR CEAPAT -->
 <button type="button" 
@@ -3231,21 +2994,21 @@ function showToast(message, type = 'success') {
 </button>
 
 <!-- TOAST NOTIFIKASI -->
-  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
-    <div id="appToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body d-flex align-items-center gap-2 fs-6 fw-medium" id="toastMessage">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
-            <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l5.002-6.502a.75.75 0 0 0-.022-1.072z"/>
-          </svg>
-          <span id="toastText">Pesan Notifikasi</span>
-        </div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;">
+  <div id="appToast" class="toast align-items-center text-white bg-success border-0 shadow-lg" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+      <div class="toast-body d-flex align-items-center gap-2 fs-6 fw-medium" id="toastMessage">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l5.002-6.502a.75.75 0 0 0-.022-1.072z"/>
+        </svg>
+        <span id="toastText">Pesan Notifikasi</span>
       </div>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
   </div>
+</div>
 
-  <!-- MODAL PREVIEW FOTO DOKUMEN -->
+<!-- MODAL PREVIEW FOTO DOKUMEN -->
 <div class="modal fade" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content bg-dark border-0 shadow-lg">

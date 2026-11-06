@@ -2227,84 +2227,93 @@
   }
 
   async function loadBocorReports() {
-    const container = document.getElementById("bocorReportsContainer") || document.getElementById("bocorReportsList");
-    if (!container) return;
+  const container = document.getElementById("bocorReportsContainer") || document.getElementById("bocorReportsList");
+  if (!container) return;
 
-    container.innerHTML = `<div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data...</div>`;
+  container.innerHTML = `<div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data...</div>`;
 
-    try {
-      const res = await fetchAPI({ action: "getBocorReports" });
-      const bocorList = (res && res.data) ? res.data : [];
-      globalBocorReportsData = bocorList;
+  try {
+    const res = await fetchAPI({ action: "getBocorReports" });
+    const bocorList = (res && res.data) ? res.data : [];
+    globalBocorReportsData = bocorList;
 
-      const elBocor = document.getElementById("statBocorReport");
-      if (elBocor) elBocor.innerText = bocorList.length;
+    const elBocor = document.getElementById("statBocorReport");
+    if (elBocor) elBocor.innerText = bocorList.length;
 
-      if (bocorList.length === 0) {
-        container.innerHTML = `<div class="text-center text-muted py-4">Belum ada riwayat laporan kebocoran air.</div>`;
-        return;
+    if (bocorList.length === 0) {
+      container.innerHTML = `<div class="text-center text-muted py-4">Belum ada riwayat laporan kebocoran air.</div>`;
+      return;
+    }
+
+    container.innerHTML = "";
+    bocorList.forEach(item => {
+      const idLaporan = item.id_laporan || "-";
+      const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString("id-ID") : "-";
+      const lantai = item.lantai || item.floor || "-";
+      const sumberBocor = item.sumber_bocor || item.source || "-";
+      const keparahan = item.tingkat_keparahan || item.severity || "RINGAN";
+      const detailLokasi = item.detail_lokasi || item.location_detail || "-";
+      const keterangan = item.keterangan || item.issue || "-";
+
+      const posX = item.marking_x ?? item.markingX ?? item.x;
+      const posY = item.marking_y ?? item.markingY ?? item.y;
+
+      let badgeColor = "bg-info";
+      if (keparahan.toUpperCase() === "SEDANG") badgeColor = "bg-warning text-dark";
+      if (keparahan.toUpperCase() === "BERAT" || keparahan.toUpperCase() === "TINGGI" || keparahan.toUpperCase() === "DARURAT") badgeColor = "bg-danger";
+
+      // 1. Memperbesar tampilan foto dengan kelas img-preview & penangan direct link Drive
+      const rawPhoto = item.url_foto || item.foto || item.urlFoto || item.photos || "";
+      let photosHtml = "";
+      if (rawPhoto && rawPhoto !== "-") {
+        const photos = String(rawPhoto).split(",");
+        photosHtml = `<div class="row g-2 mb-2">` +
+          photos.map(u => {
+            const cleanUrl = u.trim();
+            const directImgUrl = getGoogleDriveDirectLink(cleanUrl);
+            return `<div class="col"><img src="${directImgUrl}" loading="lazy" class="img-preview" style="cursor:pointer;" onclick="openImageModal('${cleanUrl}')"></div>`;
+          }).join("") +
+          `</div>`;
       }
 
-      container.innerHTML = "";
-      bocorList.forEach(item => {
-        const idLaporan = item.id_laporan || "-";
-        const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString("id-ID") : "-";
-        const lantai = item.lantai || "-";
-        const sumberBocor = item.sumber_bocor || "-";
-        const keparahan = item.tingkat_keparahan || "RINGAN";
-        const detailLokasi = item.detail_lokasi || "-";
-        const keterangan = item.keterangan || "-";
-
-        let badgeColor = "bg-info";
-        if (keparahan.toUpperCase() === "SEDANG") badgeColor = "bg-warning text-dark";
-        if (keparahan.toUpperCase() === "BERAT" || keparahan.toUpperCase() === "TINGGI" || keparahan.toUpperCase() === "DARURAT") badgeColor = "bg-danger";
-
-        // Di dalam loop loadBocorReports():
-const rawPhoto = item.url_foto || item.foto || item.urlFoto || "";
-let photosHtml = "";
-
-if (rawPhoto && rawPhoto !== "-") {
-  const photos = String(rawPhoto).split(",");
-  photosHtml = `<div class="d-flex gap-2 overflow-auto mb-2">` +
-    photos.map(u => {
-      const cleanUrl = u.trim();
-      // Konversi link ke format thumbnail direct agar tidak terblokir
-      const directImgUrl = getGoogleDriveDirectLink(cleanUrl); 
-      return `<img src="${directImgUrl}" class="rounded border shadow-sm" style="width:70px; height:70px; object-fit:cover; cursor:pointer;" onclick="openImageModal('${cleanUrl}')">`;
-    }).join("") +
-    `</div>`;
-}
-
-        const card = document.createElement("div");
-        card.className = "card mb-3 border-0 shadow-sm border-start border-4 border-danger";
-        card.innerHTML = `
-          <div class="card-body p-3">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <span class="badge ${badgeColor} fw-bold">DEBIT: ${keparahan}</span>
-              <span class="badge bg-secondary">${lantai} - ${sumberBocor}</span>
-            </div>
-            <h6 class="fw-bold mb-1">${detailLokasi}</h6>
-            <p class="small text-muted mb-2">${keterangan}</p>
-            ${photosHtml}
-            <div class="d-flex justify-content-between align-items-center text-muted small border-top pt-2 mt-2">
-              <span><i class="bi bi-clock me-1"></i>${timestamp}</span>
-              <span class="badge bg-light text-dark border">${idLaporan}</span>
-            </div>
+      // 2. Menambahkan Tombol Titik Denah jika koordinat tersedia
+      let mapBtnHtml = "";
+      if (posX !== undefined && posY !== undefined && posX !== "" && posY !== "") {
+        mapBtnHtml = `
+          <div class="mb-2">
+            <button onclick="openMapModal('${lantai}', '${posX}', '${posY}')" class="btn btn-sm btn-outline-danger w-100">
+              📍 Lihat Titik Kerusakan Pada Denah
+            </button>
           </div>
         `;
-        container.appendChild(card);
-      });
-
-      const mapView = document.getElementById("bocorMapViewContainer");
-      if (mapView && !mapView.classList.contains("d-none")) {
-        renderBocorMapPins();
       }
 
-    } catch (err) {
-      console.error("Gagal memuat laporan bocor:", err);
-      container.innerHTML = `<div class="text-center text-danger py-4">Gagal memuat data laporan kebocoran.</div>`;
-    }
+      const card = document.createElement("div");
+      card.className = "card mb-3 border-0 shadow-sm border-start border-4 border-danger";
+      card.innerHTML = `
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="badge ${badgeColor} fw-bold">DEBIT: ${keparahan}</span>
+            <span class="badge bg-secondary">${lantai} - ${sumberBocor}</span>
+          </div>
+          <h6 class="fw-bold mb-1">${detailLokasi}</h6>
+          <p class="small text-muted mb-2">${keterangan}</p>
+          ${photosHtml}
+          ${mapBtnHtml}
+          <div class="d-flex justify-content-between align-items-center text-muted small border-top pt-2 mt-2">
+            <span><i class="bi bi-clock me-1"></i>${timestamp}</span>
+            <span class="badge bg-light text-dark border">${idLaporan}</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error("Gagal memuat laporan bocor:", err);
+    container.innerHTML = `<div class="text-center text-danger py-4">Gagal memuat data laporan kebocoran.</div>`;
   }
+}
 
   function renderBocorMapPins() {
     const floorSelect = document.getElementById("bocorMapFloorSelect");

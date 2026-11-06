@@ -835,11 +835,11 @@
 
   <!-- RIWAYAT LAPORAN KEBOCORAN AIR -->
 <div id="bocorHistoryTab" class="tab-pane fade card p-3 shadow-sm">
-  <div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
     <h5 class="fw-bold text-primary mb-0">
-      <i class="bi bi-droplet-half me-2"></i>Riwayat Laporan Kebocoran Air
+      <i class="bi bi-droplet-half me-1"></i>Riwayat Laporan Kebocoran Air
     </h5>
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 ms-auto">
       <!-- Toggle Switch Antara Kartu & Denah -->
       <div class="btn-group btn-group-sm" role="group">
         <button type="button" class="btn btn-outline-primary active" id="btnViewList" onclick="switchBocorView('list')">
@@ -855,11 +855,10 @@
     </div>
   </div>
 
-  <!-- VIEW 1: TAMPILAN KARTU (DEFAULT) -->
+  <!-- VIEW 1: TAMPILAN KARTU LIST (DEFAULT) -->
   <div id="bocorListViewContainer">
-    <div id="bocorReportsList">
-      <!-- Kartu-kartu riwayat bocor akan di-render di sini oleh JavaScript -->
-    </div>
+    <!-- ID Container disesuaikan ke bocorReportsList dan bocorHistoryContainer -->
+    <div id="bocorReportsList"></div>
   </div>
 
   <!-- VIEW 2: TAMPILAN DENAH FLOORMAP INTERAKTIF -->
@@ -880,8 +879,6 @@
     <!-- Area Denah & Container Pin -->
     <div class="position-relative border rounded overflow-hidden bg-light text-center" style="min-height: 350px;">
       <img id="bocorFloorMapImage" src="" class="img-fluid w-100" style="max-height: 500px; object-fit: contain;">
-      
-      <!-- Layer Tempat Pin Ditampilkan -->
       <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100 style-pointer-events-none"></div>
     </div>
     <small class="text-muted d-block mt-2 text-center">* Klik pada ikon pin tetesan air untuk melihat detail laporan kebocoran.</small>
@@ -2431,31 +2428,6 @@ function switchBocorView(mode) {
   }
 }
 
-// 2. FUNGSI LOAD BOCOR REPORTS (MEMPERBARUI KODE LAMA AGAR MENYIMPAN KE GLOBAL)
-async function loadBocorReports() {
-  const container = document.getElementById("bocorReportsList");
-  if (container) container.innerHTML = `<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>`;
-
-  const res = await fetchAPI({ action: "getBocorReports" });
-
-  if (res.status === "success" && res.data) {
-    globalBocorReportsData = res.data;
-    
-    // Render tampilan list jika fungsinya ada
-    if (typeof renderBocorList === 'function') {
-      renderBocorList(globalBocorReportsData);
-    }
-
-    // Perbarui pin denah jika sedang membuka mode map
-    const mapView = document.getElementById("bocorMapViewContainer");
-    if (mapView && !mapView.classList.contains("d-none")) {
-      renderBocorMapPins();
-    }
-  } else {
-    if (container) container.innerHTML = `<div class="alert alert-warning text-center">Gagal memuat data laporan kebocoran.</div>`;
-  }
-}
-
 // 3. FUNGSI RENDER PIN PADA DENAH
 function renderBocorMapPins() {
   const floorSelect = document.getElementById("bocorMapFloorSelect");
@@ -2645,14 +2617,17 @@ function openDirectHistoryTab() {
   }
 
 async function loadBocorReports() {
-  const container = document.getElementById("bocorReportsContainer");
+  const container = document.getElementById("bocorReportsContainer") || document.getElementById("bocorReportsList");
   if (!container) return;
 
-  container.innerHTML = `<div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data kebocoran...</div>`;
+  container.innerHTML = `<div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm me-2"></div>Memuat data...</div>`;
 
   try {
     const res = await fetchAPI({ action: "getBocorReports" });
     const bocorList = res.data || [];
+    
+    // Simpan ke variabel global untuk kebutuhan Denah Map
+    globalBocorReportsData = bocorList;
 
     const elBocor = document.getElementById("statBocorReport");
     if (elBocor) elBocor.innerText = bocorList.length;
@@ -2662,60 +2637,58 @@ async function loadBocorReports() {
       return;
     }
 
+    // Render Kartu List Riwayat Laporan Kebocoran
     container.innerHTML = "";
-    
     bocorList.forEach(item => {
       const idLaporan = item.id_laporan || "-";
       const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString("id-ID") : "-";
       const lantai = item.lantai || "-";
       const sumberBocor = item.sumber_bocor || "-";
       const keparahan = item.tingkat_keparahan || "RINGAN";
-      const detailLokasi = item.detail_lokasi || "Lokasi Kebocoran";
+      const detailLokasi = item.detail_lokasi || "-";
       const keterangan = item.keterangan || "-";
-      const urlFoto = item.url_foto || "";
-      const status = item.status || "REPORTED";
-      const mx = item.marking_x;
-      const my = item.marking_y;
 
-      const rawPhotos = urlFoto ? urlFoto.split(',').map(u => u.trim()) : [];
-      const severityBadge = keparahan === 'DARURAT' ? 'bg-danger' : (keparahan === 'SEDANG' ? 'bg-warning text-dark' : 'bg-info text-dark');
+      let badgeColor = "bg-info";
+      if (keparahan.toUpperCase() === "SEDANG") badgeColor = "bg-warning text-dark";
+      if (keparahan.toUpperCase() === "BERAT" || keparahan.toUpperCase() === "TINGGI") badgeColor = "bg-danger";
 
-      container.innerHTML += `
-        <div class="card card-report status-${status} p-3 shadow-sm mb-3">
+      let photosHtml = "";
+      if (item.url_foto) {
+        const photos = item.url_foto.split(", ");
+        photosHtml = `<div class="d-flex gap-2 overflow-auto mb-2">` +
+          photos.map(u => `<img src="${u}" class="rounded border" style="width:70px; height:70px; object-fit:cover; cursor:pointer;" onclick="openImageModal('${u}')">`).join("") +
+          `</div>`;
+      }
+
+      const card = document.createElement("div");
+      card.className = "card mb-3 border-0 shadow-sm border-start border-4 border-danger";
+      card.innerHTML = `
+        <div class="card-body p-3">
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <span class="badge ${severityBadge} fw-bold">DEBIT: ${keparahan}</span>
+            <span class="badge ${badgeColor} fw-bold">DEBIT: ${keparahan}</span>
             <span class="badge bg-secondary">${lantai} - ${sumberBocor}</span>
           </div>
-          
-          <h6 class="fw-bold text-dark mb-1">${detailLokasi}</h6>
+          <h6 class="fw-bold mb-1">${detailLokasi}</h6>
           <p class="small text-muted mb-2">${keterangan}</p>
-          
-          ${rawPhotos.length > 0 ? `
-  <div class="d-flex flex-wrap gap-2 mb-2">
-    ${rawPhotos.map(url => {
-      const thumbUrl = getGoogleThumbnailUrl(url);
-      return `<img src="${thumbUrl}" onclick="openImageModal('${url}')" class="img-preview rounded cursor-pointer border" style="width: calc(50% - 4px); max-height: 140px; object-fit: cover;" alt="Foto Laporan">`;
-    }).join('')}
-  </div>
-` : ''}
-
-          <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top small">
-            <span class="text-muted"><i class="bi bi-clock"></i> ${timestamp}</span>
-            <div class="d-flex align-items-center gap-2">
-              ${mx && my ? `
-                <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="openMapModal('${lantai}', ${mx}, ${my})">
-                  <i class="bi bi-geo-alt"></i> Denah
-                </button>
-              ` : ''}
-              <span class="badge bg-light text-dark border">${idLaporan}</span>
-            </div>
+          ${photosHtml}
+          <div class="d-flex justify-content-between align-items-center text-muted small border-top pt-2 mt-2">
+            <span><i class="bi bi-clock me-1"></i>${timestamp}</span>
+            <span class="badge bg-light text-dark border">${idLaporan}</span>
           </div>
         </div>
       `;
+      container.appendChild(card);
     });
+
+    // Jika sedang di mode denah, perbarui juga titik pin-nya
+    const mapView = document.getElementById("bocorMapViewContainer");
+    if (mapView && !mapView.classList.contains("d-none")) {
+      renderBocorMapPins();
+    }
+
   } catch (err) {
-    console.error(err);
-    container.innerHTML = `<div class="text-center text-danger py-3">Gagal mengambil data kebocoran.</div>`;
+    console.error("Gagal memuat laporan bocor:", err);
+    container.innerHTML = `<div class="text-center text-danger py-4">Gagal memuat data laporan kebocoran.</div>`;
   }
 }
 

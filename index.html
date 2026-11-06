@@ -2259,14 +2259,21 @@
         if (keparahan.toUpperCase() === "SEDANG") badgeColor = "bg-warning text-dark";
         if (keparahan.toUpperCase() === "BERAT" || keparahan.toUpperCase() === "TINGGI" || keparahan.toUpperCase() === "DARURAT") badgeColor = "bg-danger";
 
-        const rawPhoto = item.url_foto || item.foto || item.urlFoto || "";
-        let photosHtml = "";
-        if (rawPhoto && rawPhoto !== "-") {
-          const photos = String(rawPhoto).split(",");
-          photosHtml = `<div class="d-flex gap-2 overflow-auto mb-2">` +
-            photos.map(u => `<img src="${u.trim()}" class="rounded border" style="width:70px; height:70px; object-fit:cover; cursor:pointer;" onclick="openImageModal('${u.trim()}')">`).join("") +
-            `</div>`;
-        }
+        // Di dalam loop loadBocorReports():
+const rawPhoto = item.url_foto || item.foto || item.urlFoto || "";
+let photosHtml = "";
+
+if (rawPhoto && rawPhoto !== "-") {
+  const photos = String(rawPhoto).split(",");
+  photosHtml = `<div class="d-flex gap-2 overflow-auto mb-2">` +
+    photos.map(u => {
+      const cleanUrl = u.trim();
+      // Konversi link ke format thumbnail direct agar tidak terblokir
+      const directImgUrl = getGoogleDriveDirectLink(cleanUrl); 
+      return `<img src="${directImgUrl}" class="rounded border shadow-sm" style="width:70px; height:70px; object-fit:cover; cursor:pointer;" onclick="openImageModal('${cleanUrl}')">`;
+    }).join("") +
+    `</div>`;
+}
 
         const card = document.createElement("div");
         card.className = "card mb-3 border-0 shadow-sm border-start border-4 border-danger";
@@ -2383,12 +2390,9 @@
 function getGoogleDriveDirectLink(url) {
   if (!url) return '';
   let directUrl = url.trim();
-
-  // Jika URL menggunakan format Google Drive viewer
   if (directUrl.includes("drive.google.com")) {
     const match = directUrl.match(/\/d\/([^\/]+)/) || directUrl.match(/id=([^&]+)/);
     if (match && match[1]) {
-      // Mengubah ke URL thumbnail Google Drive yang support embedding langsung
       return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w800`;
     }
   }

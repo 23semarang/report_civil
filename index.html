@@ -26,10 +26,10 @@
   pointer-events: none;
 }
 
-/* Style Pin Kebocoran dengan Animasi Kedip pulse-pin */
+/* Styling Pin Kebocoran Animasi Kedip */
 .bocor-pin {
   position: absolute;
-  transform: translate(-50%, -50%) scale(var(--pin-scale, 1));
+  transform: translate(-50%, -50%);
   width: 30px;
   height: 30px;
   background-color: #ef4444;
@@ -38,31 +38,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 15px;
-  box-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
+  font-size: 14px;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
   cursor: pointer;
   pointer-events: auto;
   z-index: 10;
   animation: pulse-pin 1.8s infinite;
-  transition: background-color 0.2s ease;
+  transition: transform 0.2s ease;
 }
 
 .bocor-pin:hover {
+  transform: translate(-50%, -50%) scale(1.25);
   background-color: #dc2626;
   z-index: 20;
 }
 
-/* Animasi Kedip Merah (Pulsing) */
 @keyframes pulse-pin {
-  0% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8);
-  }
-  70% {
-    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-  }
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
     
     /* Style Tombol Debit Air */
@@ -845,14 +839,14 @@
     </form>
   </div>
 
-  <!-- RIWAYAT LAPORAN KEBOCORAN AIR -->
+  <!-- TAB RIWAYAT LAPORAN KEBOCORAN AIR -->
 <div id="bocorHistoryTab" class="tab-pane fade card p-3 shadow-sm">
   <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
     <h5 class="fw-bold text-primary mb-0">
       <i class="bi bi-droplet-half me-1"></i>Riwayat Laporan Kebocoran Air
     </h5>
-    <div class="d-flex gap-2 ms-auto">
-      <!-- Toggle Switch Antara Kartu & Denah -->
+    <div class="d-flex gap-2">
+      <!-- Toggle Switch List vs Denah -->
       <div class="btn-group btn-group-sm" role="group">
         <button type="button" class="btn btn-outline-primary active" id="btnViewList" onclick="switchBocorView('list')">
           <i class="bi bi-list-task"></i> List
@@ -867,37 +861,34 @@
     </div>
   </div>
 
-  <!-- VIEW 1: TAMPILAN KARTU LIST (DEFAULT) -->
+  <!-- VIEW 1: MODE LIST (DEFAULT) -->
   <div id="bocorListViewContainer">
-    <!-- ID Container disesuaikan ke bocorReportsList dan bocorHistoryContainer -->
-    <div id="bocorReportsList"></div>
+    <div id="bocorReportsContainer"></div>
   </div>
 
-  <!-- VIEW 2: TAMPILAN DENAH FLOORMAP INTERAKTIF -->
-<div id="bocorMapViewContainer" class="d-none">
-  <!-- Filter Lantai Denah -->
-  <div class="mb-3">
-    <label class="form-label fw-bold small">Pilih Denah Lantai:</label>
-    <select id="bocorMapFloorSelect" class="form-select form-select-sm" onchange="renderBocorMapPins()">
-      <option value="LG">LG - Lower Ground</option>
-      <option value="L1">L1 - Floor 1</option>
-      <option value="L2">L2 - Floor 2</option>
-      <option value="L3" selected>L3 - Floor 3</option>
-      <option value="Rooftop">ROOFTOP</option>
-      <option value="FACADE">FACADE</option>
-    </select>
-  </div>
-
-  <!-- Area Wrapper Panzoom Denah -->
-  <div class="border rounded overflow-hidden bg-light text-center position-relative" style="max-height: 450px; cursor: grab;">
-    <div id="bocorPanzoomWrapper" class="d-inline-block position-relative style-touch-action-none">
-      <img id="bocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
-      
-      <!-- Layer Tempat Pin Ditampilkan (Pas di atas Gambar) -->
-      <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100 style-pointer-events-none"></div>
+  <!-- VIEW 2: MODE DENAH -->
+  <div id="bocorMapViewContainer" class="d-none">
+    <div class="mb-3">
+      <label class="form-label fw-bold small">Pilih Denah Lantai:</label>
+      <select id="bocorMapFloorSelect" class="form-select form-select-sm" onchange="renderBocorMapPins()">
+        <option value="LG">LG - Lower Ground</option>
+        <option value="L1">L1 - Floor 1</option>
+        <option value="L2">L2 - Floor 2</option>
+        <option value="L3" selected>L3 - Floor 3</option>
+        <option value="ROOFTOP">ROOFTOP</option>
+        <option value="FACADE">FACADE</option>
+      </select>
     </div>
+
+    <!-- Container Gambar Denah -->
+    <div class="border rounded overflow-hidden bg-light text-center position-relative" style="min-height: 300px;">
+      <div id="bocorMapWrapper" class="d-inline-block position-relative">
+        <img id="bocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
+        <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100 style-pointer-events-none"></div>
+      </div>
+    </div>
+    <small class="text-muted d-block mt-2 text-center">* Klik pada ikon pin tetesan air untuk melihat detail laporan kebocoran.</small>
   </div>
-  <small class="text-muted d-block mt-2 text-center">* Gunakan gesture pinch/scroll untuk zoom & pan. Klik pin untuk detail laporan.</small>
 </div>
 
   <!-- 5. TAB UTAMA DEFAULT: RIWAYAT LAPORAN DIRECT -->

@@ -26,41 +26,43 @@
   pointer-events: none;
 }
 
-/* Style Pin Kebocoran */
+/* Style Pin Kebocoran dengan Animasi Kedip pulse-pin */
 .bocor-pin {
   position: absolute;
-  transform: translate(-50%, -100%); /* Ujung bawah pin pas di titik koordinat */
-  width: 28px;
-  height: 28px;
+  transform: translate(-50%, -50%) scale(var(--pin-scale, 1));
+  width: 30px;
+  height: 30px;
   background-color: #ef4444;
-  color: #fff;
-  border-radius: 50% 50% 50% 0;
-  transform-origin: bottom left;
-  rotate: -45deg;
+  color: #ffffff;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.6);
+  font-size: 15px;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
   cursor: pointer;
   pointer-events: auto;
   z-index: 10;
-  transition: transform 0.2s ease;
-}
-
-.bocor-pin i {
-  rotate: 45deg; /* Meluruskan ikon tetesan air */
-  font-size: 14px;
+  animation: pulse-pin 1.8s infinite;
+  transition: background-color 0.2s ease;
 }
 
 .bocor-pin:hover {
-  transform: translate(-50%, -100%) scale(1.25);
+  background-color: #dc2626;
   z-index: 20;
 }
 
+/* Animasi Kedip Merah (Pulsing) */
 @keyframes pulse-pin {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
 }
     
     /* Style Tombol Debit Air */
@@ -2417,46 +2419,27 @@ function handleAreaChange() {
 // === LANGKAH 3: FITUR VIEW DENAH & MAP PINS BOCOR ======
 // =======================================================
 
-let pzBocorHistory = null; // Variabel Panzoom khusus Riwayat Denah
-
-function switchBocorView(mode) {
-  const listView = document.getElementById("bocorListViewContainer");
-  const mapView = document.getElementById("bocorMapViewContainer");
-  const btnList = document.getElementById("btnViewList");
-  const btnMap = document.getElementById("btnViewMap");
-
-  if (mode === 'map') {
-    if (listView) listView.classList.add("d-none");
-    if (mapView) mapView.classList.remove("d-none");
-    if (btnList) btnList.classList.remove("active");
-    if (btnMap) btnMap.classList.add("active");
-    
-    // Inisialisasi/Render Pin Denah
-    renderBocorMapPins();
-  } else {
-    if (mapView) mapView.classList.add("d-none");
-    if (listView) listView.classList.remove("d-none");
-    if (btnMap) btnMap.classList.remove("active");
-    if (btnList) btnList.classList.add("active");
-  }
-}
+let pzBocorHistory = null;
 
 function renderBocorMapPins() {
   const floorSelect = document.getElementById("bocorMapFloorSelect");
   if (!floorSelect) return;
   
-  const selectedFloor = floorSelect.value.toUpperCase();
+  const selectedFloorRaw = floorSelect.value;
+  const selectedFloor = selectedFloorRaw.toUpperCase();
   const mapImg = document.getElementById("bocorFloorMapImage");
   const pinsLayer = document.getElementById("bocorPinsLayer");
   const panzoomElem = document.getElementById("bocorPanzoomWrapper");
 
-  if (typeof FLOOR_MAPS !== 'undefined' && FLOOR_MAPS[selectedFloor] && mapImg) {
-    mapImg.src = FLOOR_MAPS[selectedFloor];
+  // Deteksi Denah Lantai (Termasuk Support Rooftop fleksibel)
+  if (typeof FLOOR_MAPS !== 'undefined' && mapImg) {
+    const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
+    mapImg.src = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
   }
 
-  // Saat gambar denah selesai di-load, atur Panzoom dan Pin
+  // Pemicu saat gambar denah selesai di-load
   mapImg.onload = () => {
-    // 1. Inisialisasi atau Reset Panzoom
+    // 1. Inisialisasi Panzoom dan tangani pembatasan ukuran pin (Counter Scale)
     if (typeof Panzoom !== 'undefined' && panzoomElem) {
       if (!pzBocorHistory) {
         pzBocorHistory = Panzoom(panzoomElem, {
@@ -2465,24 +2448,40 @@ function renderBocorMapPins() {
           contain: 'outside',
           cursor: 'grab'
         });
+        
+        // Event Listener agar pin TIDAK ikut membesar saat gambar di-zoom
+        panzoomElem.addEventListener('panzoomchange', (e) => {
+          const currentScale = e.detail.scale || 1;
+          const pinScale = 1 / currentScale; // Kebalikan dari skala zoom
+          document.querySelectorAll('.bocor-pin').forEach(pin => {
+            pin.style.setProperty('--pin-scale', pinScale);
+          });
+        });
+
         panzoomElem.parentElement.addEventListener('wheel', pzBocorHistory.zoomWithWheel);
       } else {
         pzBocorHistory.reset();
       }
     }
 
-    // 2. Clear & Plot Pin Presisi
+    // 2. Clear & Render Pin
     if (pinsLayer) {
       pinsLayer.innerHTML = "";
 
-      // Filter laporan yang cocok dengan lantai & memiliki koordinat (Mendukung fleksibilitas nama key property)
+      // Filter laporan kebocoran untuk lantai ini
       const filteredReports = globalBocorReportsData.filter(item => {
         const itemFloor = String(item.lantai || item.floor || '').toUpperCase();
         const posX = item.marking_x ?? item.markingX ?? item.x;
         const posY = item.marking_y ?? item.markingY ?? item.y;
-        return itemFloor === selectedFloor && posX !== undefined && posY !== undefined;
+        
+        // Normalisasi pengecekan lantai (misal ROOFTOP / RF)
+        const isFloorMatch = itemFloor === selectedFloor || 
+                             (selectedFloor.includes("ROOF") && itemFloor.includes("ROOF"));
+                             
+        return isFloorMatch && posX !== undefined && posY !== undefined && posX !== "" && posY !== "";
       });
 
+      // Plot Pin ke Denah
       filteredReports.forEach(item => {
         const posX = item.marking_x ?? item.markingX ?? item.x;
         const posY = item.marking_y ?? item.markingY ?? item.y;
@@ -2494,9 +2493,14 @@ function renderBocorMapPins() {
         pin.title = `${item.detail_lokasi || 'Lokasi Kebocoran'}`;
         pin.innerHTML = `<i class="bi bi-droplet-fill"></i>`;
 
-        // Klik pin -> tampilkan pop-up detail
+        // Atur skala pin awal sesuai zoom saat ini
+        if (pzBocorHistory) {
+          const currentScale = pzBocorHistory.getScale() || 1;
+          pin.style.setProperty('--pin-scale', 1 / currentScale);
+        }
+
         pin.onclick = (e) => {
-          e.stopPropagation(); // Mencegah bentrok dengan drag Panzoom
+          e.stopPropagation();
           showBocorDetailPopup(item);
         };
 
@@ -2506,29 +2510,37 @@ function renderBocorMapPins() {
   };
 }
 
-// 4. FUNGSI POPUP CARD DETAIL LAPORAN BOCOR
+// 3. FUNGSI POPUP CARD DETAIL (Dukungan Deteksi Foto Fleksibel)
 function showBocorDetailPopup(item) {
+  // Ambil data foto dari berbagai kemungkinan nama properti backend
+  const rawPhoto = item.url_foto || item.foto || item.urlFoto || item.photo || item.url_foto_1 || "";
   let photosHtml = '';
-  if (item.url_foto) {
-    const photoUrls = item.url_foto.split(", ");
-    photosHtml = `<div class="d-flex gap-2 overflow-auto mb-2 py-1">` +
-      photoUrls.map(url => `<img src="${url}" class="rounded border" style="height: 100px; width: 100px; object-fit: cover; cursor: pointer;" onclick="openImageModal('${url}')">`).join('') +
+
+  if (rawPhoto && rawPhoto !== "-") {
+    const photoUrls = String(rawPhoto).split(",");
+    photosHtml = `<div class="d-flex gap-2 overflow-auto mb-2 py-1 justify-content-center">` +
+      photoUrls.map(url => {
+        const cleanUrl = url.trim();
+        return `<img src="${cleanUrl}" class="rounded border shadow-sm" style="height: 110px; width: 110px; object-fit: cover; cursor: pointer;" onclick="openImageModal('${cleanUrl}')" title="Klik untuk memperbesar">`;
+      }).join('') +
       `</div>`;
+  } else {
+    photosHtml = `<div class="alert alert-light text-muted small text-center py-2 border mb-2">Tidak ada foto terlampir</div>`;
   }
 
   Swal.fire({
-    title: `<strong class="text-primary">${item.detail_lokasi || 'Kebocoran Air'}</strong>`,
+    title: `<strong class="text-primary">${item.detail_lokasi || item.lokasi || 'Kebocoran Air'}</strong>`,
     html: `
       <div class="text-start small">
-        <div class="mb-2">
-          <span class="badge bg-warning text-dark mb-1">DEBIT: ${item.tingkat_keparahan || 'SEDANG'}</span>
-          <span class="badge bg-secondary mb-1">${item.lantai || '-'} - ${item.sumber_bocor || 'Air'}</span>
+        <div class="mb-2 text-center">
+          <span class="badge bg-warning text-dark me-1">DEBIT: ${item.tingkat_keparahan || item.keparahan || 'SEDANG'}</span>
+          <span class="badge bg-secondary">${item.lantai || '-'} - ${item.sumber_bocor || 'Air'}</span>
         </div>
-        <p class="mb-2"><strong>Keterangan:</strong> ${item.keterangan || '-'}</p>
         ${photosHtml}
+        <p class="mb-2"><strong>Keterangan:</strong> ${item.keterangan || '-'}</p>
         <div class="text-muted mt-2 border-top pt-2 d-flex justify-content-between align-items-center">
-          <small><i class="bi bi-person me-1"></i>${item.pelapor || 'Petugas'}</small>
-          <small><i class="bi bi-clock me-1"></i>${item.timestamp ? new Date(item.timestamp).toLocaleDateString() : '-'}</small>
+          <small><i class="bi bi-person me-1"></i>${item.pelapor || item.username || 'Petugas'}</small>
+          <small><i class="bi bi-clock me-1"></i>${item.timestamp ? new Date(item.timestamp).toLocaleDateString("id-ID") : '-'}</small>
         </div>
       </div>
     `,

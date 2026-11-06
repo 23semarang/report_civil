@@ -1251,7 +1251,7 @@ function showApp() {
   document.getElementById("appSection").classList.remove("d-none");
   document.getElementById("userGreeting").innerText = `Halo, ${currentUser.fullname || currentUser.username}`;
   
-  // Tampilkan / Sembunyikan Tombol PDF berdasarkan Role User (Jika sudah dipasang)
+  // Tampilkan / Sembunyikan Tombol PDF berdasarkan Role User
   if (typeof renderPDFButtonsByRole === 'function') {
     renderPDFButtonsByRole();
   }
@@ -1260,13 +1260,36 @@ function showApp() {
   loadReports();
 }
 
-  function logout() {
+function logout() {
   localStorage.removeItem("user_civil");
   localStorage.removeItem("user_civil_login_time");
   currentUser = null;
   document.getElementById("appSection").classList.add("d-none");
   document.getElementById("authContainer").classList.remove("d-none");
   showAuthCard("loginCard");
+}
+
+// === FUNGSI PENGECEKAN HAK AKSES DAN TAMPILAN PDF ===
+function renderPDFButtonsByRole() {
+  const role = (currentUser && currentUser.role) ? String(currentUser.role).trim().toLowerCase() : "";
+  const username = (currentUser && currentUser.username) ? String(currentUser.username).trim().toLowerCase() : "";
+
+  // Superuser divalidasi jika role 'superuser'/'admin' ATAU username-nya 'vandi'/'spv_civil'
+  const isSuperUser = 
+    role === "superuser" || 
+    role === "admin" || 
+    currentUser?.is_superuser === true ||
+    username === "vandi" ||
+    username === "spv_civil";
+
+  const pdfContainer = document.getElementById("pdfExportContainer");
+  if (pdfContainer) {
+    if (isSuperUser) {
+      pdfContainer.classList.remove("d-none"); // Tampilkan tombol PDF di bawah form
+    } else {
+      pdfContainer.classList.add("d-none");    // Sembunyikan untuk user biasa
+    }
+  }
 }
 
 // === FUNGSI TOGGLE SHOW/HIDE PASSWORD ===
@@ -1310,13 +1333,13 @@ function updateFloorMap() {
   resetMapAndPin();
 }
 
-  function resetMapAndPin() {
-    if (pzCreate) pzCreate.reset();
-    markedX = null; markedY = null;
-    document.getElementById("mapPin").classList.add("d-none");
-    document.getElementById("mapStatus").className = "text-danger small mt-1 d-block";
-    document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
-  }
+function resetMapAndPin() {
+  if (pzCreate) pzCreate.reset();
+  markedX = null; markedY = null;
+  document.getElementById("mapPin").classList.add("d-none");
+  document.getElementById("mapStatus").className = "text-danger small mt-1 d-block";
+  document.getElementById("mapStatus").innerText = "* Belum menandai titik pada denah";
+}
 
 function openImageModal(imgUrl) {
   if (!imgUrl) return;

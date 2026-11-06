@@ -21,29 +21,39 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-/* Style Pin Kebocoran di Denah */
+/* Style Layer Pin agar presisi menempel di atas gambar */
+#bocorPinsLayer {
+  pointer-events: none;
+}
+
+/* Style Pin Kebocoran */
 .bocor-pin {
   position: absolute;
-  transform: translate(-50%, -50%);
-  width: 32px;
-  height: 32px;
+  transform: translate(-50%, -100%); /* Ujung bawah pin pas di titik koordinat */
+  width: 28px;
+  height: 28px;
   background-color: #ef4444;
   color: #fff;
-  border-radius: 50%;
+  border-radius: 50% 50% 50% 0;
+  transform-origin: bottom left;
+  rotate: -45deg;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.6);
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.6);
   cursor: pointer;
+  pointer-events: auto;
   z-index: 10;
-  transition: transform 0.2s ease, background-color 0.2s ease;
-  animation: pulse-pin 2s infinite;
+  transition: transform 0.2s ease;
+}
+
+.bocor-pin i {
+  rotate: 45deg; /* Meluruskan ikon tetesan air */
+  font-size: 14px;
 }
 
 .bocor-pin:hover {
-  transform: translate(-50%, -50%) scale(1.3);
-  background-color: #dc2626;
+  transform: translate(-50%, -100%) scale(1.25);
   z-index: 20;
 }
 
@@ -862,27 +872,30 @@
   </div>
 
   <!-- VIEW 2: TAMPILAN DENAH FLOORMAP INTERAKTIF -->
-  <div id="bocorMapViewContainer" class="d-none">
-    <!-- Filter Lantai Denah -->
-    <div class="mb-3">
-      <label class="form-label fw-bold small">Pilih Denah Lantai:</label>
-      <select id="bocorMapFloorSelect" class="form-select form-select-sm" onchange="renderBocorMapPins()">
-        <option value="LG">LG - Lower Ground</option>
-        <option value="L1" selected>L1 - Floor 1</option>
-        <option value="L2">L2 - Floor 2</option>
-        <option value="L3">L3 - Floor 3</option>
-        <option value="ROOFTOP">ROOFTOP</option>
-        <option value="FACADE">FACADE</option>
-      </select>
-    </div>
+<div id="bocorMapViewContainer" class="d-none">
+  <!-- Filter Lantai Denah -->
+  <div class="mb-3">
+    <label class="form-label fw-bold small">Pilih Denah Lantai:</label>
+    <select id="bocorMapFloorSelect" class="form-select form-select-sm" onchange="renderBocorMapPins()">
+      <option value="LG">LG - Lower Ground</option>
+      <option value="L1">L1 - Floor 1</option>
+      <option value="L2">L2 - Floor 2</option>
+      <option value="L3" selected>L3 - Floor 3</option>
+      <option value="Rooftop">ROOFTOP</option>
+      <option value="FACADE">FACADE</option>
+    </select>
+  </div>
 
-    <!-- Area Denah & Container Pin -->
-    <div class="position-relative border rounded overflow-hidden bg-light text-center" style="min-height: 350px;">
-      <img id="bocorFloorMapImage" src="" class="img-fluid w-100" style="max-height: 500px; object-fit: contain;">
+  <!-- Area Wrapper Panzoom Denah -->
+  <div class="border rounded overflow-hidden bg-light text-center position-relative" style="max-height: 450px; cursor: grab;">
+    <div id="bocorPanzoomWrapper" class="d-inline-block position-relative style-touch-action-none">
+      <img id="bocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
+      
+      <!-- Layer Tempat Pin Ditampilkan (Pas di atas Gambar) -->
       <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100 style-pointer-events-none"></div>
     </div>
-    <small class="text-muted d-block mt-2 text-center">* Klik pada ikon pin tetesan air untuk melihat detail laporan kebocoran.</small>
   </div>
+  <small class="text-muted d-block mt-2 text-center">* Gunakan gesture pinch/scroll untuk zoom & pan. Klik pin untuk detail laporan.</small>
 </div>
 
   <!-- 5. TAB UTAMA DEFAULT: RIWAYAT LAPORAN DIRECT -->
@@ -2404,10 +2417,8 @@ function handleAreaChange() {
 // === LANGKAH 3: FITUR VIEW DENAH & MAP PINS BOCOR ======
 // =======================================================
 
-// Variable Penyimpanan Data Laporan Bocor Global
-let globalBocorReportsData = [];
+let pzBocorHistory = null; // Variabel Panzoom khusus Riwayat Denah
 
-// 1. FUNGSI SWITCH MODES (LIST vs MAP)
 function switchBocorView(mode) {
   const listView = document.getElementById("bocorListViewContainer");
   const mapView = document.getElementById("bocorMapViewContainer");
@@ -2419,6 +2430,8 @@ function switchBocorView(mode) {
     if (mapView) mapView.classList.remove("d-none");
     if (btnList) btnList.classList.remove("active");
     if (btnMap) btnMap.classList.add("active");
+    
+    // Inisialisasi/Render Pin Denah
     renderBocorMapPins();
   } else {
     if (mapView) mapView.classList.add("d-none");
@@ -2428,40 +2441,69 @@ function switchBocorView(mode) {
   }
 }
 
-// 3. FUNGSI RENDER PIN PADA DENAH
 function renderBocorMapPins() {
   const floorSelect = document.getElementById("bocorMapFloorSelect");
   if (!floorSelect) return;
   
-  const selectedFloor = floorSelect.value;
+  const selectedFloor = floorSelect.value.toUpperCase();
   const mapImg = document.getElementById("bocorFloorMapImage");
   const pinsLayer = document.getElementById("bocorPinsLayer");
+  const panzoomElem = document.getElementById("bocorPanzoomWrapper");
 
   if (typeof FLOOR_MAPS !== 'undefined' && FLOOR_MAPS[selectedFloor] && mapImg) {
     mapImg.src = FLOOR_MAPS[selectedFloor];
   }
 
-  if (pinsLayer) {
-    pinsLayer.innerHTML = "";
+  // Saat gambar denah selesai di-load, atur Panzoom dan Pin
+  mapImg.onload = () => {
+    // 1. Inisialisasi atau Reset Panzoom
+    if (typeof Panzoom !== 'undefined' && panzoomElem) {
+      if (!pzBocorHistory) {
+        pzBocorHistory = Panzoom(panzoomElem, {
+          maxScale: 4,
+          minScale: 1,
+          contain: 'outside',
+          cursor: 'grab'
+        });
+        panzoomElem.parentElement.addEventListener('wheel', pzBocorHistory.zoomWithWheel);
+      } else {
+        pzBocorHistory.reset();
+      }
+    }
 
-    const filteredReports = globalBocorReportsData.filter(item => {
-      const floorMatch = String(item.lantai || item.floor || '').toUpperCase() === selectedFloor.toUpperCase();
-      const hasPin = item.marking_x && item.marking_y;
-      return floorMatch && hasPin;
-    });
+    // 2. Clear & Plot Pin Presisi
+    if (pinsLayer) {
+      pinsLayer.innerHTML = "";
 
-    filteredReports.forEach(item => {
-      const pin = document.createElement("div");
-      pin.className = "bocor-pin";
-      pin.style.left = `${item.marking_x}%`;
-      pin.style.top = `${item.marking_y}%`;
-      pin.title = `${item.detail_lokasi || 'Lokasi Kebocoran'}`;
-      pin.innerHTML = `<i class="bi bi-droplet-fill"></i>`;
+      // Filter laporan yang cocok dengan lantai & memiliki koordinat (Mendukung fleksibilitas nama key property)
+      const filteredReports = globalBocorReportsData.filter(item => {
+        const itemFloor = String(item.lantai || item.floor || '').toUpperCase();
+        const posX = item.marking_x ?? item.markingX ?? item.x;
+        const posY = item.marking_y ?? item.markingY ?? item.y;
+        return itemFloor === selectedFloor && posX !== undefined && posY !== undefined;
+      });
 
-      pin.onclick = () => showBocorDetailPopup(item);
-      pinsLayer.appendChild(pin);
-    });
-  }
+      filteredReports.forEach(item => {
+        const posX = item.marking_x ?? item.markingX ?? item.x;
+        const posY = item.marking_y ?? item.markingY ?? item.y;
+
+        const pin = document.createElement("div");
+        pin.className = "bocor-pin";
+        pin.style.left = `${posX}%`;
+        pin.style.top = `${posY}%`;
+        pin.title = `${item.detail_lokasi || 'Lokasi Kebocoran'}`;
+        pin.innerHTML = `<i class="bi bi-droplet-fill"></i>`;
+
+        // Klik pin -> tampilkan pop-up detail
+        pin.onclick = (e) => {
+          e.stopPropagation(); // Mencegah bentrok dengan drag Panzoom
+          showBocorDetailPopup(item);
+        };
+
+        pinsLayer.appendChild(pin);
+      });
+    }
+  };
 }
 
 // 4. FUNGSI POPUP CARD DETAIL LAPORAN BOCOR

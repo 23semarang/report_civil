@@ -3079,89 +3079,31 @@ function showBocorDetailPopup(item) {
     bsToast.show();
   }
 
-  // =======================================================
-// FUNGSI PETA KEBOCORAN GUEST (SWEETALERT2 VERSION - BEBAS BUG)
-// =======================================================
-let guestPzBocorHistory = null;
-
-async function openGuestBocorMap() {
-  // 1. Tampilkan Indikator Loading
-  Swal.fire({
-    title: 'Memuat Data Peta...',
-    allowOutsideClick: false,
-    didOpen: () => { Swal.showLoading(); }
-  });
-
-  try {
-    // 2. Fetch Data dari API
-    const res = await fetchAPI({ action: "getBocorReports" });
-    globalBocorReportsData = (res && res.data) ? res.data : [];
-    Swal.close();
-
-    // 3. Tampilkan Peta menggunakan SweetAlert2 Popup
-    Swal.fire({
-      title: `<h5 class="fw-bold text-primary mb-0 d-flex align-items-center justify-content-center gap-2">
-                <i class="bi bi-droplet-half text-warning"></i> Peta Kebocoran Air (Mode Tamu)
-              </h5>`,
-      html: `
-        <div class="text-start">
-          <div class="mb-3">
-            <label class="form-label fw-bold small text-muted">Pilih Denah Lantai:</label>
-            <select id="guestBocorMapFloorSelect" class="form-select form-select-sm" onchange="renderGuestBocorMapPins()">
-              <option value="LG" selected>LG - Lower Ground</option>
-              <option value="L1">L1 - Floor 1</option>
-              <option value="L2">L2 - Floor 2</option>
-              <option value="L3">L3 - Floor 3</option>
-              <option value="ROOFTOP">ROOFTOP</option>
-              <option value="FACADE">FACADE</option>
-            </select>
-          </div>
-
-          <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
-            <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
-              <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 440px; width: auto; object-fit: contain;">
-              <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
-            </div>
-          </div>
-          <small class="text-muted d-block mt-2 text-center" style="font-size: 0.75rem;">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail kebocoran.</small>
-        </div>
-      `,
-      showCloseButton: true,
-      confirmButtonText: 'Tutup',
-      confirmButtonColor: '#6c757d',
-      width: '92%',
-      maxWidth: '750px',
-      customClass: {
-        popup: 'rounded-4 p-3'
-      },
-      didOpen: () => {
-        // Beri jeda 100ms agar DOM elemen html selesai disiapkan oleh SweetAlert2
-        setTimeout(() => {
-          renderGuestBocorMapPins();
-        }, 100);
-      }
-    });
-
-  } catch (err) {
-    Swal.fire('Gagal', 'Gagal memuat data riwayat kebocoran air.', 'error');
-  }
-}
-
-function renderGuestBocorMapPins() {
+  function renderGuestBocorMapPins() {
   const floorSelect = document.getElementById("guestBocorMapFloorSelect");
-  if (!floorSelect) return;
-  
-  const selectedFloorRaw = floorSelect.value;
-  const selectedFloor = selectedFloorRaw.toUpperCase();
   const mapImg = document.getElementById("guestBocorFloorMapImage");
   const pinsLayer = document.getElementById("guestBocorPinsLayer");
   const panzoomElem = document.getElementById("guestBocorMapHistoryWrapper");
 
-  if (!mapImg) return;
+  if (!floorSelect || !mapImg) return;
+  
+  const selectedFloorRaw = floorSelect.value;
+  const selectedFloor = selectedFloorRaw.toUpperCase();
 
-  // Logika Eksekusi Render Denah & Pin (Dipisah dari event listener agar bisa dipanggil langsung)
+  // 1. Tentukan & Langsung Set SRC Gambar Denah Lebih Dulu
+  let mapSrc = "";
+  if (typeof FLOOR_MAPS !== 'undefined') {
+    const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
+    mapSrc = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
+  }
+
+  if (mapSrc) {
+    mapImg.src = mapSrc;
+  }
+
+  // 2. Fungsi Eksekusi Render Panzoom & Pin Kebocoran
   const drawMapAndPins = () => {
-    // 1. Inisialisasi Panzoom untuk Guest Map
+    // Inisialisasi Panzoom untuk Guest Map
     if (typeof Panzoom !== 'undefined' && panzoomElem) {
       if (guestPzBocorHistory) {
         try { guestPzBocorHistory.destroy(); } catch(e){}
@@ -3187,7 +3129,7 @@ function renderGuestBocorMapPins() {
       }
     }
 
-    // 2. Pasang Pin Kebocoran
+    // Pasang Pin Kebocoran
     if (pinsLayer) {
       pinsLayer.innerHTML = "";
 
@@ -3229,21 +3171,9 @@ function renderGuestBocorMapPins() {
     }
   };
 
-  // Pasang Handler Load Gambar
+  // 3. Jalankan eksekusi secara langsung & pasang event listener sebagai cadangan
+  drawMapAndPins();
   mapImg.onload = drawMapAndPins;
-
-  // Set URL Gambar Denah
-  if (typeof FLOOR_MAPS !== 'undefined') {
-    const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
-    const targetSrc = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
-
-    // Jika gambar sudah ter-cache atau src-nya sama, langsung gambar tanpa menunggu event onload
-    if (mapImg.src.endsWith(targetSrc) && mapImg.complete) {
-      drawMapAndPins();
-    } else {
-      mapImg.src = targetSrc;
-    }
-  }
 }
   
 </script>

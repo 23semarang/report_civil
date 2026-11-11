@@ -21,25 +21,28 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    /* Container Tooltip Melayang di Atas Pin */
+    /* Container Tooltip Melayang di Atas/Bawah Pin */
 .pin-tooltip-card {
   position: absolute;
-  bottom: 125%; /* Posisikan persis di atas pin */
   left: 50%;
   transform: translateX(-50%) scale(var(--pin-scale, 1));
   transform-origin: bottom center;
-  width: 230px;
+  width: 220px;
   background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
   border: 1px solid #e2e8f0;
   z-index: 100;
   pointer-events: auto;
   cursor: default;
 }
 
-/* Panah Segitiga Kecil Mengarah ke Pin */
-.pin-tooltip-card::after {
+/* Tooltip jika posisi Normal (Di Atas Pin) */
+.pin-tooltip-card.tooltip-top {
+  bottom: 125%;
+  transform-origin: bottom center;
+}
+.pin-tooltip-card.tooltip-top::after {
   content: '';
   position: absolute;
   top: 100%;
@@ -48,6 +51,46 @@
   border-width: 6px;
   border-style: solid;
   border-color: #ffffff transparent transparent transparent;
+}
+
+/* Tooltip jika Pin Mepet Atas (Di Bawah Pin) */
+.pin-tooltip-card.tooltip-bottom {
+  top: 125%;
+  transform-origin: top center;
+}
+.pin-tooltip-card.tooltip-bottom::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent #ffffff transparent;
+}
+
+/* Layout Scrollable Multi Foto */
+.tooltip-photos-wrapper {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.tooltip-photos-wrapper::-webkit-scrollbar {
+  height: 4px;
+}
+.tooltip-photos-wrapper::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.tooltip-img-item {
+  width: 100px;
+  height: 85px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: 1px solid #e2e8f0;
 }
     /* 1. Modal Guest Bootstrap Map */
 #guestBocorMapModal {
@@ -3209,7 +3252,6 @@ function renderGuestBocorMapPins() {
         const currentScale = e.detail.scale || 1;
         const pinScale = 1 / currentScale;
         
-        // Skalakan pin & tooltip secara serentak
         document.querySelectorAll('#guestBocorPinsLayer .bocor-pin, #guestBocorPinsLayer .pin-tooltip-card').forEach(el => {
           el.style.setProperty('--pin-scale', pinScale);
         });
@@ -3237,6 +3279,7 @@ function renderGuestBocorMapPins() {
       filteredReports.forEach((item, index) => {
         const posX = item.marking_x ?? item.markingX ?? item.x;
         const posY = item.marking_y ?? item.markingY ?? item.y;
+        const posYNum = parseFloat(posY);
 
         // Container Utama Pin + Popup
         const pinContainer = document.createElement("div");
@@ -3253,18 +3296,26 @@ function renderGuestBocorMapPins() {
         pin.title = `${item.detail_lokasi || 'Lokasi Kebocoran'}`;
         pin.innerHTML = `<i class="bi bi-droplet-fill"></i>`;
 
-        // Tooltip Popup Padat yang Mengikuti Pin
+        // Multi-Photo Handler (Menampilkan Banyak Foto sekaligus)
         const rawPhoto = item.url_foto || item.foto || item.urlFoto || item.photo || item.photos || "";
         let photoHtml = "";
         if (rawPhoto && rawPhoto !== "-") {
-          const firstPhoto = String(rawPhoto).split(",")[0].trim();
-          const directImgUrl = getGoogleDriveDirectLink(firstPhoto);
-          photoHtml = `<img src="${directImgUrl}" class="w-100 rounded mb-2" style="height: 100px; object-fit: cover; cursor: pointer;" onclick="openImageModal('${firstPhoto}')">`;
+          const photoUrls = String(rawPhoto).split(",");
+          photoHtml = `<div class="tooltip-photos-wrapper mb-2">` +
+            photoUrls.map(u => {
+              const cleanUrl = u.trim();
+              const directImgUrl = getGoogleDriveDirectLink(cleanUrl);
+              return `<img src="${directImgUrl}" class="tooltip-img-item" onclick="event.stopPropagation(); openImageModal('${cleanUrl}')">`;
+            }).join("") +
+            `</div>`;
         }
+
+        // Deteksi Posisi: Jika Y < 35% (mepet garis atas), posisikan tooltip di bawah pin
+        const positionClass = posYNum < 35 ? "tooltip-bottom" : "tooltip-top";
 
         const tooltip = document.createElement("div");
         tooltip.id = `tooltip-pin-${index}`;
-        tooltip.className = "pin-tooltip-card p-2 d-none text-start";
+        tooltip.className = `pin-tooltip-card ${positionClass} p-2 d-none text-start`;
         tooltip.innerHTML = `
           <div class="d-flex justify-content-between align-items-center mb-1">
             <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.65rem;">DEBIT: ${item.tingkat_keparahan || 'RINGAN'}</span>
@@ -3272,12 +3323,11 @@ function renderGuestBocorMapPins() {
           </div>
           <h6 class="fw-bold text-primary mb-1 text-truncate" style="font-size: 0.8rem;">${item.detail_lokasi || 'Kebocoran Air'}</h6>
           ${photoHtml}
-          <div class="bg-light p-1 rounded border text-muted" style="font-size: 0.7rem;">
+          <div class="bg-light p-1.5 rounded border text-muted" style="font-size: 0.7rem;">
             <strong>Ket:</strong> ${item.keterangan || item.issue || '-'}
           </div>
         `;
 
-        // Set Skala Awal
         if (guestPzBocorHistory) {
           const currentScale = guestPzBocorHistory.getScale() || 1;
           const pinScale = 1 / currentScale;
@@ -3285,10 +3335,9 @@ function renderGuestBocorMapPins() {
           tooltip.style.setProperty('--pin-scale', pinScale);
         }
 
-        // Toggle Buka/Tutup Popup Pas Klik Pin
+        // Toggle Buka/Tutup Tooltip
         pin.onclick = (e) => {
           e.stopPropagation();
-          // Sembunyikan tooltip lain jika ada yang terbuka
           document.querySelectorAll('#guestBocorPinsLayer .pin-tooltip-card').forEach(el => {
             if (el !== tooltip) el.classList.add('d-none');
           });

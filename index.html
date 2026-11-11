@@ -420,6 +420,12 @@
         <a href="#" class="text-decoration-none" onclick="showAuthCard('registerCard')">Buat Akun Baru</a>
         <a href="#" class="text-decoration-none" onclick="showAuthCard('forgotCard')">Lupa Password?</a>
       </div>
+      <!-- Ditaruh di sini (di bawah div link Buat Akun / Lupa Password) -->
+<div class="mt-3 pt-3 border-top text-center">
+  <button type="button" class="btn btn-outline-info w-100 fw-bold d-flex align-items-center justify-content-center gap-2" onclick="openGuestBocorMap()">
+    <i class="bi bi-map-fill"></i> Lihat Peta Kebocoran Air (Tanpa Login)
+  </button>
+</div>
     </div>
 
     <div id="registerCard" class="card p-4 shadow-sm d-none">
@@ -3054,6 +3060,127 @@ function showBocorDetailPopup(item) {
     const bsToast = new bootstrap.Toast(toastEl, { delay: 3500 });
     bsToast.show();
   }
+
+  // =======================================================
+// FUNGSI PETA KEBOCORAN UNTUK GUEST / TANPA LOGIN (NOMOR 3)
+// =======================================================
+let guestPzBocorHistory = null;
+let guestBocorMapModalObj = null;
+
+// Dipanggil saat tombol "Lihat Peta Kebocoran Air (Tanpa Login)" diklik
+async function openGuestBocorMap() {
+  if (!guestBocorMapModalObj) {
+    guestBocorMapModalObj = new bootstrap.Modal(document.getElementById('guestBocorMapModal'));
+  }
+  
+  // Tampilkan Modal Guest
+  guestBocorMapModalObj.show();
+
+  // Tampilkan indikator loading
+  Swal.fire({
+    title: 'Memuat Data Peta...',
+    allowOutsideClick: false,
+    didOpen: () => { Swal.showLoading(); }
+  });
+
+  try {
+    const res = await fetchAPI({ action: "getBocorReports" });
+    globalBocorReportsData = (res && res.data) ? res.data : [];
+    Swal.close();
+    
+    // Render denah setelah modal terbuka
+    setTimeout(() => {
+      renderGuestBocorMapPins();
+    }, 300);
+  } catch (err) {
+    Swal.fire('Gagal', 'Gagal memuat data riwayat kebocoran air.', 'error');
+  }
+}
+
+// Fungsi Render Pin Khusus Mode Guest
+function renderGuestBocorMapPins() {
+  const floorSelect = document.getElementById("guestBocorMapFloorSelect");
+  if (!floorSelect) return;
+  
+  const selectedFloorRaw = floorSelect.value;
+  const selectedFloor = selectedFloorRaw.toUpperCase();
+  const mapImg = document.getElementById("guestBocorFloorMapImage");
+  const pinsLayer = document.getElementById("guestBocorPinsLayer");
+  const panzoomElem = document.getElementById("guestBocorMapHistoryWrapper");
+
+  if (typeof FLOOR_MAPS !== 'undefined' && mapImg) {
+    const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
+    mapImg.src = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
+  }
+
+  mapImg.onload = () => {
+    // Inisialisasi Panzoom untuk Peta Guest
+    if (typeof Panzoom !== 'undefined' && panzoomElem) {
+      if (!guestPzBocorHistory) {
+        guestPzBocorHistory = Panzoom(panzoomElem, {
+          maxScale: 4,
+          minScale: 1,
+          contain: 'outside',
+          cursor: 'grab'
+        });
+        
+        panzoomElem.addEventListener('panzoomchange', (e) => {
+          const currentScale = e.detail.scale || 1;
+          const pinScale = 1 / currentScale;
+          document.querySelectorAll('#guestBocorPinsLayer .bocor-pin').forEach(pin => {
+            pin.style.setProperty('--pin-scale', pinScale);
+          });
+        });
+
+        panzoomElem.parentElement.addEventListener('wheel', guestPzBocorHistory.zoomWithWheel);
+      } else {
+        guestPzBocorHistory.reset();
+      }
+    }
+
+    // Pasang Pin Titik Kebocoran
+    if (pinsLayer) {
+      pinsLayer.innerHTML = "";
+
+      const filteredReports = globalBocorReportsData.filter(item => {
+        const itemFloor = String(item.lantai || item.floor || '').toUpperCase();
+        const posX = item.marking_x ?? item.markingX ?? item.x;
+        const posY = item.marking_y ?? item.markingY ?? item.y;
+        
+        const isFloorMatch = itemFloor === selectedFloor || 
+                             (selectedFloor.includes("ROOF") && itemFloor.includes("ROOF"));
+                             
+        return isFloorMatch && posX !== undefined && posY !== undefined && posX !== "" && posY !== "";
+      });
+
+      filteredReports.forEach(item => {
+        const posX = item.marking_x ?? item.markingX ?? item.x;
+        const posY = item.marking_y ?? item.markingY ?? item.y;
+
+        const pin = document.createElement("div");
+        pin.className = "bocor-pin";
+        pin.style.left = `${posX}%`;
+        pin.style.top = `${posY}%`;
+        pin.title = `${item.detail_lokasi || 'Lokasi Kebocoran'}`;
+        pin.innerHTML = `<i class="bi bi-droplet-fill"></i>`;
+
+        if (guestPzBocorHistory) {
+          const currentScale = guestPzBocorHistory.getScale() || 1;
+          pin.style.setProperty('--pin-scale', 1 / currentScale);
+        }
+
+        // Klik pin untuk membuka popup detail padat
+        pin.onclick = (e) => {
+          e.stopPropagation();
+          showBocorDetailPopup(item);
+        };
+
+        pinsLayer.appendChild(pin);
+      });
+    }
+  };
+}
+  
 </script>
 
 <!-- TOMBOL FLOATING LAPOR BOCOR CEAPAT -->
@@ -3090,6 +3217,46 @@ function showBocorDetailPopup(item) {
       </div>
       <div class="modal-body text-center p-2">
         <img id="previewModalImage" src="" class="img-fluid rounded shadow" style="max-height: 80vh; object-fit: contain;" alt="Foto Laporan Bocor">
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- ======================================================= -->
+<!-- MODAL DENAH KEBOCORAN UNTUK GUEST / PUBLIK (NOMOR 2)   -->
+<!-- ======================================================= -->
+<div class="modal fade" id="guestBocorMapModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+      <div class="modal-header border-bottom">
+        <h5 class="modal-title fw-bold text-primary d-flex align-items-center gap-2">
+          <i class="bi bi-droplet-half text-warning"></i> Peta Kebocoran Air (Mode Tamu)
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-3">
+        <div class="mb-3">
+          <label class="form-label fw-bold small text-muted">Pilih Denah Lantai:</label>
+          <select id="guestBocorMapFloorSelect" class="form-select form-select-sm" onchange="renderGuestBocorMapPins()">
+            <option value="LG" selected>LG - Lower Ground</option>
+            <option value="L1">L1 - Floor 1</option>
+            <option value="L2">L2 - Floor 2</option>
+            <option value="L3">L3 - Floor 3</option>
+            <option value="ROOFTOP">ROOFTOP</option>
+            <option value="FACADE">FACADE</option>
+          </select>
+        </div>
+
+        <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 320px;">
+          <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
+            <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 480px; width: auto; object-fit: contain;">
+            <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
+          </div>
+        </div>
+        <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail kebocoran.</small>
+      </div>
+      <div class="modal-footer border-0 pt-0">
+        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
       </div>
     </div>
   </div>

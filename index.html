@@ -3123,7 +3123,7 @@ async function openGuestBocorMap() {
               <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
             </div>
           </div>
-          <small class="text-muted d-block mt-2 text-center style="font-size: 0.75rem;">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail kebocoran.</small>
+          <small class="text-muted d-block mt-2 text-center" style="font-size: 0.75rem;">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail kebocoran.</small>
         </div>
       `,
       showCloseButton: true,
@@ -3135,8 +3135,10 @@ async function openGuestBocorMap() {
         popup: 'rounded-4 p-3'
       },
       didOpen: () => {
-        // Render pin denah setelah popup Swal terbuka
-        renderGuestBocorMapPins();
+        // Beri jeda 100ms agar DOM elemen html selesai disiapkan oleh SweetAlert2
+        setTimeout(() => {
+          renderGuestBocorMapPins();
+        }, 100);
       }
     });
 
@@ -3155,15 +3157,11 @@ function renderGuestBocorMapPins() {
   const pinsLayer = document.getElementById("guestBocorPinsLayer");
   const panzoomElem = document.getElementById("guestBocorMapHistoryWrapper");
 
-  if (typeof FLOOR_MAPS !== 'undefined' && mapImg) {
-    const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
-    mapImg.src = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
-  }
-
   if (!mapImg) return;
 
-  mapImg.onload = () => {
-    // Inisialisasi Panzoom untuk Guest Map
+  // Logika Eksekusi Render Denah & Pin (Dipisah dari event listener agar bisa dipanggil langsung)
+  const drawMapAndPins = () => {
+    // 1. Inisialisasi Panzoom untuk Guest Map
     if (typeof Panzoom !== 'undefined' && panzoomElem) {
       if (guestPzBocorHistory) {
         try { guestPzBocorHistory.destroy(); } catch(e){}
@@ -3184,10 +3182,12 @@ function renderGuestBocorMapPins() {
         });
       });
 
-      panzoomElem.parentElement.parentElement.addEventListener('wheel', guestPzBocorHistory.zoomWithWheel);
+      if (panzoomElem.parentElement && panzoomElem.parentElement.parentElement) {
+        panzoomElem.parentElement.parentElement.addEventListener('wheel', guestPzBocorHistory.zoomWithWheel);
+      }
     }
 
-    // Pasang Pin Kebocoran
+    // 2. Pasang Pin Kebocoran
     if (pinsLayer) {
       pinsLayer.innerHTML = "";
 
@@ -3228,6 +3228,22 @@ function renderGuestBocorMapPins() {
       });
     }
   };
+
+  // Pasang Handler Load Gambar
+  mapImg.onload = drawMapAndPins;
+
+  // Set URL Gambar Denah
+  if (typeof FLOOR_MAPS !== 'undefined') {
+    const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
+    const targetSrc = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
+
+    // Jika gambar sudah ter-cache atau src-nya sama, langsung gambar tanpa menunggu event onload
+    if (mapImg.src.endsWith(targetSrc) && mapImg.complete) {
+      drawMapAndPins();
+    } else {
+      mapImg.src = targetSrc;
+    }
+  }
 }
   
 </script>

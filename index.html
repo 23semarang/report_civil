@@ -21,6 +21,34 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
+    /* Container Tooltip Melayang di Atas Pin */
+.pin-tooltip-card {
+  position: absolute;
+  bottom: 125%; /* Posisikan persis di atas pin */
+  left: 50%;
+  transform: translateX(-50%) scale(var(--pin-scale, 1));
+  transform-origin: bottom center;
+  width: 230px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  border: 1px solid #e2e8f0;
+  z-index: 100;
+  pointer-events: auto;
+  cursor: default;
+}
+
+/* Panah Segitiga Kecil Mengarah ke Pin */
+.pin-tooltip-card::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: #ffffff transparent transparent transparent;
+}
     /* 1. Modal Guest Bootstrap Map */
 #guestBocorMapModal {
   z-index: 1050 !important;
@@ -3154,7 +3182,6 @@ function renderGuestBocorMapPins() {
   const selectedFloorRaw = floorSelect.value;
   const selectedFloor = selectedFloorRaw.toUpperCase();
 
-  // 1. Ambil URL Denah
   let mapSrc = "";
   if (typeof FLOOR_MAPS !== 'undefined') {
     const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
@@ -3163,10 +3190,8 @@ function renderGuestBocorMapPins() {
     mapSrc = "LG.jpg";
   }
 
-  // Set atribut src gambar
   mapImg.src = mapSrc;
 
-  // 2. Fungsi Render Panzoom & Pin Kebocoran
   const executeRender = () => {
     if (typeof Panzoom !== 'undefined' && panzoomElem) {
       if (guestPzBocorHistory) {
@@ -3183,8 +3208,10 @@ function renderGuestBocorMapPins() {
       panzoomElem.addEventListener('panzoomchange', (e) => {
         const currentScale = e.detail.scale || 1;
         const pinScale = 1 / currentScale;
-        document.querySelectorAll('#guestBocorPinsLayer .bocor-pin').forEach(pin => {
-          pin.style.setProperty('--pin-scale', pinScale);
+        
+        // Skalakan pin & tooltip secara serentak
+        document.querySelectorAll('#guestBocorPinsLayer .bocor-pin, #guestBocorPinsLayer .pin-tooltip-card').forEach(el => {
+          el.style.setProperty('--pin-scale', pinScale);
         });
       });
 
@@ -3207,28 +3234,70 @@ function renderGuestBocorMapPins() {
         return isFloorMatch && posX !== undefined && posY !== undefined && posX !== "" && posY !== "";
       });
 
-      filteredReports.forEach(item => {
+      filteredReports.forEach((item, index) => {
         const posX = item.marking_x ?? item.markingX ?? item.x;
         const posY = item.marking_y ?? item.markingY ?? item.y;
 
+        // Container Utama Pin + Popup
+        const pinContainer = document.createElement("div");
+        pinContainer.style.position = "absolute";
+        pinContainer.style.left = `${posX}%`;
+        pinContainer.style.top = `${posY}%`;
+
+        // Ikon Pin
         const pin = document.createElement("div");
         pin.className = "bocor-pin";
-        pin.style.left = `${posX}%`;
-        pin.style.top = `${posY}%`;
+        pin.style.position = "relative";
+        pin.style.left = "0";
+        pin.style.top = "0";
         pin.title = `${item.detail_lokasi || 'Lokasi Kebocoran'}`;
         pin.innerHTML = `<i class="bi bi-droplet-fill"></i>`;
 
-        if (guestPzBocorHistory) {
-          const currentScale = guestPzBocorHistory.getScale() || 1;
-          pin.style.setProperty('--pin-scale', 1 / currentScale);
+        // Tooltip Popup Padat yang Mengikuti Pin
+        const rawPhoto = item.url_foto || item.foto || item.urlFoto || item.photo || item.photos || "";
+        let photoHtml = "";
+        if (rawPhoto && rawPhoto !== "-") {
+          const firstPhoto = String(rawPhoto).split(",")[0].trim();
+          const directImgUrl = getGoogleDriveDirectLink(firstPhoto);
+          photoHtml = `<img src="${directImgUrl}" class="w-100 rounded mb-2" style="height: 100px; object-fit: cover; cursor: pointer;" onclick="openImageModal('${firstPhoto}')">`;
         }
 
+        const tooltip = document.createElement("div");
+        tooltip.id = `tooltip-pin-${index}`;
+        tooltip.className = "pin-tooltip-card p-2 d-none text-start";
+        tooltip.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.65rem;">DEBIT: ${item.tingkat_keparahan || 'RINGAN'}</span>
+            <button type="button" class="btn-close ms-auto" style="font-size: 0.65rem;" onclick="event.stopPropagation(); this.closest('.pin-tooltip-card').classList.add('d-none');"></button>
+          </div>
+          <h6 class="fw-bold text-primary mb-1 text-truncate" style="font-size: 0.8rem;">${item.detail_lokasi || 'Kebocoran Air'}</h6>
+          ${photoHtml}
+          <div class="bg-light p-1 rounded border text-muted" style="font-size: 0.7rem;">
+            <strong>Ket:</strong> ${item.keterangan || item.issue || '-'}
+          </div>
+        `;
+
+        // Set Skala Awal
+        if (guestPzBocorHistory) {
+          const currentScale = guestPzBocorHistory.getScale() || 1;
+          const pinScale = 1 / currentScale;
+          pin.style.setProperty('--pin-scale', pinScale);
+          tooltip.style.setProperty('--pin-scale', pinScale);
+        }
+
+        // Toggle Buka/Tutup Popup Pas Klik Pin
         pin.onclick = (e) => {
           e.stopPropagation();
-          showBocorDetailPopup(item);
+          // Sembunyikan tooltip lain jika ada yang terbuka
+          document.querySelectorAll('#guestBocorPinsLayer .pin-tooltip-card').forEach(el => {
+            if (el !== tooltip) el.classList.add('d-none');
+          });
+          tooltip.classList.toggle('d-none');
         };
 
-        pinsLayer.appendChild(pin);
+        pinContainer.appendChild(pin);
+        pinContainer.appendChild(tooltip);
+        pinsLayer.appendChild(pinContainer);
       });
     }
   };

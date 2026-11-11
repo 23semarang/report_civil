@@ -3080,7 +3080,7 @@ function showBocorDetailPopup(item) {
   }
 
   // =======================================================
-// FUNGSI PETA KEBOCORAN GUEST (MODE TAMU / TANPA LOGIN)
+// FUNGSI PETA KEBOCORAN GUEST (FULL SWEETALERT2 VERSION)
 // =======================================================
 let guestPzBocorHistory = null;
 
@@ -3116,7 +3116,7 @@ async function openGuestBocorMap() {
 
           <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
             <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
-              <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 440px; width: auto; object-fit: contain;">
+              <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 440px; width: 100%; object-fit: contain;">
               <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
             </div>
           </div>
@@ -3134,7 +3134,7 @@ async function openGuestBocorMap() {
       didOpen: () => {
         setTimeout(() => {
           renderGuestBocorMapPins();
-        }, 150);
+        }, 200);
       }
     });
 
@@ -3154,22 +3154,17 @@ function renderGuestBocorMapPins() {
   const selectedFloorRaw = floorSelect.value;
   const selectedFloor = selectedFloorRaw.toUpperCase();
 
-  // 1. Ambil URL Denah dari FLOOR_MAPS atau gunakan URL fallback jika FLOOR_MAPS tidak terdefinisi
+  // 1. Ambil URL Denah
   let mapSrc = "";
-  if (typeof FLOOR_MAPS !== 'undefined' && FLOOR_MAPS[selectedFloor]) {
-    mapSrc = FLOOR_MAPS[selectedFloor];
-  } else if (typeof FLOOR_MAPS !== 'undefined' && FLOOR_MAPS[selectedFloorRaw]) {
-    mapSrc = FLOOR_MAPS[selectedFloorRaw];
+  if (typeof FLOOR_MAPS !== 'undefined') {
+    const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
+    mapSrc = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"] || "LG.jpg";
+  } else {
+    mapSrc = "LG.jpg";
   }
 
-  // Jika tetap kosong/undefined, beri gambar denah default agar pasti muncul
-  if (!mapSrc) {
-    // Memastikan atribut src terisi dan tidak kosong melompong
-    mapSrc = (typeof FLOOR_MAPS !== 'undefined' && FLOOR_MAPS["LG"]) ? FLOOR_MAPS["LG"] : mapImg.src;
-  }
-
-  // PAKSA PASANG SRC KE ELEMEN GAMBAR
-  mapImg.setAttribute("src", mapSrc);
+  // Set atribut src gambar
+  mapImg.src = mapSrc;
 
   // 2. Fungsi Render Panzoom & Pin Kebocoran
   const executeRender = () => {
@@ -3238,8 +3233,8 @@ function renderGuestBocorMapPins() {
     }
   };
 
-  // Jalankan render secara langsung
   executeRender();
+  mapImg.onload = executeRender;
 }
   
 </script>
@@ -3283,45 +3278,6 @@ function renderGuestBocorMapPins() {
   </div>
 </div>
 
-  <!-- ======================================================= -->
-<!-- MODAL DENAH KEBOCORAN UNTUK GUEST / PUBLIK (NOMOR 2)   -->
-<!-- ======================================================= -->
-<div class="modal fade" id="guestBocorMapModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
-      <div class="modal-header border-bottom">
-        <h5 class="modal-title fw-bold text-primary d-flex align-items-center gap-2">
-          <i class="bi bi-droplet-half text-warning"></i> Peta Kebocoran Air (Mode Tamu)
-        </h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body p-3">
-        <div class="mb-3">
-          <label class="form-label fw-bold small text-muted">Pilih Denah Lantai:</label>
-          <select id="guestBocorMapFloorSelect" class="form-select form-select-sm" onchange="renderGuestBocorMapPins()">
-            <option value="LG" selected>LG - Lower Ground</option>
-            <option value="L1">L1 - Floor 1</option>
-            <option value="L2">L2 - Floor 2</option>
-            <option value="L3">L3 - Floor 3</option>
-            <option value="ROOFTOP">ROOFTOP</option>
-            <option value="FACADE">FACADE</option>
-          </select>
-        </div>
-
-        <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 320px;">
-          <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
-            <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 480px; width: auto; object-fit: contain;">
-            <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
-          </div>
-        </div>
-        <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail kebocoran.</small>
-      </div>
-      <div class="modal-footer border-0 pt-0">
-        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Tutup</button>
-      </div>
-    </div>
-  </div>
-</div>
   
 </body>
 </html>

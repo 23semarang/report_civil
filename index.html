@@ -21,6 +21,20 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
+    /* 1. Modal Guest Bootstrap Map */
+#guestBocorMapModal {
+  z-index: 1050 !important;
+}
+
+/* 2. SweetAlert2 Detail Laporan (Tengah) */
+.swal-high-zindex {
+  z-index: 1060 !important;
+}
+
+/* 3. SweetAlert2 Preview Foto Perbesar (Paling Depan / Topmost) */
+.swal-topmost-zindex {
+  z-index: 999999 !important;
+}
     /* Memastikan SweetAlert2 selalu di atas Bootstrap Modal (Guest Map) */
 .swal-high-zindex {
   z-index: 99999 !important;
@@ -1386,19 +1400,24 @@
   }
 
   function openImageModal(imgUrl) {
-    if (!imgUrl) return;
-    let directUrl = imgUrl;
+  if (!imgUrl) return;
 
-    if (imgUrl.includes("drive.google.com")) {
-      const match = imgUrl.match(/\/d\/([^\/]+)/) || imgUrl.match(/id=([^&]+)/);
-      if (match && match[1]) {
-        directUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1600`;
-      }
+  const directUrl = getGoogleDriveDirectLink(imgUrl);
+
+  Swal.fire({
+    imageUrl: directUrl,
+    imageAlt: 'Preview Foto Laporan',
+    showConfirmButton: false,
+    showCloseButton: true,
+    background: 'rgba(0, 0, 0, 0.9)',
+    backdrop: 'rgba(0, 0, 0, 0.8)',
+    target: 'body',
+    customClass: {
+      container: 'swal-topmost-zindex',
+      image: 'img-fluid rounded shadow-lg'
     }
-
-    fullImageEl.src = directUrl;
-    imageModal.show();
-  }
+  });
+}
 
   let pzBocor = null;
   let bocorMarkingX = null;

@@ -3154,16 +3154,24 @@ function renderGuestBocorMapPins() {
   const selectedFloorRaw = floorSelect.value;
   const selectedFloor = selectedFloorRaw.toUpperCase();
 
+  // 1. Ambil URL Denah dari FLOOR_MAPS atau gunakan URL fallback jika FLOOR_MAPS tidak terdefinisi
   let mapSrc = "";
-  if (typeof FLOOR_MAPS !== 'undefined') {
-    const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
-    mapSrc = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
+  if (typeof FLOOR_MAPS !== 'undefined' && FLOOR_MAPS[selectedFloor]) {
+    mapSrc = FLOOR_MAPS[selectedFloor];
+  } else if (typeof FLOOR_MAPS !== 'undefined' && FLOOR_MAPS[selectedFloorRaw]) {
+    mapSrc = FLOOR_MAPS[selectedFloorRaw];
   }
 
-  if (mapSrc) {
-    mapImg.src = mapSrc;
+  // Jika tetap kosong/undefined, beri gambar denah default agar pasti muncul
+  if (!mapSrc) {
+    // Memastikan atribut src terisi dan tidak kosong melompong
+    mapSrc = (typeof FLOOR_MAPS !== 'undefined' && FLOOR_MAPS["LG"]) ? FLOOR_MAPS["LG"] : mapImg.src;
   }
 
+  // PAKSA PASANG SRC KE ELEMEN GAMBAR
+  mapImg.setAttribute("src", mapSrc);
+
+  // 2. Fungsi Render Panzoom & Pin Kebocoran
   const executeRender = () => {
     if (typeof Panzoom !== 'undefined' && panzoomElem) {
       if (guestPzBocorHistory) {
@@ -3230,8 +3238,8 @@ function renderGuestBocorMapPins() {
     }
   };
 
+  // Jalankan render secara langsung
   executeRender();
-  mapImg.onload = executeRender;
 }
   
 </script>

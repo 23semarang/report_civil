@@ -21,6 +21,10 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
+    /* Memastikan SweetAlert2 selalu di atas Bootstrap Modal (Guest Map) */
+.swal-high-zindex {
+  z-index: 99999 !important;
+}
 /* Style Layer Pin agar presisi menempel di atas gambar */
 #bocorPinsLayer {
   pointer-events: none;
@@ -2437,8 +2441,6 @@ function showBocorDetailPopup(item) {
 
   if (rawPhoto && rawPhoto !== "-") {
     const photoUrls = String(rawPhoto).split(",");
-    
-    // Foto dibuat besar (max-height: 240px & width 100%) agar jelas terlihat
     photosHtml = `<div class="d-flex gap-2 overflow-auto mb-2 justify-content-center">` +
       photoUrls.map(url => {
         const cleanUrl = url.trim();
@@ -2452,29 +2454,24 @@ function showBocorDetailPopup(item) {
 
   const timestampStr = item.timestamp ? new Date(item.timestamp).toLocaleDateString("id-ID") : '-';
   const reporterStr = item.pelapor || item.username || 'Petugas';
-  const idLaporan = item.id_laporan || item.id || '';
 
   Swal.fire({
     title: `<h5 class="fw-bold text-primary mb-0" style="font-size: 1.15rem;">${item.detail_lokasi || 'Kebocoran Air'}</h5>`,
     html: `
       <div class="text-start">
-        <!-- 1. Header Informasi Ringkas dalam 1 Baris -->
         <div class="d-flex flex-wrap align-items-center justify-content-center gap-1 mb-2">
           <span class="badge bg-warning text-dark fw-bold" style="font-size: 0.72rem;">DEBIT: ${item.tingkat_keparahan || 'RINGAN'}</span>
           <span class="badge bg-secondary" style="font-size: 0.72rem;">${item.lantai || '-'} - ${item.sumber_bocor || 'Air'}</span>
         </div>
 
-        <!-- 2. Display Foto Utama (Ukuran Besar & Jelas) -->
         ${photosHtml}
 
-        <!-- 3. Informasi Padat dalam 1 Box Compact -->
         <div class="bg-light rounded-3 p-2 border">
           <div class="mb-1" style="font-size: 0.85rem;">
             <strong class="text-dark">Keterangan:</strong> 
             <span class="text-secondary">${item.keterangan || item.issue || '-'}</span>
           </div>
 
-          <!-- Footer Metadata (Pelapor & Tanggal) dibuat 1 baris ramping -->
           <div class="d-flex justify-content-between align-items-center pt-2 mt-1 border-top text-muted" style="font-size: 0.75rem;">
             <span><i class="bi bi-person-fill me-1 text-primary"></i>${reporterStr}</span>
             <span><i class="bi bi-calendar3 me-1 text-primary"></i>${timestampStr}</span>
@@ -2485,7 +2482,9 @@ function showBocorDetailPopup(item) {
     showCloseButton: true,
     confirmButtonText: 'Tutup',
     confirmButtonColor: '#4361ee',
+    target: 'body', // Memastikan modal sweetalert dirender langsung di body
     customClass: {
+      container: 'swal-high-zindex', // Kelas custom untuk menaikkan z-index
       popup: 'rounded-4 p-3',
       htmlContainer: 'm-0 pt-2'
     }

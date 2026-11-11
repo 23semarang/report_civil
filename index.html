@@ -817,55 +817,59 @@
         </form>
       </div>
 
-      <!-- 4. TAB RIWAYAT LAPORAN KEBOCORAN AIR -->
-      <div id="bocorHistoryTab" class="tab-pane fade card p-3 shadow-sm">
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-          <h5 class="fw-bold text-primary mb-0">
-            <i class="bi bi-droplet-half me-1"></i>Riwayat Laporan Kebocoran Air
-          </h5>
-          <div class="d-flex gap-2">
-            <div class="btn-group btn-group-sm" role="group">
-              <button type="button" class="btn btn-outline-primary active" id="btnViewList" onclick="switchBocorView('list')">
-                <i class="bi bi-list-task"></i> List
-              </button>
-              <button type="button" class="btn btn-outline-primary" id="btnViewMap" onclick="switchBocorView('map')">
-                <i class="bi bi-map"></i> Denah
-              </button>
-            </div>
-            <button class="btn btn-sm btn-outline-secondary" onclick="loadBocorReports()">
-              <i class="bi bi-arrow-clockwise"></i> Refresh
-            </button>
-          </div>
-        </div>
-
-        <!-- VIEW 1: MODE LIST (DEFAULT) -->
-        <div id="bocorListViewContainer">
-          <div id="bocorReportsContainer"></div>
-        </div>
-
-        <!-- VIEW 2: MODE DENAH INTERAKTIF -->
-        <div id="bocorMapViewContainer" class="d-none">
-          <div class="mb-3">
-            <label class="form-label fw-bold small">Pilih Denah Lantai:</label>
-            <select id="bocorMapFloorSelect" class="form-select form-select-sm" onchange="renderBocorMapPins()">
-              <option value="LG">LG - Lower Ground</option>
-              <option value="L1">L1 - Floor 1</option>
-              <option value="L2">L2 - Floor 2</option>
-              <option value="L3" selected>L3 - Floor 3</option>
-              <option value="ROOFTOP">ROOFTOP</option>
-              <option value="FACADE">FACADE</option>
-            </select>
-          </div>
-
-          <div class="border rounded overflow-hidden bg-light text-center position-relative" style="min-height: 300px;">
-            <div id="bocorMapHistoryWrapper" class="d-inline-block position-relative">
-              <img id="bocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
-              <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
-            </div>
-          </div>
-          <small class="text-muted d-block mt-2 text-center">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
-        </div>
+      <!-- TAB RIWAYAT LAPORAN KEBOCORAN AIR -->
+<div id="bocorHistoryTab" class="tab-pane fade card p-3 shadow-sm">
+  <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <h6 class="fw-bold text-primary mb-0 d-flex align-items-center gap-2">
+      <i class="bi bi-droplet-fill text-primary fs-5"></i> Riwayat Laporan Kebocoran Air
+    </h6>
+    
+    <!-- Tombol Switch Pill Modern & Minimalis -->
+    <div class="d-flex align-items-center gap-2">
+      <div class="bg-light p-1 rounded-pill d-inline-flex border" style="background-color: #f1f5f9 !important;">
+        <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold transition-all border-0 shadow-none btn-primary" id="btnViewList" onclick="switchBocorView('list')" style="font-size: 0.8rem; padding-top: 4px; padding-bottom: 4px;">
+          <i class="bi bi-list-task me-1"></i> List
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill px-3 fw-semibold transition-all border-0 shadow-none text-secondary" id="btnViewMap" onclick="switchBocorView('map')" style="font-size: 0.8rem; padding-top: 4px; padding-bottom: 4px;">
+          <i class="bi bi-map me-1"></i> Denah
+        </button>
       </div>
+
+      <button class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" onclick="loadBocorReports()" style="width: 32px; height: 32px;" title="Refresh Data">
+        <i class="bi bi-arrow-clockwise"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- VIEW 1: MODE LIST (DEFAULT) -->
+  <div id="bocorListViewContainer">
+    <div id="bocorReportsContainer"></div>
+  </div>
+
+  <!-- VIEW 2: MODE DENAH INTERAKTIF -->
+  <div id="bocorMapViewContainer" class="d-none">
+    <div class="mb-3">
+      <label class="form-label fw-bold small text-muted">Pilih Denah Lantai:</label>
+      <select id="bocorMapFloorSelect" class="form-select form-select-sm" onchange="renderBocorMapPins()">
+        <!-- Pilihan LG diberi atribut selected -->
+        <option value="LG" selected>LG - Lower Ground</option>
+        <option value="L1">L1 - Floor 1</option>
+        <option value="L2">L2 - Floor 2</option>
+        <option value="L3">L3 - Floor 3</option>
+        <option value="ROOFTOP">ROOFTOP</option>
+        <option value="FACADE">FACADE</option>
+      </select>
+    </div>
+
+    <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
+      <div id="bocorMapHistoryWrapper" class="d-inline-block position-relative">
+        <img id="bocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
+        <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
+      </div>
+    </div>
+    <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
+  </div>
+</div>
 
       <!-- 5. TAB UTAMA DEFAULT: RIWAYAT LAPORAN DIRECT -->
       <div id="listTab" class="tab-pane fade show active">
@@ -2207,24 +2211,36 @@
   // =======================================================
 
   function switchBocorView(mode) {
-    const listView = document.getElementById("bocorListViewContainer");
-    const mapView = document.getElementById("bocorMapViewContainer");
-    const btnList = document.getElementById("btnViewList");
-    const btnMap = document.getElementById("btnViewMap");
+  const listView = document.getElementById("bocorListViewContainer");
+  const mapView = document.getElementById("bocorMapViewContainer");
+  const btnList = document.getElementById("btnViewList");
+  const btnMap = document.getElementById("btnViewMap");
 
-    if (mode === 'map') {
-      if (listView) listView.classList.add("d-none");
-      if (mapView) mapView.classList.remove("d-none");
-      if (btnList) btnList.classList.remove("active");
-      if (btnMap) btnMap.classList.add("active");
-      renderBocorMapPins();
-    } else {
-      if (mapView) mapView.classList.add("d-none");
-      if (listView) listView.classList.remove("d-none");
-      if (btnMap) btnMap.classList.remove("active");
-      if (btnList) btnList.classList.add("active");
+  if (mode === 'map') {
+    if (listView) listView.classList.add("d-none");
+    if (mapView) mapView.classList.remove("d-none");
+    
+    // Style Active Tombol Denah
+    if (btnList) {
+      btnList.className = "btn btn-sm rounded-pill px-3 fw-semibold transition-all border-0 shadow-none text-secondary";
+    }
+    if (btnMap) {
+      btnMap.className = "btn btn-sm rounded-pill px-3 fw-semibold transition-all border-0 shadow-none btn-primary text-white shadow-sm";
+    }
+    renderBocorMapPins();
+  } else {
+    if (mapView) mapView.classList.add("d-none");
+    if (listView) listView.classList.remove("d-none");
+    
+    // Style Active Tombol List
+    if (btnMap) {
+      btnMap.className = "btn btn-sm rounded-pill px-3 fw-semibold transition-all border-0 shadow-none text-secondary";
+    }
+    if (btnList) {
+      btnList.className = "btn btn-sm rounded-pill px-3 fw-semibold transition-all border-0 shadow-none btn-primary text-white shadow-sm";
     }
   }
+}
 
   async function loadBocorReports() {
   const container = document.getElementById("bocorReportsContainer") || document.getElementById("bocorReportsList");

@@ -21,465 +21,419 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-    /* Container Tooltip Melayang di Atas/Bawah Pin */
-.pin-tooltip-card {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%) scale(var(--pin-scale, 1));
-  transform-origin: bottom center;
-  width: 220px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  border: 1px solid #e2e8f0;
-  z-index: 100;
-  pointer-events: auto;
-  cursor: default;
-}
+  /* =======================================================
+     1. STYLING PIN & TOOLTIP POPUP (TETAP NEMPEL PAS ZOOM)
+     ======================================================= */
+  #bocorPinsLayer, #guestBocorPinsLayer {
+    pointer-events: none;
+  }
 
-/* Tooltip jika posisi Normal (Di Atas Pin) */
-.pin-tooltip-card.tooltip-top {
-  bottom: 125%;
-  transform-origin: bottom center;
-}
-.pin-tooltip-card.tooltip-top::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 6px;
-  border-style: solid;
-  border-color: #ffffff transparent transparent transparent;
-}
+  /* Pin Kebocoran Utama (Elemen Induk Popup) */
+  .bocor-pin {
+    position: absolute;
+    transform: translate(-50%, -50%) scale(var(--pin-scale, 1));
+    transform-origin: center center;
+    width: 30px;
+    height: 30px;
+    background-color: #ef4444;
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 10;
+    animation: pulse-pin 1.8s infinite;
+  }
 
-/* Tooltip jika Pin Mepet Atas (Di Bawah Pin) */
-.pin-tooltip-card.tooltip-bottom {
-  top: 125%;
-  transform-origin: top center;
-}
-.pin-tooltip-card.tooltip-bottom::after {
-  content: '';
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  border-width: 6px;
-  border-style: solid;
-  border-color: transparent transparent #ffffff transparent;
-}
+  .bocor-pin:hover {
+    background-color: #dc2626;
+    z-index: 20;
+  }
 
-/* Layout Scrollable Multi Foto */
-.tooltip-photos-wrapper {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-.tooltip-photos-wrapper::-webkit-scrollbar {
-  height: 4px;
-}
-.tooltip-photos-wrapper::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-.tooltip-img-item {
-  width: 100px;
-  height: 85px;
-  object-fit: cover;
-  border-radius: 8px;
-  flex-shrink: 0;
-  cursor: pointer;
-  border: 1px solid #e2e8f0;
-}
-    /* 1. Modal Guest Bootstrap Map */
-#guestBocorMapModal {
-  z-index: 1050 !important;
-}
+  @keyframes pulse-pin {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  }
 
-/* 2. SweetAlert2 Detail Laporan (Tengah) */
-.swal-high-zindex {
-  z-index: 1060 !important;
-}
+  /* Popup Tooltip Mengapung (Child Elemen dari Pin) */
+  .pin-tooltip-card {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    border: 1px solid #e2e8f0;
+    z-index: 100;
+    pointer-events: auto;
+    cursor: default;
+  }
 
-/* 3. SweetAlert2 Preview Foto Perbesar (Paling Depan / Topmost) */
-.swal-topmost-zindex {
-  z-index: 999999 !important;
-}
-    /* Memastikan SweetAlert2 selalu di atas Bootstrap Modal (Guest Map) */
-.swal-high-zindex {
-  z-index: 99999 !important;
-}
-/* Style Layer Pin agar presisi menempel di atas gambar */
-#bocorPinsLayer {
-  pointer-events: none;
-}
+  /* Tooltip Normal (Posisi Di Atas Pin) */
+  .pin-tooltip-card.tooltip-top {
+    bottom: 125%;
+    transform-origin: bottom center;
+  }
+  .pin-tooltip-card.tooltip-top::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: #ffffff transparent transparent transparent;
+  }
 
-/* Styling Pin Kebocoran Animasi Kedip pulse-pin */
-.bocor-pin {
-  position: absolute;
-  transform: translate(-50%, -50%) scale(var(--pin-scale, 1));
-  width: 30px;
-  height: 30px;
-  background-color: #ef4444;
-  color: #ffffff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.8);
-  cursor: pointer;
-  pointer-events: auto;
-  z-index: 10;
-  animation: pulse-pin 1.8s infinite;
-  transition: background-color 0.2s ease;
-}
+  /* Tooltip Jika Pin Mepet Atas (Posisi Di Bawah Pin) */
+  .pin-tooltip-card.tooltip-bottom {
+    top: 125%;
+    transform-origin: top center;
+  }
+  .pin-tooltip-card.tooltip-bottom::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent #ffffff transparent;
+  }
 
-.bocor-pin:hover {
-  background-color: #dc2626;
-  z-index: 20;
-}
+  /* Layout Horizontal Multi Foto Slider */
+  .tooltip-photos-wrapper {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .tooltip-photos-wrapper::-webkit-scrollbar {
+    height: 4px;
+  }
+  .tooltip-photos-wrapper::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  .tooltip-img-item {
+    width: 100px;
+    height: 85px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+  }
 
-@keyframes pulse-pin {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.8); }
-  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-}
-    
-    /* Style Tombol Debit Air */
-.btn-debit-info, .btn-debit-warning, .btn-debit-danger {
-  color: #6c757d !important;
-  border: 1px solid #dee2e6 !important;
-  background-color: #f8f9fa !important;
-  font-weight: 500;
-  transition: all 0.2s ease-in-out;
-}
+  /* =======================================================
+     2. Z-INDEX SYSTEM (AGAR PREVIEW FOTO TIDAK MENUTUPI PETA)
+     ======================================================= */
+  #guestBocorMapModal { z-index: 1050 !important; }
+  .swal-high-zindex { z-index: 1060 !important; }
+  .swal-topmost-zindex { z-index: 999999 !important; }
 
-.btn-debit-info:hover, .btn-debit-warning:hover, .btn-debit-danger:hover {
-  background-color: #e9ecef !important;
-  color: #495057 !important;
-}
+  /* =======================================================
+     3. FORM DEBIT AIR & DENAH CONTROLS
+     ======================================================= */
+  .btn-debit-info, .btn-debit-warning, .btn-debit-danger {
+    color: #6c757d !important;
+    border: 1px solid #dee2e6 !important;
+    background-color: #f8f9fa !important;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+  }
+  .btn-debit-info:hover, .btn-debit-warning:hover, .btn-debit-danger:hover {
+    background-color: #e9ecef !important;
+    color: #495057 !important;
+  }
+  .btn-check:checked + .btn-debit-info {
+    background-color: #0dcaf0 !important;
+    border-color: #0dcaf0 !important;
+    color: #fff !important;
+    font-weight: bold;
+  }
+  .btn-check:checked + .btn-debit-warning {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #212529 !important;
+    font-weight: bold;
+  }
+  .btn-check:checked + .btn-debit-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: #fff !important;
+    font-weight: bold;
+  }
 
-.btn-check:checked + .btn-debit-info {
-  background-color: #0dcaf0 !important;
-  border-color: #0dcaf0 !important;
-  color: #fff !important;
-  font-weight: bold;
-}
+  #mapContainer, #bocorMapContainer, .map-wrapper, #mapImage, .svg-map-container {
+    touch-action: none !important;
+    user-select: none !important;
+    -webkit-user-drag: none !important;
+  }
 
-.btn-check:checked + .btn-debit-warning {
-  background-color: #ffc107 !important;
-  border-color: #ffc107 !important;
-  color: #212529 !important;
-  font-weight: bold;
-}
+  /* =======================================================
+     4. MODERN DASHBOARD & LAYOUT STYLES
+     ======================================================= */
+  .sticky-header {
+    position: sticky;
+    top: 10px;
+    z-index: 1030;
+    transition: all 0.3s ease;
+  }
+  .sticky-header.scrolled {
+    background: rgba(255, 255, 255, 0.85) !important;
+    backdrop-filter: blur(10px);
+    padding: 8px 14px !important;
+  }
+  .sticky-header.scrolled .user-text-group {
+    display: none !important;
+  }
 
-.btn-check:checked + .btn-debit-danger {
-  background-color: #dc3545 !important;
-  border-color: #dc3545 !important;
-  color: #fff !important;
-  font-weight: bold;
-}
+  .offcanvas {
+    border-radius: 20px 0 0 20px !important;
+    background-color: #ffffff;
+  }
+  .offcanvas .nav-link {
+    color: #334155;
+    font-weight: 600;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 6px;
+  }
+  .offcanvas .nav-link.active {
+    background-color: #4361ee !important;
+    color: #ffffff !important;
+  }
 
-/* KODE TAMBAHAN UNTUK MEMASTIKAN DENAH BISA DI-ZOOM & DI-DRAG KEMBALI */
-#mapContainer, #bocorMapContainer, .map-wrapper, #mapImage, .svg-map-container {
-  touch-action: none !important;
-  user-select: none !important;
-  -webkit-user-drag: none !important;
-}
-    /* STICKY HEADER DENGAN TRANSISI HIDE NAMA AKUN */
-.sticky-header {
-  position: sticky;
-  top: 10px;
-  z-index: 1030;
-  transition: all 0.3s ease;
-}
+  :root {
+    --bg-main: #f4f6f9;
+    --sidebar-bg: #1a1d20;
+    --text-main: #2b2d42;
+    --text-muted: #8d99ae;
+    --border-color: #e2e8f0;
+  }
 
-.sticky-header.scrolled {
-  background: rgba(255, 255, 255, 0.85) !important;
-  backdrop-filter: blur(10px);
-  padding: 8px 14px !important;
-}
+  body {
+    background-color: var(--bg-main);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: var(--text-main);
+    -webkit-font-smoothing: antialiased;
+  }
 
-.sticky-header.scrolled .user-text-group {
-  display: none !important; /* Hide nama akun saat scroll down */
-}
+  .card {
+    background: #ffffff !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
+  }
+  .card-report {
+    margin-bottom: 16px;
+    border-left: 5px solid #4361ee !important;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card-report:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06) !important;
+  }
 
-/* OFFNAV SIDEBAR STYLING */
-.offcanvas {
-  border-radius: 20px 0 0 20px !important;
-  background-color: #ffffff;
-}
-.offcanvas .nav-link {
-  color: #334155;
-  font-weight: 600;
-  padding: 12px 16px;
-  border-radius: 12px;
-  margin-bottom: 6px;
-}
-.offcanvas .nav-link.active {
-  background-color: #4361ee !important;
-  color: #ffffff !important;
-}
-    /* ==========================================
-       MODERN SAAS DASHBOARD STYLE (DARK & PASTEL)
-       ========================================== */
-    :root {
-      --bg-main: #f4f6f9;
-      --sidebar-bg: #1a1d20;
-      --text-main: #2b2d42;
-      --text-muted: #8d99ae;
-      --border-color: #e2e8f0;
-    }
+  .status-REPORTED { border-left-color: #ef4444 !important; }
+  .status-PROGRESS { border-left-color: #f59e0b !important; }
+  .status-RESOLVED { border-left-color: #10b981 !important; }
 
-    body {
-      background-color: var(--bg-main);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: var(--text-main);
-      -webkit-font-smoothing: antialiased;
-    }
+  .card-pastel-blue { background: #eef4ff !important; border: none !important; border-radius: 20px !important; color: #1d3557; }
+  .card-pastel-purple { background: #f3e8ff !important; border: none !important; border-radius: 20px !important; color: #4a154b; }
+  .card-pastel-green { background: #e8f5e9 !important; border: none !important; border-radius: 20px !important; color: #1b5e20; }
+  .card-pastel-yellow { background: #fff8e1 !important; border: none !important; border-radius: 20px !important; color: #f57f17; }
 
-    /* KARTU MODUL & TAMPILAN CONTAINER */
-    .card {
-      background: #ffffff !important;
-      border: 1px solid var(--border-color) !important;
-      border-radius: 20px !important;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03) !important;
-    }
+  .sidebar {
+    background-color: var(--sidebar-bg) !important;
+    border-radius: 0 24px 24px 0;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.04);
+  }
+  .sidebar .nav-link {
+    color: var(--text-muted);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  .sidebar .nav-link:hover, .sidebar .nav-link.active {
+    background-color: #2b2d42;
+    color: #ffffff;
+  }
 
-    .card-report {
-      margin-bottom: 16px;
-      border-left: 5px solid #4361ee !important;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .card-report:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06) !important;
-    }
+  .btn {
+    font-weight: 600 !important;
+    border-radius: 12px !important;
+    padding: 10px 18px;
+    transition: all 0.2s ease !important;
+  }
+  .btn-primary { 
+    background-color: #4361ee !important; 
+    border-color: #4361ee !important;
+    box-shadow: 0 4px 14px rgba(67, 97, 238, 0.25) !important;
+  }
+  .btn-primary:hover { 
+    background-color: #3a0ca3 !important; 
+    border-color: #3a0ca3 !important;
+  }
+  .btn-success { background-color: #10b981 !important; border-color: #10b981 !important; }
+  .btn-danger { background-color: #ef4444 !important; border-color: #ef4444 !important; }
+  .btn-warning { background-color: #f59e0b !important; border-color: #f59e0b !important; color: #fff !important; }
 
-    .status-REPORTED { border-left-color: #ef4444 !important; }
-    .status-PROGRESS { border-left-color: #f59e0b !important; }
-    .status-RESOLVED { border-left-color: #10b981 !important; }
+  .form-control, .form-select {
+    background-color: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    padding: 11px 15px;
+    font-size: 0.9rem;
+    color: #334155;
+  }
+  .form-control:focus, .form-select:focus {
+    background-color: #ffffff !important;
+    border-color: #4361ee !important;
+    box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.12) !important;
+  }
 
-    /* KARTU STATISTIK PASTEL */
-    .card-pastel-blue {
-      background: #eef4ff !important;
-      border: none !important;
-      border-radius: 20px !important;
-      color: #1d3557;
-    }
-    .card-pastel-purple {
-      background: #f3e8ff !important;
-      border: none !important;
-      border-radius: 20px !important;
-      color: #4a154b;
-    }
-    .card-pastel-green {
-      background: #e8f5e9 !important;
-      border: none !important;
-      border-radius: 20px !important;
-      color: #1b5e20;
-    }
-    .card-pastel-yellow {
-      background: #fff8e1 !important;
-      border: none !important;
-      border-radius: 20px !important;
-      color: #f57f17;
-    }
+  .nav-pills {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+  }
+  .nav-pills::-webkit-scrollbar { display: none; }
+  .nav-pills .nav-link {
+    font-size: 0.85rem !important;
+    padding: 8px 14px !important;
+    font-weight: 600;
+    border-radius: 10px !important;
+    color: #64748b;
+    flex: 0 0 auto !important;
+  }
+  .nav-pills .nav-link.active {
+    background-color: #4361ee !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
+  }
 
-    /* SIDEBAR GELAP */
-    .sidebar {
-      background-color: var(--sidebar-bg) !important;
-      border-radius: 0 24px 24px 0;
-      box-shadow: 4px 0 24px rgba(0, 0, 0, 0.04);
-    }
-    .sidebar .nav-link {
-      color: var(--text-muted);
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-    .sidebar .nav-link:hover, 
-    .sidebar .nav-link.active {
-      background-color: #2b2d42;
-      color: #ffffff;
-    }
+  .inspection-item, .chk-item-card .card-body {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    padding: 14px 16px !important;
+  }
+  .inspection-label {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+    flex: 1;
+  }
+  .status-btn-group {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 6px !important;
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+  }
+  .btn-status-pass, .btn-status-fail,
+  .btn-success.btn-sm, .btn-danger.btn-sm, 
+  .btn-outline-success.btn-sm, .btn-outline-danger.btn-sm {
+    font-size: 0.75rem !important;
+    font-weight: 700 !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    min-width: 58px !important;
+    text-align: center;
+  }
 
-    /* TOMBOL ELEGAN & MODERN */
-    .btn {
-      font-weight: 600 !important;
-      border-radius: 12px !important;
-      padding: 10px 18px;
-      transition: all 0.2s ease !important;
-    }
-    .btn-primary { 
-      background-color: #4361ee !important; 
-      border-color: #4361ee !important;
-      box-shadow: 0 4px 14px rgba(67, 97, 238, 0.25) !important;
-    }
-    .btn-primary:hover { 
-      background-color: #3a0ca3 !important; 
-      border-color: #3a0ca3 !important;
-    }
-    .btn-success { background-color: #10b981 !important; border-color: #10b981 !important; }
-    .btn-danger { background-color: #ef4444 !important; border-color: #ef4444 !important; }
-    .btn-warning { background-color: #f59e0b !important; border-color: #f59e0b !important; color: #fff !important; }
+  .map-outer-wrapper {
+    position: relative;
+    border: 2px dashed #4361ee;
+    border-radius: 16px;
+    overflow: hidden;
+    background-color: #f8fafc;
+    width: 100%;
+    height: 280px;
+    touch-action: none;
+    user-select: none;
+  }
+  #viewMapContainer, .map-container {
+    transition: none !important;
+    touch-action: none !important;
+    user-select: none !important;
+  }
+  .map-image { 
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block; 
+    user-select: none; 
+    -webkit-user-drag: none; 
+  }
+  .map-controls {
+    position: absolute; 
+    top: 12px; 
+    right: 12px; 
+    z-index: 20; 
+    display: flex; 
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.85); 
+    backdrop-filter: blur(8px); 
+    padding: 6px; 
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+  }
+  .map-controls button {
+    font-size: 0.8rem !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+  }
 
-    /* FORM INPUT & SELECT */
-    .form-control, .form-select {
-      background-color: #f8fafc !important;
-      border: 1px solid #e2e8f0 !important;
-      border-radius: 12px !important;
-      padding: 11px 15px;
-      font-size: 0.9rem;
-      color: #334155;
-    }
-    .form-control:focus, .form-select:focus {
-      background-color: #ffffff !important;
-      border-color: #4361ee !important;
-      box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.12) !important;
-    }
+  .map-pin-water {
+    position: absolute; 
+    width: 22px; 
+    height: 22px; 
+    background-color: #0284c7;
+    border: 3px solid #ffffff;
+    border-radius: 50%; 
+    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.35), 0 4px 8px rgba(0,0,0,0.25); 
+    pointer-events: none; 
+    z-index: 10;
+  }
+  .map-pin {
+    position: absolute; 
+    width: 20px; 
+    height: 20px; 
+    background-color: #ef4444; 
+    border: 3px solid #ffffff;
+    border-radius: 50%; 
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35), 0 4px 8px rgba(0,0,0,0.25); 
+    pointer-events: none; 
+    z-index: 10;
+  }
 
-    /* NAV TAB RESPONSIVE */
-    .nav-pills {
-      flex-wrap: nowrap !important;
-      overflow-x: auto !important;
-      white-space: nowrap !important;
-      -webkit-overflow-scrolling: touch;
-      padding-bottom: 6px;
-    }
-    .nav-pills::-webkit-scrollbar { display: none; }
-    .nav-pills .nav-link {
-      font-size: 0.85rem !important;
-      padding: 8px 14px !important;
-      font-weight: 600;
-      border-radius: 10px !important;
-      color: #64748b;
-      flex: 0 0 auto !important;
-    }
-    .nav-pills .nav-link.active {
-      background-color: #4361ee !important;
-      color: #ffffff !important;
-      box-shadow: 0 4px 12px rgba(67, 97, 238, 0.2);
-    }
+  .img-preview {
+    width: 100%; 
+    max-height: 180px; 
+    object-fit: cover; 
+    border-radius: 12px; 
+    border: 1px solid var(--border-color);
+  }
 
-    /* INSPECTION ITEMS & STATUS BUTTONS */
-    .inspection-item, 
-    .chk-item-card .card-body {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: space-between !important;
-      gap: 12px !important;
-      padding: 14px 16px !important;
-    }
-    .inspection-label {
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: #1e293b;
-      margin: 0;
-      flex: 1;
-    }
-    .status-btn-group {
-      display: flex !important;
-      flex-direction: row !important;
-      gap: 6px !important;
-      margin-left: auto !important;
-      flex-shrink: 0 !important;
-    }
-    .btn-status-pass, .btn-status-fail,
-    .btn-success.btn-sm, .btn-danger.btn-sm, 
-    .btn-outline-success.btn-sm, .btn-outline-danger.btn-sm {
-      font-size: 0.75rem !important;
-      font-weight: 700 !important;
-      padding: 6px 12px !important;
-      border-radius: 8px !important;
-      min-width: 58px !important;
-      text-align: center;
-    }
-
-    /* DENAH INTERAKTIF PANZOOM CONTAINER */
-    .map-outer-wrapper {
-      position: relative;
-      border: 2px dashed #4361ee;
-      border-radius: 16px;
-      overflow: hidden;
-      background-color: #f8fafc;
-      width: 100%;
-      height: 280px;
-      touch-action: none;
-      user-select: none;
-    }
-    #viewMapContainer, .map-container {
-      transition: none !important;
-      touch-action: none !important;
-      user-select: none !important;
-    }
-    .map-image { 
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block; 
-      user-select: none; 
-      -webkit-user-drag: none; 
-    }
-    .map-controls {
-      position: absolute; 
-      top: 12px; 
-      right: 12px; 
-      z-index: 20; 
-      display: flex; 
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.85); 
-      backdrop-filter: blur(8px); 
-      padding: 6px; 
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-    }
-    .map-controls button {
-      font-size: 0.8rem !important;
-      padding: 4px 10px !important;
-      border-radius: 6px !important;
-    }
-
-    /* PIN MARKER DENAH */
-    .map-pin-water {
-      position: absolute; 
-      width: 22px; 
-      height: 22px; 
-      background-color: #0284c7;
-      border: 3px solid #ffffff;
-      border-radius: 50%; 
-      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.35), 0 4px 8px rgba(0,0,0,0.25); 
-      pointer-events: none; 
-      z-index: 10;
-    }
-    .map-pin {
-      position: absolute; 
-      width: 20px; 
-      height: 20px; 
-      background-color: #ef4444; 
-      border: 3px solid #ffffff;
-      border-radius: 50%; 
-      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35), 0 4px 8px rgba(0,0,0,0.25); 
-      pointer-events: none; 
-      z-index: 10;
-    }
-
-    .img-preview {
-      width: 100%; 
-      max-height: 180px; 
-      object-fit: cover; 
-      border-radius: 12px; 
-      border: 1px solid var(--border-color);
-    }
-
-    @media (max-width: 576px) {
-      .container { padding-left: 12px !important; padding-right: 12px !important; }
-      h3, h5 { font-size: 1.15rem !important; }
-    }
-  </style>
+  @media (max-width: 576px) {
+    .container { padding-left: 12px !important; padding-right: 12px !important; }
+    h3, h5 { font-size: 1.15rem !important; }
+  }
+</style>
 </head>
 <body>
 
@@ -3151,6 +3105,28 @@ function showBocorDetailPopup(item) {
   }
 
   // =======================================================
+// FUNGSI PREVIEW FOTO GUEST (BEBAS DARI BUG SLIDE/CLOSED)
+// =======================================================
+function openGuestImagePreview(imgUrl) {
+  if (!imgUrl) return;
+
+  const directUrl = getGoogleDriveDirectLink(imgUrl);
+  const previewImg = document.getElementById("previewModalImage");
+  const previewModalEl = document.getElementById("imagePreviewModal");
+
+  if (previewImg && previewModalEl) {
+    previewImg.src = directUrl;
+    
+    // Gunakan Bootstrap Modal Instance agar SweetAlert2 Peta di belakangnya tetap terbuka
+    const bsModal = bootstrap.Modal.getOrCreateInstance(previewModalEl);
+    
+    // Pastikan z-index modal preview foto berada di atas SweetAlert2
+    previewModalEl.style.zIndex = "999999";
+    bsModal.show();
+  }
+}
+
+// =======================================================
 // FUNGSI PETA KEBOCORAN GUEST (FULL SWEETALERT2 VERSION)
 // =======================================================
 let guestPzBocorHistory = null;
@@ -3187,7 +3163,7 @@ async function openGuestBocorMap() {
 
           <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
             <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
-              <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 440px; width: 100%; object-fit: contain;">
+              <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 440px; width: auto; object-fit: contain;">
               <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
             </div>
           </div>
@@ -3205,7 +3181,7 @@ async function openGuestBocorMap() {
       didOpen: () => {
         setTimeout(() => {
           renderGuestBocorMapPins();
-        }, 200);
+        }, 150);
       }
     });
 
@@ -3214,6 +3190,9 @@ async function openGuestBocorMap() {
   }
 }
 
+// =======================================================
+// FUNGSI RENDER PIN & TOOLTIP (TERKUNCI PRESISI SAAT ZOOM)
+// =======================================================
 function renderGuestBocorMapPins() {
   const floorSelect = document.getElementById("guestBocorMapFloorSelect");
   const mapImg = document.getElementById("guestBocorFloorMapImage");
@@ -3252,7 +3231,7 @@ function renderGuestBocorMapPins() {
         const currentScale = e.detail.scale || 1;
         const pinScale = 1 / currentScale;
         
-        document.querySelectorAll('#guestBocorPinsLayer .bocor-pin, #guestBocorPinsLayer .pin-tooltip-card').forEach(el => {
+        document.querySelectorAll('#guestBocorPinsLayer .bocor-pin').forEach(el => {
           el.style.setProperty('--pin-scale', pinScale);
         });
       });
@@ -3281,22 +3260,15 @@ function renderGuestBocorMapPins() {
         const posY = item.marking_y ?? item.markingY ?? item.y;
         const posYNum = parseFloat(posY);
 
-        // Container Utama Pin + Popup
-        const pinContainer = document.createElement("div");
-        pinContainer.style.position = "absolute";
-        pinContainer.style.left = `${posX}%`;
-        pinContainer.style.top = `${posY}%`;
-
-        // Ikon Pin
+        // 1. Ikon Pin Utama
         const pin = document.createElement("div");
         pin.className = "bocor-pin";
-        pin.style.position = "relative";
-        pin.style.left = "0";
-        pin.style.top = "0";
+        pin.style.left = `${posX}%`;
+        pin.style.top = `${posY}%`;
         pin.title = `${item.detail_lokasi || 'Lokasi Kebocoran'}`;
         pin.innerHTML = `<i class="bi bi-droplet-fill"></i>`;
 
-        // Multi-Photo Handler (Menampilkan Banyak Foto sekaligus)
+        // 2. Multi-Photo Handler
         const rawPhoto = item.url_foto || item.foto || item.urlFoto || item.photo || item.photos || "";
         let photoHtml = "";
         if (rawPhoto && rawPhoto !== "-") {
@@ -3305,14 +3277,17 @@ function renderGuestBocorMapPins() {
             photoUrls.map(u => {
               const cleanUrl = u.trim();
               const directImgUrl = getGoogleDriveDirectLink(cleanUrl);
-              return `<img src="${directImgUrl}" class="tooltip-img-item" onclick="event.stopPropagation(); openImageModal('${cleanUrl}')">`;
+              return `<img src="${directImgUrl}" class="tooltip-img-item" onclick="event.stopPropagation(); openGuestImagePreview('${cleanUrl}')">`;
             }).join("") +
             `</div>`;
+        } else {
+          photoHtml = `<div class="text-muted small text-center py-1 bg-light rounded mb-2 border" style="font-size:0.7rem;">Tidak ada foto</div>`;
         }
 
-        // Deteksi Posisi: Jika Y < 35% (mepet garis atas), posisikan tooltip di bawah pin
+        // 3. Posisikan Tooltip: Otomatis pindah ke bawah jika pin mepet atas (Y < 35%)
         const positionClass = posYNum < 35 ? "tooltip-bottom" : "tooltip-top";
 
+        // 4. Tooltip dimasukkan sebagai CHILD langsung di dalam elemen Pin
         const tooltip = document.createElement("div");
         tooltip.id = `tooltip-pin-${index}`;
         tooltip.className = `pin-tooltip-card ${positionClass} p-2 d-none text-start`;
@@ -3323,7 +3298,7 @@ function renderGuestBocorMapPins() {
           </div>
           <h6 class="fw-bold text-primary mb-1 text-truncate" style="font-size: 0.8rem;">${item.detail_lokasi || 'Kebocoran Air'}</h6>
           ${photoHtml}
-          <div class="bg-light p-1.5 rounded border text-muted" style="font-size: 0.7rem;">
+          <div class="bg-light p-1 rounded border text-muted" style="font-size: 0.7rem;">
             <strong>Ket:</strong> ${item.keterangan || item.issue || '-'}
           </div>
         `;
@@ -3332,10 +3307,9 @@ function renderGuestBocorMapPins() {
           const currentScale = guestPzBocorHistory.getScale() || 1;
           const pinScale = 1 / currentScale;
           pin.style.setProperty('--pin-scale', pinScale);
-          tooltip.style.setProperty('--pin-scale', pinScale);
         }
 
-        // Toggle Buka/Tutup Tooltip
+        // 5. Toggle Buka/Tutup Tooltip saat Pin diklik
         pin.onclick = (e) => {
           e.stopPropagation();
           document.querySelectorAll('#guestBocorPinsLayer .pin-tooltip-card').forEach(el => {
@@ -3344,9 +3318,8 @@ function renderGuestBocorMapPins() {
           tooltip.classList.toggle('d-none');
         };
 
-        pinContainer.appendChild(pin);
-        pinContainer.appendChild(tooltip);
-        pinsLayer.appendChild(pinContainer);
+        pin.appendChild(tooltip);
+        pinsLayer.appendChild(pin);
       });
     }
   };

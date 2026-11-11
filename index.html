@@ -3080,21 +3080,12 @@ function showBocorDetailPopup(item) {
   }
 
   // =======================================================
-// FUNGSI PETA KEBOCORAN UNTUK GUEST / TANPA LOGIN (NOMOR 3)
+// FUNGSI PETA KEBOCORAN GUEST (SWEETALERT2 VERSION - BEBAS BUG)
 // =======================================================
 let guestPzBocorHistory = null;
-let guestBocorMapModalObj = null;
 
-// Dipanggil saat tombol "Lihat Peta Kebocoran Air (Tanpa Login)" diklik
 async function openGuestBocorMap() {
-  if (!guestBocorMapModalObj) {
-    guestBocorMapModalObj = new bootstrap.Modal(document.getElementById('guestBocorMapModal'));
-  }
-  
-  // Tampilkan Modal Guest
-  guestBocorMapModalObj.show();
-
-  // Tampilkan indikator loading
+  // 1. Tampilkan Indikator Loading
   Swal.fire({
     title: 'Memuat Data Peta...',
     allowOutsideClick: false,
@@ -3102,20 +3093,58 @@ async function openGuestBocorMap() {
   });
 
   try {
+    // 2. Fetch Data dari API
     const res = await fetchAPI({ action: "getBocorReports" });
     globalBocorReportsData = (res && res.data) ? res.data : [];
     Swal.close();
-    
-    // Render denah setelah modal terbuka
-    setTimeout(() => {
-      renderGuestBocorMapPins();
-    }, 300);
+
+    // 3. Tampilkan Peta menggunakan SweetAlert2 Popup
+    Swal.fire({
+      title: `<h5 class="fw-bold text-primary mb-0 d-flex align-items-center justify-content-center gap-2">
+                <i class="bi bi-droplet-half text-warning"></i> Peta Kebocoran Air (Mode Tamu)
+              </h5>`,
+      html: `
+        <div class="text-start">
+          <div class="mb-3">
+            <label class="form-label fw-bold small text-muted">Pilih Denah Lantai:</label>
+            <select id="guestBocorMapFloorSelect" class="form-select form-select-sm" onchange="renderGuestBocorMapPins()">
+              <option value="LG" selected>LG - Lower Ground</option>
+              <option value="L1">L1 - Floor 1</option>
+              <option value="L2">L2 - Floor 2</option>
+              <option value="L3">L3 - Floor 3</option>
+              <option value="ROOFTOP">ROOFTOP</option>
+              <option value="FACADE">FACADE</option>
+            </select>
+          </div>
+
+          <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
+            <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
+              <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 440px; width: auto; object-fit: contain;">
+              <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
+            </div>
+          </div>
+          <small class="text-muted d-block mt-2 text-center style="font-size: 0.75rem;">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail kebocoran.</small>
+        </div>
+      `,
+      showCloseButton: true,
+      confirmButtonText: 'Tutup',
+      confirmButtonColor: '#6c757d',
+      width: '92%',
+      maxWidth: '750px',
+      customClass: {
+        popup: 'rounded-4 p-3'
+      },
+      didOpen: () => {
+        // Render pin denah setelah popup Swal terbuka
+        renderGuestBocorMapPins();
+      }
+    });
+
   } catch (err) {
     Swal.fire('Gagal', 'Gagal memuat data riwayat kebocoran air.', 'error');
   }
 }
 
-// Fungsi Render Pin Khusus Mode Guest
 function renderGuestBocorMapPins() {
   const floorSelect = document.getElementById("guestBocorMapFloorSelect");
   if (!floorSelect) return;
@@ -3131,32 +3160,34 @@ function renderGuestBocorMapPins() {
     mapImg.src = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
   }
 
-  mapImg.onload = () => {
-    // Inisialisasi Panzoom untuk Peta Guest
-    if (typeof Panzoom !== 'undefined' && panzoomElem) {
-      if (!guestPzBocorHistory) {
-        guestPzBocorHistory = Panzoom(panzoomElem, {
-          maxScale: 4,
-          minScale: 1,
-          contain: 'outside',
-          cursor: 'grab'
-        });
-        
-        panzoomElem.addEventListener('panzoomchange', (e) => {
-          const currentScale = e.detail.scale || 1;
-          const pinScale = 1 / currentScale;
-          document.querySelectorAll('#guestBocorPinsLayer .bocor-pin').forEach(pin => {
-            pin.style.setProperty('--pin-scale', pinScale);
-          });
-        });
+  if (!mapImg) return;
 
-        panzoomElem.parentElement.addEventListener('wheel', guestPzBocorHistory.zoomWithWheel);
-      } else {
-        guestPzBocorHistory.reset();
+  mapImg.onload = () => {
+    // Inisialisasi Panzoom untuk Guest Map
+    if (typeof Panzoom !== 'undefined' && panzoomElem) {
+      if (guestPzBocorHistory) {
+        try { guestPzBocorHistory.destroy(); } catch(e){}
       }
+      
+      guestPzBocorHistory = Panzoom(panzoomElem, {
+        maxScale: 4,
+        minScale: 1,
+        contain: 'outside',
+        cursor: 'grab'
+      });
+      
+      panzoomElem.addEventListener('panzoomchange', (e) => {
+        const currentScale = e.detail.scale || 1;
+        const pinScale = 1 / currentScale;
+        document.querySelectorAll('#guestBocorPinsLayer .bocor-pin').forEach(pin => {
+          pin.style.setProperty('--pin-scale', pinScale);
+        });
+      });
+
+      panzoomElem.parentElement.parentElement.addEventListener('wheel', guestPzBocorHistory.zoomWithWheel);
     }
 
-    // Pasang Pin Titik Kebocoran
+    // Pasang Pin Kebocoran
     if (pinsLayer) {
       pinsLayer.innerHTML = "";
 

@@ -3143,17 +3143,14 @@ async function openGuestBocorMap() {
     globalBocorReportsData = (res && res.data) ? res.data : [];
     Swal.close();
 
-    // Deteksi apakah layar HP (< 576px)
-    const isMobile = window.innerWidth < 576;
-
     Swal.fire({
-      title: `<div class="fw-bold text-primary d-flex align-items-center justify-content-center gap-2" style="font-size: 1.05rem; padding-top: 4px;">
+      title: `<h5 class="fw-bold text-primary mb-0 d-flex align-items-center justify-content-center gap-2">
                 <i class="bi bi-droplet-half text-warning"></i> Peta Kebocoran Air (Mode Tamu)
-              </div>`,
+              </h5>`,
       html: `
         <div class="text-start">
-          <div class="mb-2 px-1">
-            <label class="form-label fw-bold text-muted mb-1" style="font-size: 0.78rem;">Pilih Denah Lantai:</label>
+          <div class="mb-3">
+            <label class="form-label fw-bold small text-muted">Pilih Denah Lantai:</label>
             <select id="guestBocorMapFloorSelect" class="form-select form-select-sm" onchange="renderGuestBocorMapPins()">
               <option value="LG" selected>LG - Lower Ground</option>
               <option value="L1">L1 - Floor 1</option>
@@ -3164,24 +3161,22 @@ async function openGuestBocorMap() {
             </select>
           </div>
 
-          <div class="border rounded-3 overflow-hidden bg-light text-center position-relative shadow-sm d-flex align-items-center justify-content-center" style="min-height: ${isMobile ? '52vh' : '360px'}; width: 100%;">
-            <div id="guestBocorMapHistoryWrapper" class="position-relative w-100">
-              <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block mx-auto" style="width: 100%; max-height: ${isMobile ? '58vh' : '500px'}; object-fit: contain;">
+          <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
+            <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
+              <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 440px; width: auto; object-fit: contain;">
               <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
             </div>
           </div>
-          <small class="text-muted d-block mt-2 text-center" style="font-size: 0.72rem;">* Cubit/scroll untuk zoom & geser. Ketuk pin merah untuk detail.</small>
+          <small class="text-muted d-block mt-2 text-center" style="font-size: 0.75rem;">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail kebocoran.</small>
         </div>
       `,
       showCloseButton: true,
       confirmButtonText: 'Tutup',
       confirmButtonColor: '#6c757d',
-      // Lebar 98% di HP agar nyaris full layar
-      width: isMobile ? '98%' : '820px',
-      padding: isMobile ? '0.6rem 0.5rem' : '1.25rem',
+      width: '92%',
+      maxWidth: '750px',
       customClass: {
-        popup: 'rounded-4',
-        htmlContainer: 'm-0 px-1 pt-2'
+        popup: 'rounded-4 p-3'
       },
       didOpen: () => {
         setTimeout(() => {

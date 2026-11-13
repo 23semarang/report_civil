@@ -538,6 +538,59 @@
     </div>
   </div>
 
+  <div id="guestMapSection" class="d-none">
+    <!-- Header Guest -->
+    <div class="card p-3 mb-3 border-0 shadow-sm" style="background: #ffffff; border-radius: 16px !important;">
+      <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+            <i class="bi bi-map-fill fs-5"></i>
+          </div>
+          <div>
+            <span class="fw-bold text-dark d-block" style="font-size: 0.95rem;">Peta Kebocoran Air</span>
+            <small class="text-muted" style="font-size: 0.72rem;">Mode Tamu (Akses Publik)</small>
+          </div>
+        </div>
+
+        <button type="button" onclick="closeGuestBocorMap()" class="btn btn-sm btn-outline-secondary fw-bold">
+          <i class="bi bi-arrow-left me-1"></i> Kembali Login
+        </button>
+      </div>
+    </div>
+
+    <!-- Card Denah -->
+    <div class="card p-3 shadow-sm">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold text-primary mb-0 d-flex align-items-center gap-2">
+          <i class="bi bi-droplet-fill text-warning fs-5"></i> Denah Lokasi Kebocoran
+        </h6>
+        <button class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" onclick="openGuestBocorMap()" style="width: 32px; height: 32px;" title="Refresh Data">
+          <i class="bi bi-arrow-clockwise"></i>
+        </button>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold small text-muted">Pilih Denah Lantai:</label>
+        <select id="guestBocorMapFloorSelect" class="form-select form-select-sm" onchange="renderGuestBocorMapPins()">
+          <option value="LG" selected>LG - Lower Ground</option>
+          <option value="L1">L1 - Floor 1</option>
+          <option value="L2">L2 - Floor 2</option>
+          <option value="L3">L3 - Floor 3</option>
+          <option value="ROOFTOP">ROOFTOP</option>
+          <option value="FACADE">FACADE</option>
+        </select>
+      </div>
+
+      <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
+        <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
+          <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
+          <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
+        </div>
+      </div>
+      <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
+    </div>
+  </div>
+
   <!-- MAIN APP SECTION -->
   <div id="appSection" class="d-none">
 
@@ -3105,7 +3158,7 @@ function showBocorDetailPopup(item) {
   }
 
   // =======================================================
-// FUNGSI PREVIEW FOTO GUEST (BEBAS DARI BUG SLIDE/CLOSED)
+// FUNGSI PREVIEW FOTO GUEST (MENGGUNAKAN MODAL BOOTSTRAP)
 // =======================================================
 function openGuestImagePreview(imgUrl) {
   if (!imgUrl) return;
@@ -3116,18 +3169,14 @@ function openGuestImagePreview(imgUrl) {
 
   if (previewImg && previewModalEl) {
     previewImg.src = directUrl;
-    
-    // Gunakan Bootstrap Modal Instance agar SweetAlert2 Peta di belakangnya tetap terbuka
     const bsModal = bootstrap.Modal.getOrCreateInstance(previewModalEl);
-    
-    // Pastikan z-index modal preview foto berada di atas SweetAlert2
     previewModalEl.style.zIndex = "999999";
     bsModal.show();
   }
 }
 
 // =======================================================
-// FUNGSI PETA KEBOCORAN GUEST (FULL SWEETALERT2 VERSION)
+// FUNGSI PETA KEBOCORAN GUEST (LAYOUT FULL DASHBOARD)
 // =======================================================
 let guestPzBocorHistory = null;
 
@@ -3143,86 +3192,68 @@ async function openGuestBocorMap() {
     globalBocorReportsData = (res && res.data) ? res.data : [];
     Swal.close();
 
-    Swal.fire({
-      title: `<h5 class="fw-bold text-primary mb-0 d-flex align-items-center justify-content-center gap-2">
-                <i class="bi bi-droplet-half text-warning"></i> Peta Kebocoran Air (Mode Tamu)
-              </h5>`,
-      html: `
-        <div class="text-start">
-          <div class="mb-3">
-            <label class="form-label fw-bold small text-muted">Pilih Denah Lantai:</label>
-            <select id="guestBocorMapFloorSelect" class="form-select form-select-sm" onchange="renderGuestBocorMapPins()">
-              <option value="LG" selected>LG - Lower Ground</option>
-              <option value="L1">L1 - Floor 1</option>
-              <option value="L2">L2 - Floor 2</option>
-              <option value="L3">L3 - Floor 3</option>
-              <option value="ROOFTOP">ROOFTOP</option>
-              <option value="FACADE">FACADE</option>
-            </select>
-          </div>
+    // Sembunyikan form login, tampilkan halaman denah tamu (100% identik dashboard)
+    document.getElementById("authContainer").classList.add("d-none");
+    document.getElementById("guestMapSection").classList.remove("d-none");
 
-          <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
-            <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
-              <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 440px; width: auto; object-fit: contain;">
-              <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
-            </div>
-          </div>
-          <small class="text-muted d-block mt-2 text-center" style="font-size: 0.75rem;">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail kebocoran.</small>
-        </div>
-      `,
-      showCloseButton: true,
-      confirmButtonText: 'Tutup',
-      confirmButtonColor: '#6c757d',
-      width: '92%',
-      maxWidth: '750px',
-      customClass: {
-        popup: 'rounded-4 p-3'
-      },
-      didOpen: () => {
-        setTimeout(() => {
-          renderGuestBocorMapPins();
-        }, 150);
-      }
-    });
-
+    renderGuestBocorMapPins();
   } catch (err) {
     Swal.fire('Gagal', 'Gagal memuat data riwayat kebocoran air.', 'error');
   }
 }
 
-// =======================================================
-// FUNGSI RENDER PIN & TOOLTIP (TERKUNCI PRESISI SAAT ZOOM)
-// =======================================================
+function closeGuestBocorMap() {
+  // Tutup semua tooltip yang terbuka sebelum kembali ke login
+  document.querySelectorAll('#guestBocorPinsLayer .pin-tooltip-card').forEach(el => {
+    el.classList.add('d-none');
+  });
+  document.getElementById("guestMapSection").classList.add("d-none");
+  document.getElementById("authContainer").classList.remove("d-none");
+}
+
 function renderGuestBocorMapPins() {
   const floorSelect = document.getElementById("guestBocorMapFloorSelect");
+  if (!floorSelect) return;
+
+  const selectedFloorRaw = floorSelect.value;
+  const selectedFloor = selectedFloorRaw.toUpperCase();
   const mapImg = document.getElementById("guestBocorFloorMapImage");
   const pinsLayer = document.getElementById("guestBocorPinsLayer");
   const panzoomElem = document.getElementById("guestBocorMapHistoryWrapper");
 
-  if (!floorSelect || !mapImg) return;
+  if (!mapImg) return;
 
-  const selectedFloorRaw = floorSelect.value;
-  const selectedFloor = selectedFloorRaw.toUpperCase();
-
-  let mapSrc = "";
   if (typeof FLOOR_MAPS !== 'undefined') {
     const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
-    mapSrc = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"] || "LG.jpg";
-  } else {
-    mapSrc = "LG.jpg";
+    mapImg.src = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
   }
 
-  // Hancurkan instance Panzoom lama & reset posisi transform ke tengah (0,0) sebelum ganti gambar
-  if (guestPzBocorHistory) {
-    try { guestPzBocorHistory.destroy(); } catch (e) {}
-    guestPzBocorHistory = null;
-  }
-  if (panzoomElem) {
-    panzoomElem.style.transform = "none";
-  }
+  const drawPinsAndZoom = () => {
+    // 1. Inisialisasi Panzoom persis seperti dashboard
+    if (typeof Panzoom !== 'undefined' && panzoomElem) {
+      if (!guestPzBocorHistory) {
+        guestPzBocorHistory = Panzoom(panzoomElem, {
+          maxScale: 4,
+          minScale: 1,
+          contain: 'outside',
+          cursor: 'grab'
+        });
 
-  const executeRender = () => {
-    // 1. Render Pin Kebocoran terlebih dahulu
+        panzoomElem.addEventListener('panzoomchange', (e) => {
+          const currentScale = e.detail.scale || 1;
+          const pinScale = 1 / currentScale;
+          document.querySelectorAll('#guestBocorPinsLayer .bocor-pin').forEach(pin => {
+            pin.style.setProperty('--pin-scale', pinScale);
+          });
+        });
+
+        panzoomElem.parentElement.addEventListener('wheel', guestPzBocorHistory.zoomWithWheel);
+      } else {
+        guestPzBocorHistory.reset();
+      }
+    }
+
+    // 2. Pasang Pin + Tooltip Child Element
     if (pinsLayer) {
       pinsLayer.innerHTML = "";
 
@@ -3249,6 +3280,7 @@ function renderGuestBocorMapPins() {
         pin.title = `${item.detail_lokasi || 'Lokasi Kebocoran'}`;
         pin.innerHTML = `<i class="bi bi-droplet-fill"></i>`;
 
+        // Multi-photo slider
         const rawPhoto = item.url_foto || item.foto || item.urlFoto || item.photo || item.photos || "";
         let photoHtml = "";
         if (rawPhoto && rawPhoto !== "-") {
@@ -3264,6 +3296,7 @@ function renderGuestBocorMapPins() {
           photoHtml = `<div class="text-muted small text-center py-1 bg-light rounded mb-2 border" style="font-size:0.7rem;">Tidak ada foto</div>`;
         }
 
+        // Smart positioning: pindah ke bawah jika mepet tepi atas (Y < 35%)
         const positionClass = posYNum < 35 ? "tooltip-bottom" : "tooltip-top";
 
         const tooltip = document.createElement("div");
@@ -3281,6 +3314,11 @@ function renderGuestBocorMapPins() {
           </div>
         `;
 
+        if (guestPzBocorHistory) {
+          const currentScale = guestPzBocorHistory.getScale() || 1;
+          pin.style.setProperty('--pin-scale', 1 / currentScale);
+        }
+
         pin.onclick = (e) => {
           e.stopPropagation();
           document.querySelectorAll('#guestBocorPinsLayer .pin-tooltip-card').forEach(el => {
@@ -3293,40 +3331,11 @@ function renderGuestBocorMapPins() {
         pinsLayer.appendChild(pin);
       });
     }
-
-    // 2. Inisialisasi Panzoom SETELAH ukuran gambar valid (tanpa contain: 'outside' yang memotong gambar)
-    if (typeof Panzoom !== 'undefined' && panzoomElem && mapImg.naturalWidth > 0) {
-      guestPzBocorHistory = Panzoom(panzoomElem, {
-        maxScale: 5,
-        minScale: 1,
-        startScale: 1,
-        startX: 0,
-        startY: 0,
-        cursor: 'grab'
-      });
-
-      panzoomElem.addEventListener('panzoomchange', (e) => {
-        const currentScale = e.detail.scale || 1;
-        const pinScale = 1 / currentScale;
-
-        document.querySelectorAll('#guestBocorPinsLayer .bocor-pin').forEach(el => {
-          el.style.setProperty('--pin-scale', pinScale);
-        });
-      });
-
-      const scrollWrapper = panzoomElem.parentElement;
-      if (scrollWrapper) {
-        scrollWrapper.onwheel = guestPzBocorHistory.zoomWithWheel;
-      }
-    }
   };
 
-  // Pastikan Panzoom baru berjalan setelah gambar selesai dimuat sempurna
-  mapImg.onload = executeRender;
-  mapImg.src = mapSrc;
-
+  mapImg.onload = drawPinsAndZoom;
   if (mapImg.complete && mapImg.naturalWidth > 0) {
-    executeRender();
+    drawPinsAndZoom();
   }
 }
   

@@ -21,6 +21,29 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
+
+    /* Pin laporan existing pada form input Lapor Bocor */
+.existing-form-pin {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: rgba(220, 53, 69, 0.85);
+  color: #fff;
+  border: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+  z-index: 5;
+  cursor: pointer;
+}
+
+.existing-form-pin.pin-resolved {
+  background-color: rgba(16, 185, 129, 0.85);
+}
   /* =======================================================
      1. STYLING PIN & TOOLTIP POPUP (TETAP NEMPEL PAS ZOOM)
      ======================================================= */
@@ -2469,8 +2492,12 @@ async function openResolveBocorModal(idLaporan, detailLokasi) {
 
     // Hanya hitung laporan yang belum selesai (REPORTED)
     const activeReportedOnly = bocorList.filter(item => String(item.status || "REPORTED").toUpperCase() !== "RESOLVED");
+    const activeResolvedOnly = bocorList.filter(item => String(item.status || "").toUpperCase() === "RESOLVED");
+
     const elBocor = document.getElementById("statBocorReport");
+    const elBocorDone = document.getElementById("statBocorResolved");
     if (elBocor) elBocor.innerText = activeReportedOnly.length;
+    if (elBocorDone) elBocorDone.innerText = activeResolvedOnly.length;
 
     if (bocorList.length === 0) {
       container.innerHTML = `<div class="text-center text-muted py-4">Belum ada riwayat laporan kebocoran air aktif.</div>`;
@@ -2774,9 +2801,21 @@ function showBocorDetailPopup(item) {
 
     fetchAPI({ action: "getBocorReports" }).then(res => {
       if (res && res.data) {
-        const activeReportedOnly = res.data.filter(item => String(item.status || "REPORTED").toUpperCase() !== "RESOLVED");
+        const validBocor = res.data.filter(isBocorReportActive);
+        globalBocorReportsData = validBocor; // Simpan ke global agar denah form langsung punya data
+
+        const activeReportedOnly = validBocor.filter(item => String(item.status || "REPORTED").toUpperCase() !== "RESOLVED");
+        const activeResolvedOnly = validBocor.filter(item => String(item.status || "").toUpperCase() === "RESOLVED");
+
         const elBocorMain = document.getElementById("statBocorReport");
+        const elBocorDoneMain = document.getElementById("statBocorResolved");
         if (elBocorMain) elBocorMain.innerText = activeReportedOnly.length;
+        if (elBocorDoneMain) elBocorDoneMain.innerText = activeResolvedOnly.length;
+
+        // Render pin existing di form Lapor Bocor jika fungsi sudah tersedia
+        if (typeof renderExistingPinsOnBocorForm === "function") {
+          renderExistingPinsOnBocorForm();
+        }
       }
     }).catch(err => console.log(err));
   }
@@ -3515,6 +3554,99 @@ function renderGuestBocorMapPins() {
     drawPinsAndZoom();
   }
 }
+
+  // =======================================================
+// TAMPILKAN PIN EXISTING DI DENAH FORM LAPORAN KEBOCORAN
+// =======================================================
+async function renderExistingPinsOnBocorForm() {
+  const floorSelect = document.getElementById("bocorFloor");
+  const mapImg = document.getElementById("bocorMapImage");
+  if (!floorSelect || !mapImg) return;
+
+  const wrapper = mapImg.parentElement;
+  if (!wrapper) return;
+
+  // Pastikan wrapper memiliki position relative
+  if (getComputedStyle(wrapper).position === "static") {
+    wrapper.style.position = "relative";
+  }
+
+  // Buat layer khusus pin existing jika belum ada
+  let existingLayer = document.getElementById("bocorFormExistingPinsLayer");
+  if (!existingLayer) {
+    existingLayer = document.createElement("div");
+    existingLayer.id = "bocorFormExistingPinsLayer";
+    existingLayer.className = "position-absolute top-0 start-0 w-100 h-100";
+    existingLayer.style.pointerEvents = "none";
+    existingLayer.style.zIndex = "5";
+    wrapper.appendChild(existingLayer);
+  }
+
+  // Ambil data dari server jika globalBocorReportsData masih kosong
+  if (!Array.isArray(globalBocorReportsData) || globalBocorReportsData.length === 0) {
+    try {
+      const res = await fetchAPI({ action: "getBocorReports" });
+      if (res && res.data) {
+        globalBocorReportsData = res.data.filter(isBocorReportActive);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
+  const selectedFloor = String(floorSelect.value || "LG").toUpperCase();
+  existingLayer.innerHTML = "";
+
+  const matchedReports = (globalBocorReportsData || []).filter(item => {
+    if (!isBocorReportActive(item)) return false;
+    const itemFloor = String(item.lantai || item.floor || "").toUpperCase();
+    const posX = item.marking_x ?? item.markingX ?? item.x;
+    const posY = item.marking_y ?? item.markingY ?? item.y;
+
+    const isFloorMatch = itemFloor === selectedFloor ||
+                         (selectedFloor.includes("ROOF") && itemFloor.includes("ROOF"));
+
+    return isFloorMatch && posX !== undefined && posY !== undefined && posX !== "" && posY !== "";
+  });
+
+  matchedReports.forEach(item => {
+    const posX = item.marking_x ?? item.markingX ?? item.x;
+    const posY = item.marking_y ?? item.markingY ?? item.y;
+    const isResolved = String(item.status || "").toUpperCase() === "RESOLVED";
+
+    const pin = document.createElement("div");
+    pin.className = `existing-form-pin ${isResolved ? "pin-resolved" : ""}`;
+    pin.style.left = `${posX}%`;
+    pin.style.top = `${posY}%`;
+    pin.style.pointerEvents = "auto";
+    pin.title = `[${isResolved ? "RESOLVED" : "REPORTED"}] ${item.detail_lokasi || "Titik Bocor"}`;
+    pin.innerHTML = `<i class="bi ${isResolved ? "bi-check-lg" : "bi-droplet-fill"}"></i>`;
+
+    // Klik pin existing untuk melihat info titik tersebut
+    pin.addEventListener("click", (e) => {
+      e.stopPropagation(); // Mencegah klik dianggap sebagai marking titik baru
+      showBocorDetailPopup(item);
+    });
+
+    existingLayer.appendChild(pin);
+  });
+}
+
+// Jalankan render pin existing setiap kali lantai di form berubah atau gambar denah selesai dimuat
+document.addEventListener("DOMContentLoaded", () => {
+  const bocorFloorEl = document.getElementById("bocorFloor");
+  const bocorMapImgEl = document.getElementById("bocorMapImage");
+
+  if (bocorFloorEl) {
+    bocorFloorEl.addEventListener("change", () => {
+      setTimeout(renderExistingPinsOnBocorForm, 100);
+    });
+  }
+
+  if (bocorMapImgEl) {
+    bocorMapImgEl.addEventListener("load", renderExistingPinsOnBocorForm);
+  }
+});
   
 </script>
 

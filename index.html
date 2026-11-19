@@ -660,17 +660,23 @@
       </div>
 
       <div class="col-6">
-        <div class="card p-3 shadow-sm border-0 bg-warning-subtle cursor-pointer h-100" onclick="openBocorHistoryTab()">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <div class="small text-muted fw-bold">Lapor Bocor</div>
-              <h3 class="fw-bold mb-0 text-warning-emphasis" id="statBocorReport">0</h3>
+        <div class="card p-2 p-md-3 shadow-sm border-0 bg-warning-subtle cursor-pointer h-100" onclick="openBocorHistoryTab()">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <div class="small text-muted fw-bold">Lapor Bocor</div>
+            <div class="fs-5 text-warning"><i class="bi bi-droplet-fill"></i></div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center text-center bg-white rounded p-1 mt-1 w-100">
+            <div class="flex-fill border-end">
+              <span class="d-block text-danger fw-bold" style="font-size: 0.6rem;">REPORT</span>
+              <span class="fw-bold text-danger fs-6" id="statBocorReport">0</span>
             </div>
-            <div class="fs-4 text-warning"><i class="bi bi-droplet-fill"></i></div>
+            <div class="flex-fill">
+              <span class="d-block text-success fw-bold" style="font-size: 0.6rem;">DONE (30H)</span>
+              <span class="fw-bold text-success fs-6" id="statBocorResolved">0</span>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
     <!-- 3. SIDEBAR MENUS (OFFCANVAS DRAWER) -->
     <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
@@ -2461,8 +2467,10 @@ async function openResolveBocorModal(idLaporan, detailLokasi) {
     const bocorList = rawList.filter(isBocorReportActive);
     globalBocorReportsData = bocorList;
 
+    // Hanya hitung laporan yang belum selesai (REPORTED)
+    const activeReportedOnly = bocorList.filter(item => String(item.status || "REPORTED").toUpperCase() !== "RESOLVED");
     const elBocor = document.getElementById("statBocorReport");
-    if (elBocor) elBocor.innerText = bocorList.length;
+    if (elBocor) elBocor.innerText = activeReportedOnly.length;
 
     if (bocorList.length === 0) {
       container.innerHTML = `<div class="text-center text-muted py-4">Belum ada riwayat laporan kebocoran air aktif.</div>`;
@@ -2766,9 +2774,9 @@ function showBocorDetailPopup(item) {
 
     fetchAPI({ action: "getBocorReports" }).then(res => {
       if (res && res.data) {
-        const activeBocor = res.data.filter(isBocorReportActive);
+        const activeReportedOnly = res.data.filter(item => String(item.status || "REPORTED").toUpperCase() !== "RESOLVED");
         const elBocorMain = document.getElementById("statBocorReport");
-        if (elBocorMain) elBocorMain.innerText = activeBocor.length;
+        if (elBocorMain) elBocorMain.innerText = activeReportedOnly.length;
       }
     }).catch(err => console.log(err));
   }

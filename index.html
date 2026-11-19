@@ -35,7 +35,7 @@
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(var(--form-pin-scale, 1));
   box-shadow: 0 2px 5px rgba(0,0,0,0.35);
   z-index: 5;
   cursor: pointer;
@@ -3566,12 +3566,22 @@ async function renderExistingPinsOnBocorForm() {
   const wrapper = mapImg.parentElement;
   if (!wrapper) return;
 
-  // Pastikan wrapper memiliki position relative
   if (getComputedStyle(wrapper).position === "static") {
     wrapper.style.position = "relative";
   }
 
-  // Buat layer khusus pin existing jika belum ada
+  // Pasang listener zoom 1x saja agar ukuran pin otomatis mengecil berlawanan dengan zoom denah
+  if (!wrapper.dataset.pinZoomBound) {
+    wrapper.addEventListener("panzoomchange", (e) => {
+      const currentScale = (e.detail && e.detail.scale) ? e.detail.scale : 1;
+      const invScale = 1 / currentScale;
+      document.querySelectorAll("#bocorFormExistingPinsLayer .existing-form-pin").forEach(p => {
+        p.style.setProperty("--form-pin-scale", invScale);
+      });
+    });
+    wrapper.dataset.pinZoomBound = "true";
+  }
+
   let existingLayer = document.getElementById("bocorFormExistingPinsLayer");
   if (!existingLayer) {
     existingLayer = document.createElement("div");
@@ -3582,7 +3592,6 @@ async function renderExistingPinsOnBocorForm() {
     wrapper.appendChild(existingLayer);
   }
 
-  // Ambil data dari server jika globalBocorReportsData masih kosong
   if (!Array.isArray(globalBocorReportsData) || globalBocorReportsData.length === 0) {
     try {
       const res = await fetchAPI({ action: "getBocorReports" });
@@ -3591,6 +3600,16 @@ async function renderExistingPinsOnBocorForm() {
       }
     } catch (e) {
       console.error(e);
+    }
+  }
+
+  // Deteksi skala zoom yang sedang aktif pada wrapper
+  let activeScale = 1;
+  const transformMatch = getComputedStyle(wrapper).transform;
+  if (transformMatch && transformMatch !== "none") {
+    const matrixValues = transformMatch.match(/matrix\(([^)]+)\)/);
+    if (matrixValues) {
+      activeScale = parseFloat(matrixValues[1].split(",")[0]) || 1;
     }
   }
 
@@ -3619,12 +3638,12 @@ async function renderExistingPinsOnBocorForm() {
     pin.style.left = `${posX}%`;
     pin.style.top = `${posY}%`;
     pin.style.pointerEvents = "auto";
+    pin.style.setProperty("--form-pin-scale", 1 / activeScale);
     pin.title = `[${isResolved ? "RESOLVED" : "REPORTED"}] ${item.detail_lokasi || "Titik Bocor"}`;
     pin.innerHTML = `<i class="bi ${isResolved ? "bi-check-lg" : "bi-droplet-fill"}"></i>`;
 
-    // Klik pin existing untuk melihat info titik tersebut
     pin.addEventListener("click", (e) => {
-      e.stopPropagation(); // Mencegah klik dianggap sebagai marking titik baru
+      e.stopPropagation();
       showBocorDetailPopup(item);
     });
 

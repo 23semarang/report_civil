@@ -621,6 +621,25 @@
         </select>
       </div>
 
+      <!-- Filter Rentang Tanggal Laporan Bocor (Mode Tamu) -->
+<div class="bg-light rounded-3 p-2 mb-3 border">
+  <div class="row g-2 align-items-end">
+    <div class="col-5">
+      <label class="form-label small text-muted fw-bold mb-1" style="font-size: 0.72rem;">Dari Tanggal</label>
+      <input type="date" id="guestBocorStartDate" class="form-control form-control-sm" onchange="renderGuestBocorMapPins()">
+    </div>
+    <div class="col-5">
+      <label class="form-label small text-muted fw-bold mb-1" style="font-size: 0.72rem;">Sampai Tanggal</label>
+      <input type="date" id="guestBocorEndDate" class="form-control form-control-sm" onchange="renderGuestBocorMapPins()">
+    </div>
+    <div class="col-2">
+      <button type="button" onclick="resetGuestBocorDateFilter()" class="btn btn-sm btn-outline-secondary w-100" title="Reset Filter Tanggal">
+        <i class="bi bi-arrow-counterclockwise"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
       <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
         <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
           <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
@@ -986,6 +1005,25 @@
       <button class="btn btn-sm btn-outline-secondary rounded-circle d-flex align-items-center justify-content-center" onclick="loadBocorReports()" style="width: 32px; height: 32px;" title="Refresh Data">
         <i class="bi bi-arrow-clockwise"></i>
       </button>
+    </div>
+  </div>
+
+  <!-- TEMPELKAN FILTER TANGGAL DI SINI -->
+  <div class="bg-light rounded-3 p-2 mb-3 border">
+    <div class="row g-2 align-items-end">
+      <div class="col-5">
+        <label class="form-label small text-muted fw-bold mb-1" style="font-size: 0.72rem;">Dari Tanggal</label>
+        <input type="date" id="bocorStartDate" class="form-control form-control-sm" onchange="applyBocorDateFilter()">
+      </div>
+      <div class="col-5">
+        <label class="form-label small text-muted fw-bold mb-1" style="font-size: 0.72rem;">Sampai Tanggal</label>
+        <input type="date" id="bocorEndDate" class="form-control form-control-sm" onchange="applyBocorDateFilter()">
+      </div>
+      <div class="col-2">
+        <button type="button" onclick="resetBocorDateFilter()" class="btn btn-sm btn-outline-secondary w-100" title="Reset Filter Tanggal">
+          <i class="bi bi-arrow-counterclockwise"></i>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -2476,6 +2514,51 @@ async function openResolveBocorModal(idLaporan, detailLokasi) {
   }
 }
 
+  // Helper: Cek apakah tanggal laporan masuk dalam rentang filter (Dari - Sampai Tanggal)
+function isBocorWithinDateRange(item, startInputId, endInputId) {
+  const startVal = document.getElementById(startInputId)?.value;
+  const endVal = document.getElementById(endInputId)?.value;
+
+  if (!startVal && !endVal) return true;
+  if (!item.timestamp) return false;
+
+  const itemTime = new Date(item.timestamp).getTime();
+  if (isNaN(itemTime)) return false;
+
+  if (startVal) {
+    const startTime = new Date(startVal + "T00:00:00").getTime();
+    if (itemTime < startTime) return false;
+  }
+
+  if (endVal) {
+    const endTime = new Date(endVal + "T23:59:59.999").getTime();
+    if (itemTime > endTime) return false;
+  }
+
+  return true;
+}
+
+function applyBocorDateFilter() {
+  renderBocorReportsList();
+  renderBocorMapPins();
+}
+
+function resetBocorDateFilter() {
+  const s = document.getElementById("bocorStartDate");
+  const e = document.getElementById("bocorEndDate");
+  if (s) s.value = "";
+  if (e) e.value = "";
+  applyBocorDateFilter();
+}
+
+function resetGuestBocorDateFilter() {
+  const s = document.getElementById("guestBocorStartDate");
+  const e = document.getElementById("guestBocorEndDate");
+  if (s) s.value = "";
+  if (e) e.value = "";
+  renderGuestBocorMapPins();
+}
+
   async function loadBocorReports() {
   const container = document.getElementById("bocorReportsContainer") || document.getElementById("bocorReportsList");
   if (!container) return;
@@ -2485,12 +2568,12 @@ async function openResolveBocorModal(idLaporan, detailLokasi) {
   try {
     const res = await fetchAPI({ action: "getBocorReports" });
     const rawList = (res && res.data) ? res.data : [];
-    
+
     // Filter otomatis: laporan RESOLVED > 30 hari tidak ditampilkan lagi
     const bocorList = rawList.filter(isBocorReportActive);
     globalBocorReportsData = bocorList;
 
-    // Hanya hitung laporan yang belum selesai (REPORTED)
+    // Update angka statistik atas
     const activeReportedOnly = bocorList.filter(item => String(item.status || "REPORTED").toUpperCase() !== "RESOLVED");
     const activeResolvedOnly = bocorList.filter(item => String(item.status || "").toUpperCase() === "RESOLVED");
 
@@ -2499,110 +2582,122 @@ async function openResolveBocorModal(idLaporan, detailLokasi) {
     if (elBocor) elBocor.innerText = activeReportedOnly.length;
     if (elBocorDone) elBocorDone.innerText = activeResolvedOnly.length;
 
-    if (bocorList.length === 0) {
-      container.innerHTML = `<div class="text-center text-muted py-4">Belum ada riwayat laporan kebocoran air aktif.</div>`;
-      return;
-    }
-
-    container.innerHTML = "";
-    bocorList.forEach(item => {
-      const idLaporan = item.id_laporan || "-";
-      const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString("id-ID") : "-";
-      const lantai = item.lantai || item.floor || "-";
-      const sumberBocor = item.sumber_bocor || item.source || "-";
-      const keparahan = item.tingkat_keparahan || item.severity || "RINGAN";
-      const detailLokasi = item.detail_lokasi || item.location_detail || "-";
-      const keterangan = item.keterangan || item.issue || "-";
-      const status = String(item.status || "REPORTED").toUpperCase();
-      const isResolved = status === "RESOLVED";
-
-      const posX = item.marking_x ?? item.markingX ?? item.x;
-      const posY = item.marking_y ?? item.markingY ?? item.y;
-
-      let badgeColor = "bg-info";
-      if (keparahan.toUpperCase() === "SEDANG") badgeColor = "bg-warning text-dark";
-      if (["BERAT", "TINGGI", "DARURAT"].includes(keparahan.toUpperCase())) badgeColor = "bg-danger";
-
-      const statusBadgeHtml = isResolved
-        ? `<span class="badge bg-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>RESOLVED</span>`
-        : `<span class="badge bg-danger fw-bold">REPORTED</span>`;
-
-      const rawPhoto = item.url_foto || item.foto || item.urlFoto || item.photos || "";
-      let photosHtml = "";
-      if (rawPhoto && rawPhoto !== "-") {
-        const photos = String(rawPhoto).split(",");
-        photosHtml = `<div class="row g-2 mb-2">` +
-          photos.map(u => {
-            const cleanUrl = u.trim();
-            const directImgUrl = getGoogleDriveDirectLink(cleanUrl);
-            return `<div class="col"><img src="${directImgUrl}" loading="lazy" class="img-preview" style="cursor:pointer;" onclick="openImageModal('${cleanUrl}')"></div>`;
-          }).join("") +
-          `</div>`;
-      }
-
-      // Keterangan & Foto Resolved (jika sudah selesai)
-      let resolvedInfoHtml = "";
-      if (isResolved) {
-        const resDate = item.resolved_at ? new Date(item.resolved_at).toLocaleDateString("id-ID") : "-";
-        const resPhoto = (item.resolved_photo && item.resolved_photo !== "-")
-          ? `<img src="${getGoogleDriveDirectLink(item.resolved_photo)}" class="rounded border mt-1 d-block" style="max-height:110px; cursor:pointer;" onclick="openImageModal('${item.resolved_photo}')">`
-          : "";
-        resolvedInfoHtml = `
-          <div class="alert alert-success py-2 px-2 mb-2 small border-success">
-            <div class="fw-bold text-success"><i class="bi bi-check2-all me-1"></i>Selesai (${resDate}) oleh ${item.resolved_by || 'Petugas'}</div>
-            <div class="text-dark mt-1">${item.resolved_note || '-'}</div>
-            ${resPhoto}
-          </div>
-        `;
-      }
-
-      let mapBtnHtml = "";
-      if (posX !== undefined && posY !== undefined && posX !== "" && posY !== "") {
-        mapBtnHtml = `
-          <div class="mb-2">
-            <button onclick="openMapModal('${lantai}', '${posX}', '${posY}')" class="btn btn-sm btn-outline-${isResolved ? 'success' : 'danger'} w-100">
-              📍 Lihat Titik Kerusakan Pada Denah
-            </button>
-          </div>
-        `;
-      }
-
-      const resolveActionBtn = !isResolved
-        ? `<button onclick="openResolveBocorModal('${idLaporan}', '${detailLokasi.replace(/'/g, "\\'")}')" class="btn btn-sm btn-success w-100 mb-2 fw-bold">
-             <i class="bi bi-check-circle me-1"></i> Tandai Selesai (Resolved)
-           </button>`
-        : "";
-
-      const card = document.createElement("div");
-      card.className = `card mb-3 border-0 shadow-sm border-start border-4 ${isResolved ? 'border-success' : 'border-danger'}`;
-      card.innerHTML = `
-        <div class="card-body p-3">
-          <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-2">
-            <div class="d-flex gap-1">
-              ${statusBadgeHtml}
-              <span class="badge ${badgeColor} fw-bold">DEBIT: ${keparahan}</span>
-            </div>
-            <span class="badge bg-secondary">${lantai} - ${sumberBocor}</span>
-          </div>
-          <h6 class="fw-bold mb-1">${detailLokasi}</h6>
-          <p class="small text-muted mb-2">${keterangan}</p>
-          ${photosHtml}
-          ${resolvedInfoHtml}
-          ${mapBtnHtml}
-          ${resolveActionBtn}
-          <div class="d-flex justify-content-between align-items-center text-muted small border-top pt-2 mt-2">
-            <span><i class="bi bi-clock me-1"></i>${timestamp}</span>
-            <span class="badge bg-light text-dark border">${idLaporan}</span>
-          </div>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-
+    renderBocorReportsList();
+    renderBocorMapPins();
   } catch (err) {
     console.error("Gagal memuat laporan bocor:", err);
     container.innerHTML = `<div class="text-center text-danger py-4">Gagal memuat data laporan kebocoran.</div>`;
   }
+}
+
+function renderBocorReportsList() {
+  const container = document.getElementById("bocorReportsContainer") || document.getElementById("bocorReportsList");
+  if (!container) return;
+
+  // Terapkan filter rentang tanggal pada data aktif
+  const filteredList = (globalBocorReportsData || []).filter(item =>
+    isBocorReportActive(item) && isBocorWithinDateRange(item, "bocorStartDate", "bocorEndDate")
+  );
+
+  if (filteredList.length === 0) {
+    container.innerHTML = `<div class="text-center text-muted py-4">Tidak ada riwayat laporan kebocoran air pada rentang tanggal tersebut.</div>`;
+    return;
+  }
+
+  container.innerHTML = "";
+  filteredList.forEach(item => {
+    const idLaporan = item.id_laporan || "-";
+    const timestamp = item.timestamp ? new Date(item.timestamp).toLocaleString("id-ID") : "-";
+    const lantai = item.lantai || item.floor || "-";
+    const sumberBocor = item.sumber_bocor || item.source || "-";
+    const keparahan = item.tingkat_keparahan || item.severity || "RINGAN";
+    const detailLokasi = item.detail_lokasi || item.location_detail || "-";
+    const keterangan = item.keterangan || item.issue || "-";
+    const status = String(item.status || "REPORTED").toUpperCase();
+    const isResolved = status === "RESOLVED";
+
+    const posX = item.marking_x ?? item.markingX ?? item.x;
+    const posY = item.marking_y ?? item.markingY ?? item.y;
+
+    let badgeColor = "bg-info";
+    if (keparahan.toUpperCase() === "SEDANG") badgeColor = "bg-warning text-dark";
+    if (["BERAT", "TINGGI", "DARURAT"].includes(keparahan.toUpperCase())) badgeColor = "bg-danger";
+
+    const statusBadgeHtml = isResolved
+      ? `<span class="badge bg-success fw-bold"><i class="bi bi-check-circle-fill me-1"></i>RESOLVED</span>`
+      : `<span class="badge bg-danger fw-bold">REPORTED</span>`;
+
+    const rawPhoto = item.url_foto || item.foto || item.urlFoto || item.photos || "";
+    let photosHtml = "";
+    if (rawPhoto && rawPhoto !== "-") {
+      const photos = String(rawPhoto).split(",");
+      photosHtml = `<div class="row g-2 mb-2">` +
+        photos.map(u => {
+          const cleanUrl = u.trim();
+          const directImgUrl = getGoogleDriveDirectLink(cleanUrl);
+          return `<div class="col"><img src="${directImgUrl}" loading="lazy" class="img-preview" style="cursor:pointer;" onclick="openImageModal('${cleanUrl}')"></div>`;
+        }).join("") +
+        `</div>`;
+    }
+
+    // Keterangan & Foto Resolved (jika sudah selesai)
+    let resolvedInfoHtml = "";
+    if (isResolved) {
+      const resDate = item.resolved_at ? new Date(item.resolved_at).toLocaleDateString("id-ID") : "-";
+      const resPhoto = (item.resolved_photo && item.resolved_photo !== "-")
+        ? `<img src="${getGoogleDriveDirectLink(item.resolved_photo)}" class="rounded border mt-1 d-block" style="max-height:110px; cursor:pointer;" onclick="openImageModal('${item.resolved_photo}')">`
+        : "";
+      resolvedInfoHtml = `
+        <div class="alert alert-success py-2 px-2 mb-2 small border-success">
+          <div class="fw-bold text-success"><i class="bi bi-check2-all me-1"></i>Selesai (${resDate}) oleh ${item.resolved_by || 'Petugas'}</div>
+          <div class="text-dark mt-1">${item.resolved_note || '-'}</div>
+          ${resPhoto}
+        </div>
+      `;
+    }
+
+    let mapBtnHtml = "";
+    if (posX !== undefined && posY !== undefined && posX !== "" && posY !== "") {
+      mapBtnHtml = `
+        <div class="mb-2">
+          <button onclick="openMapModal('${lantai}', '${posX}', '${posY}')" class="btn btn-sm btn-outline-${isResolved ? 'success' : 'danger'} w-100">
+            📍 Lihat Titik Kerusakan Pada Denah
+          </button>
+        </div>
+      `;
+    }
+
+    const resolveActionBtn = !isResolved
+      ? `<button onclick="openResolveBocorModal('${idLaporan}', '${detailLokasi.replace(/'/g, "\\'")}')" class="btn btn-sm btn-success w-100 mb-2 fw-bold">
+           <i class="bi bi-check-circle me-1"></i> Tandai Selesai (Resolved)
+         </button>`
+      : "";
+
+    const card = document.createElement("div");
+    card.className = `card mb-3 border-0 shadow-sm border-start border-4 ${isResolved ? 'border-success' : 'border-danger'}`;
+    card.innerHTML = `
+      <div class="card-body p-3">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-1 mb-2">
+          <div class="d-flex gap-1">
+            ${statusBadgeHtml}
+            <span class="badge ${badgeColor} fw-bold">DEBIT: ${keparahan}</span>
+          </div>
+          <span class="badge bg-secondary">${lantai} - ${sumberBocor}</span>
+        </div>
+        <h6 class="fw-bold mb-1">${detailLokasi}</h6>
+        <p class="small text-muted mb-2">${keterangan}</p>
+        ${photosHtml}
+        ${resolvedInfoHtml}
+        ${mapBtnHtml}
+        ${resolveActionBtn}
+        <div class="d-flex justify-content-between align-items-center text-muted small border-top pt-2 mt-2">
+          <span><i class="bi bi-clock me-1"></i>${timestamp}</span>
+          <span class="badge bg-light text-dark border">${idLaporan}</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
 }
 
   function renderBocorMapPins() {
@@ -2615,12 +2710,17 @@ async function openResolveBocorModal(idLaporan, detailLokasi) {
   const pinsLayer = document.getElementById("bocorPinsLayer");
   const panzoomElem = document.getElementById("bocorMapHistoryWrapper");
 
-  if (typeof FLOOR_MAPS !== 'undefined' && mapImg) {
+  if (!mapImg) return;
+
+  if (typeof FLOOR_MAPS !== 'undefined') {
     const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
-    mapImg.src = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
+    const targetSrc = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
+    if (mapImg.getAttribute("src") !== targetSrc) {
+      mapImg.src = targetSrc;
+    }
   }
 
-  mapImg.onload = () => {
+  const drawUserPinsAndZoom = () => {
     if (typeof Panzoom !== 'undefined' && panzoomElem) {
       if (!pzBocorHistory) {
         pzBocorHistory = Panzoom(panzoomElem, {
@@ -2649,6 +2749,7 @@ async function openResolveBocorModal(idLaporan, detailLokasi) {
 
       const filteredReports = globalBocorReportsData.filter(item => {
         if (!isBocorReportActive(item)) return false;
+        if (!isBocorWithinDateRange(item, "bocorStartDate", "bocorEndDate")) return false;
 
         const itemFloor = String(item.lantai || item.floor || '').toUpperCase();
         const posX = item.marking_x ?? item.markingX ?? item.x;
@@ -2686,6 +2787,11 @@ async function openResolveBocorModal(idLaporan, detailLokasi) {
       });
     }
   };
+
+  mapImg.onload = drawUserPinsAndZoom;
+  if (mapImg.complete && mapImg.naturalWidth > 0) {
+    drawUserPinsAndZoom();
+  }
 }
 
 // Helper function untuk mengubah URL Google Drive ke Link Gambar Direct/Thumbnail
@@ -3427,7 +3533,10 @@ function renderGuestBocorMapPins() {
 
   if (typeof FLOOR_MAPS !== 'undefined') {
     const mapKey = Object.keys(FLOOR_MAPS).find(k => k.toUpperCase() === selectedFloor) || selectedFloorRaw;
-    mapImg.src = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
+    const targetSrc = FLOOR_MAPS[mapKey] || FLOOR_MAPS[selectedFloor] || FLOOR_MAPS["LG"];
+    if (mapImg.getAttribute("src") !== targetSrc) {
+      mapImg.src = targetSrc;
+    }
   }
 
   const drawPinsAndZoom = () => {
@@ -3459,6 +3568,7 @@ function renderGuestBocorMapPins() {
 
       const filteredReports = globalBocorReportsData.filter(item => {
         if (!isBocorReportActive(item)) return false;
+        if (!isBocorWithinDateRange(item, "guestBocorStartDate", "guestBocorEndDate")) return false;
 
         const itemFloor = String(item.lantai || item.floor || '').toUpperCase();
         const posX = item.marking_x ?? item.markingX ?? item.x;

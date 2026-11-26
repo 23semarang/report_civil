@@ -2851,11 +2851,8 @@ function getGoogleDriveDirectLink(url) {
 
 // Update fungsi showBocorDetailPopup
 function showBocorDetailPopup(item) {
-  const idLaporan = item.id_laporan || "-";
-  const detailLokasi = item.detail_lokasi || 'Kebocoran Air';
   const rawPhoto = item.url_foto || item.foto || item.urlFoto || item.photo || item.photos || "";
   const isResolved = String(item.status || "").toUpperCase() === "RESOLVED";
-  const canResolve = !isResolved && typeof currentUser !== "undefined" && currentUser !== null;
   let photosHtml = '';
 
   if (rawPhoto && rawPhoto !== "-") {
@@ -2879,7 +2876,7 @@ function showBocorDetailPopup(item) {
       : '';
     resolvedSection = `
       <div class="alert alert-success p-2 mb-2 text-start border-success" style="font-size: 0.82rem;">
-        <div class="fw-bold text-success"><i class="bi bi-check-circle-fill me-1"></i>Status: RESOLVED (${resDate}) oleh ${item.resolved_by || 'Petugas'}</div>
+        <div class="fw-bold text-success"><i class="bi bi-check-circle-fill me-1"></i>Status: RESOLVED (${resDate})</div>
         <div class="mt-1 text-dark"><strong>Tindakan:</strong> ${item.resolved_note || '-'}</div>
         ${resImg}
       </div>
@@ -2890,7 +2887,7 @@ function showBocorDetailPopup(item) {
   const reporterStr = item.pelapor || item.username || 'Petugas';
 
   Swal.fire({
-    title: `<h5 class="fw-bold ${isResolved ? 'text-success' : 'text-primary'} mb-0" style="font-size: 1.15rem;">${detailLokasi}</h5>`,
+    title: `<h5 class="fw-bold ${isResolved ? 'text-success' : 'text-primary'} mb-0" style="font-size: 1.15rem;">${item.detail_lokasi || 'Kebocoran Air'}</h5>`,
     html: `
       <div class="text-start">
         <div class="d-flex flex-wrap align-items-center justify-content-center gap-1 mb-2">
@@ -2916,20 +2913,13 @@ function showBocorDetailPopup(item) {
       </div>
     `,
     showCloseButton: true,
-    showCancelButton: canResolve,
-    confirmButtonText: canResolve ? '<i class="bi bi-check-circle me-1"></i> Tandai Selesai (Resolved)' : 'Tutup',
-    cancelButtonText: 'Tutup',
-    confirmButtonColor: canResolve ? '#198754' : (isResolved ? '#10b981' : '#4361ee'),
-    cancelButtonColor: '#6c757d',
+    confirmButtonText: 'Tutup',
+    confirmButtonColor: isResolved ? '#10b981' : '#4361ee',
     target: 'body',
     customClass: {
       container: 'swal-high-zindex',
       popup: 'rounded-4 p-3',
       htmlContainer: 'm-0 pt-2'
-    }
-  }).then((result) => {
-    if (result.isConfirmed && canResolve) {
-      openResolveBocorModal(idLaporan, detailLokasi);
     }
   });
 }

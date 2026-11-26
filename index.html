@@ -39,26 +39,34 @@
   max-width: 96vw !important;
 }
 
-/* Fallback Fullscreen (khusus iOS Safari) */
 .map-fullscreen-fallback {
   position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
+  inset: 0 !important;
   width: 100vw !important;
   height: 100dvh !important;
   background-color: #f8f9fa !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
   border-radius: 0 !important;
   z-index: 1040 !important;
   margin: 0 !important;
+  padding: 0 !important;
   overflow: hidden !important;
 }
 
+.map-fullscreen-fallback #bocorMapHistoryWrapper,
+.map-fullscreen-fallback #guestBocorMapHistoryWrapper {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
 .map-fullscreen-fallback img {
-  max-height: 94dvh !important;
-  max-width: 98vw !important;
+  max-height: 92dvh !important;
+  max-width: 96vw !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
 }
 
 .btn-fullscreen-map {
@@ -2821,21 +2829,22 @@ function renderBocorReportsList() {
         pzBocorHistory = Panzoom(panzoomElem, {
           maxScale: 4,
           minScale: 1,
-          contain: 'outside',
+          contain: false,
+          animate: false,
           cursor: 'grab'
         });
 
         panzoomElem.addEventListener('panzoomchange', (e) => {
-          const currentScale = e.detail.scale || 1;
+          const currentScale = (e.detail && e.detail.scale) ? e.detail.scale : (pzBocorHistory.getScale() || 1);
           const pinScale = 1 / currentScale;
-          document.querySelectorAll('.bocor-pin').forEach(pin => {
+          document.querySelectorAll('#bocorPinsLayer .bocor-pin').forEach(pin => {
             pin.style.setProperty('--pin-scale', pinScale);
           });
         });
 
         panzoomElem.parentElement.addEventListener('wheel', pzBocorHistory.zoomWithWheel);
       } else {
-        pzBocorHistory.reset();
+        pzBocorHistory.reset({ animate: false });
       }
     }
 
@@ -2888,7 +2897,7 @@ function renderBocorReportsList() {
     drawUserPinsAndZoom();
   }
 }
-
+  
 // Helper function untuk mengubah URL Google Drive ke Link Gambar Direct/Thumbnail
 function getGoogleDriveDirectLink(url) {
   if (!url) return '';
@@ -3886,9 +3895,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-// =======================================================
-// TOGGLE FULL SCREEN DENAH (USER & TAMU - COMPATIBLE POPUP)
-// =======================================================
+function resetMapPanCenter(pzInstance) {
+  if (!pzInstance || typeof pzInstance.reset !== "function") return;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      pzInstance.reset({ animate: false });
+      const currentScale = pzInstance.getScale() || 1;
+      document.querySelectorAll(".bocor-pin").forEach((pin) => {
+        pin.style.setProperty("--pin-scale", 1 / currentScale);
+      });
+    });
+  });
+}
+
 function toggleMapFullscreen(containerId, btnEl) {
   const container = document.getElementById(containerId);
   if (!container) return;
@@ -3897,7 +3916,7 @@ function toggleMapFullscreen(containerId, btnEl) {
 
   if (!isFullscreen) {
     container.classList.add("map-fullscreen-fallback");
-    document.body.style.overflow = "hidden"; // Kunci scroll halaman belakang
+    document.body.style.overflow = "hidden";
     if (btnEl) btnEl.innerHTML = `<i class="bi bi-fullscreen-exit me-1"></i> Keluar`;
   } else {
     container.classList.remove("map-fullscreen-fallback");
@@ -3905,25 +3924,25 @@ function toggleMapFullscreen(containerId, btnEl) {
     if (btnEl) btnEl.innerHTML = `<i class="bi bi-arrows-fullscreen me-1"></i> Full Screen`;
   }
 
-  // Reset posisi zoom agar denah pas di tengah layar baru
   if (containerId === "userMapFullscreenContainer" && typeof pzBocorHistory !== "undefined" && pzBocorHistory) {
-    pzBocorHistory.reset();
+    resetMapPanCenter(pzBocorHistory);
   }
   if (containerId === "guestMapFullscreenContainer" && typeof guestPzBocorHistory !== "undefined" && guestPzBocorHistory) {
-    guestPzBocorHistory.reset();
+    resetMapPanCenter(guestPzBocorHistory);
   }
 }
 
-// Tutup mode fullscreen jika tombol ESC ditekan
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
-    document.querySelectorAll(".map-fullscreen-fallback").forEach(el => {
+    document.querySelectorAll(".map-fullscreen-fallback").forEach((el) => {
       el.classList.remove("map-fullscreen-fallback");
     });
     document.body.style.overflow = "";
-    document.querySelectorAll(".btn-fullscreen-map").forEach(btn => {
+    document.querySelectorAll(".btn-fullscreen-map").forEach((btn) => {
       btn.innerHTML = `<i class="bi bi-arrows-fullscreen me-1"></i> Full Screen`;
     });
+    if (typeof pzBocorHistory !== "undefined" && pzBocorHistory) resetMapPanCenter(pzBocorHistory);
+    if (typeof guestPzBocorHistory !== "undefined" && guestPzBocorHistory) resetMapPanCenter(guestPzBocorHistory);
   }
 });
   

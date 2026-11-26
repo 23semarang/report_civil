@@ -45,19 +45,20 @@
   top: 0 !important;
   left: 0 !important;
   width: 100vw !important;
-  height: 100vh !important;
+  height: 100dvh !important;
   background-color: #f8f9fa !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   border-radius: 0 !important;
-  z-index: 9999 !important;
+  z-index: 1040 !important;
   margin: 0 !important;
+  overflow: hidden !important;
 }
 
 .map-fullscreen-fallback img {
-  max-height: 92vh !important;
-  max-width: 96vw !important;
+  max-height: 94dvh !important;
+  max-width: 98vw !important;
 }
 
 .btn-fullscreen-map {
@@ -3885,40 +3886,41 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 });
 
-  // =======================================================
-// TOGGLE FULL SCREEN DENAH (USER & TAMU)
+// =======================================================
+// TOGGLE FULL SCREEN DENAH (USER & TAMU - COMPATIBLE POPUP)
 // =======================================================
 function toggleMapFullscreen(containerId, btnEl) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
-  const isFallbackActive = container.classList.contains("map-fullscreen-fallback");
-  const isNativeFullscreen = document.fullscreenElement === container || document.webkitFullscreenElement === container;
+  const isFullscreen = container.classList.contains("map-fullscreen-fallback");
 
-  if (!isNativeFullscreen && !isFallbackActive) {
-    if (container.requestFullscreen) {
-      container.requestFullscreen().catch(() => {
-        container.classList.add("map-fullscreen-fallback");
-      });
-    } else if (container.webkitRequestFullscreen) {
-      container.webkitRequestFullscreen();
-    } else {
-      container.classList.add("map-fullscreen-fallback");
-    }
+  if (!isFullscreen) {
+    container.classList.add("map-fullscreen-fallback");
+    document.body.style.overflow = "hidden"; // Kunci scroll halaman belakang
     if (btnEl) btnEl.innerHTML = `<i class="bi bi-fullscreen-exit me-1"></i> Keluar`;
   } else {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    } else if (document.webkitFullscreenElement) {
-      document.webkitExitFullscreen();
-    }
     container.classList.remove("map-fullscreen-fallback");
+    document.body.style.overflow = "";
     if (btnEl) btnEl.innerHTML = `<i class="bi bi-arrows-fullscreen me-1"></i> Full Screen`;
+  }
+
+  // Reset posisi zoom agar denah pas di tengah layar baru
+  if (containerId === "userMapFullscreenContainer" && typeof pzBocorHistory !== "undefined" && pzBocorHistory) {
+    pzBocorHistory.reset();
+  }
+  if (containerId === "guestMapFullscreenContainer" && typeof guestPzBocorHistory !== "undefined" && guestPzBocorHistory) {
+    guestPzBocorHistory.reset();
   }
 }
 
-document.addEventListener("fullscreenchange", () => {
-  if (!document.fullscreenElement) {
+// Tutup mode fullscreen jika tombol ESC ditekan
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    document.querySelectorAll(".map-fullscreen-fallback").forEach(el => {
+      el.classList.remove("map-fullscreen-fallback");
+    });
+    document.body.style.overflow = "";
     document.querySelectorAll(".btn-fullscreen-map").forEach(btn => {
       btn.innerHTML = `<i class="bi bi-arrows-fullscreen me-1"></i> Full Screen`;
     });

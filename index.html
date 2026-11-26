@@ -703,6 +703,8 @@
 </div>
 
 <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
+    </div>
+  </div>
 
   <!-- MAIN APP SECTION -->
   <div id="appSection" class="d-none">
@@ -1551,35 +1553,25 @@
     const role = String(user?.role || "user").trim().toLowerCase();
     const isKontraktor = role === "kontraktor";
 
-    // 1. Sembunyikan tombol Hamburger Menu (Sidebar)
-    const hamburgerBtn = document.querySelector('[data-bs-toggle="offcanvas"], .navbar-toggler, button[onclick*="sidebar"]');
+    // 1. Sembunyikan tombol Hamburger Menu (Sidebar) di header atas
+    const hamburgerBtn = document.querySelector('button[data-bs-target="#sidebarMenu"]');
     if (hamburgerBtn) hamburgerBtn.classList.toggle("d-none", isKontraktor);
 
     // 2. Sembunyikan Kartu "Lapor Direct" & lebarkan kartu "Lapor Bocor" jadi full width
-    const statDirectEl = document.getElementById("statDirectReported");
-    const statDirectCardCol = statDirectEl ? statDirectEl.closest(".col-6, .col-md-6, .col") : null;
-    const statBocorEl = document.getElementById("statBocorReport");
-    const statBocorCardCol = statBocorEl ? statBocorEl.closest(".col-6, .col-md-6, .col") : null;
+    const directCard = document.querySelector('[onclick*="openDirectHistoryTab"]')?.closest(".col-6, .col-12");
+    const bocorCard = document.querySelector('[onclick*="openBocorHistoryTab"]')?.closest(".col-6, .col-12");
 
-    if (statDirectCardCol) statDirectCardCol.classList.toggle("d-none", isKontraktor);
-    if (statBocorCardCol) {
-      statBocorCardCol.classList.toggle("col-12", isKontraktor);
-      statBocorCardCol.classList.toggle("col-6", !isKontraktor);
+    if (directCard) directCard.classList.toggle("d-none", isKontraktor);
+    if (bocorCard) {
+      bocorCard.classList.toggle("col-12", isKontraktor);
+      bocorCard.classList.toggle("col-6", !isKontraktor);
     }
 
-    // 3. Sembunyikan tombol Floating Lapor Bocor Baru (ikon tetesan air kuning kanan bawah)
-    const fabBocorBtn = document.querySelector('button[onclick*="laporBocorTab"], .fab-bocor, #btnFloatingLaporBocor');
+    // 3. Sembunyikan tombol Floating Kuning Lapor Bocor Cepat di pojok kanan bawah
+    const fabBocorBtn = document.querySelector('button[onclick*="openQuickBocorForm"]');
     if (fabBocorBtn) fabBocorBtn.classList.toggle("d-none", isKontraktor);
 
-    // 4. Sembunyikan menu sidebar lain selain Riwayat Laporan Kebocoran Air
-    document.querySelectorAll('.offcanvas a, .offcanvas button.nav-link, .sidebar a').forEach(el => {
-      const onClickAttr = el.getAttribute("onclick") || "";
-      if (!onClickAttr.includes("bocorHistoryTab") && !onClickAttr.includes("openBocorHistoryTab") && !onClickAttr.includes("logout")) {
-        el.classList.toggle("d-none", isKontraktor);
-      }
-    });
-
-    // 5. Otomatis buka tab Riwayat Laporan Kebocoran Air jika akun Kontraktor
+    // 4. Buka otomatis tab Riwayat Laporan Kebocoran Air jika akun Kontraktor
     if (isKontraktor && typeof openBocorHistoryTab === "function") {
       openBocorHistoryTab();
     }

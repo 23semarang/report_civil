@@ -48,25 +48,30 @@
   border-radius: 0 !important;
   z-index: 1040 !important;
   margin: 0 !important;
-  padding: 0 !important;
+  padding: 12px !important;
   overflow: hidden !important;
-}
-
-.map-fullscreen-fallback #bocorMapHistoryWrapper,
-.map-fullscreen-fallback #guestBocorMapHistoryWrapper {
-  width: 100% !important;
-  height: 100% !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
 
+.map-fullscreen-fallback #bocorMapHistoryWrapper,
+.map-fullscreen-fallback #guestBocorMapHistoryWrapper {
+  display: inline-block !important;
+  position: relative !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
 .map-fullscreen-fallback img {
-  max-height: 92dvh !important;
-  max-width: 96vw !important;
+  max-height: 88dvh !important;
+  max-width: 94vw !important;
   width: auto !important;
   height: auto !important;
   object-fit: contain !important;
+  display: block !important;
 }
 
 .btn-fullscreen-map {
@@ -2827,12 +2832,12 @@ function renderBocorReportsList() {
     if (typeof Panzoom !== 'undefined' && panzoomElem) {
       if (!pzBocorHistory) {
         pzBocorHistory = Panzoom(panzoomElem, {
-          maxScale: 4,
-          minScale: 1,
-          contain: false,
-          animate: false,
-          cursor: 'grab'
-        });
+  maxScale: 5,
+  minScale: 1,
+  contain: false,
+  animate: false,
+  cursor: 'grab'
+});
 
         panzoomElem.addEventListener('panzoomchange', (e) => {
           const currentScale = (e.detail && e.detail.scale) ? e.detail.scale : (pzBocorHistory.getScale() || 1);
@@ -3661,14 +3666,15 @@ function renderGuestBocorMapPins() {
     if (typeof Panzoom !== 'undefined' && panzoomElem) {
       if (!guestPzBocorHistory) {
         guestPzBocorHistory = Panzoom(panzoomElem, {
-          maxScale: 4,
+          maxScale: 5,
           minScale: 1,
-          contain: 'outside',
+          contain: false,
+          animate: false,
           cursor: 'grab'
         });
 
         panzoomElem.addEventListener('panzoomchange', (e) => {
-          const currentScale = e.detail.scale || 1;
+          const currentScale = (e.detail && e.detail.scale) ? e.detail.scale : (guestPzBocorHistory.getScale() || 1);
           const pinScale = 1 / currentScale;
           document.querySelectorAll('#guestBocorPinsLayer .bocor-pin').forEach(pin => {
             pin.style.setProperty('--pin-scale', pinScale);
@@ -3677,7 +3683,7 @@ function renderGuestBocorMapPins() {
 
         panzoomElem.parentElement.addEventListener('wheel', guestPzBocorHistory.zoomWithWheel);
       } else {
-        guestPzBocorHistory.reset();
+        guestPzBocorHistory.reset({ animate: false });
       }
     }
 

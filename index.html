@@ -28,6 +28,37 @@
 
 .map-fullscreen-active {
   position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  background-color: #f8f9fa !important;
+  z-index: 1050 !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  border-radius: 0 !important;
+  overflow: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.btn-fullscreen-map {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 20;
+  background-color: rgba(255, 255, 255, 0.92);
+  border: 1px solid #dee2e6;
+  font-size: 0.78rem;
+}
+
+    .map-fullscreen-box {
+  position: relative;
+}
+
+.map-fullscreen-active {
+  position: fixed !important;
   inset: 12px !important;
   width: auto !important;
   height: auto !important;
@@ -685,13 +716,16 @@
   </div>
 </div>
 
-      <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
+      <div id="guestMapFrame" class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm map-fullscreen-box" style="min-height: 300px;">
+        <button type="button" class="btn btn-sm btn-light btn-fullscreen-map" onclick="toggleMapFullscreen('guestMapFrame', this)">
+          <i class="bi bi-arrows-fullscreen me-1"></i> Full Screen
+        </button>
         <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
           <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
           <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
         </div>
+        <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
       </div>
-      <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
     </div>
   </div>
 
@@ -1092,13 +1126,16 @@
       </select>
     </div>
 
-    <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
+    <div id="userMapFrame" class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm map-fullscreen-box" style="min-height: 300px;">
+      <button type="button" class="btn btn-sm btn-light btn-fullscreen-map" onclick="toggleMapFullscreen('userMapFrame', this)">
+        <i class="bi bi-arrows-fullscreen me-1"></i> Full Screen
+      </button>
       <div id="bocorMapHistoryWrapper" class="d-inline-block position-relative">
         <img id="bocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
         <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
       </div>
+      <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
     </div>
-    <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
   </div>
 </div>
 

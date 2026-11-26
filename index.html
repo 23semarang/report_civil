@@ -21,93 +21,129 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
+  /* Mode Full Screen untuk Denah User & Tamu */
+  .map-fullscreen-box:fullscreen {
+    width: 100vw !important;
+    height: 100vh !important;
+    background-color: #f8f9fa !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 0 !important;
+    z-index: 9999 !important;
+  }
 
-    /* Mode Full Screen untuk Denah User & Tamu */
-.map-fullscreen-box:fullscreen {
-  width: 100vw !important;
-  height: 100vh !important;
-  background-color: #f8f9fa !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border-radius: 0 !important;
-  z-index: 9999 !important;
-}
+  .map-fullscreen-box:fullscreen img {
+    max-height: 92vh !important;
+    max-width: 96vw !important;
+  }
 
-.map-fullscreen-box:fullscreen img {
-  max-height: 92vh !important;
-  max-width: 96vw !important;
-}
+  .map-fullscreen-fallback {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    background-color: #f8f9fa !important;
+    border-radius: 0 !important;
+    z-index: 1040 !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
 
-.map-fullscreen-fallback {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100dvh !important;
-  background-color: #f8f9fa !important;
-  border-radius: 0 !important;
-  z-index: 1040 !important;
-  margin: 0 !important;
-  padding: 12px !important;
-  overflow: hidden !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
+  .map-fullscreen-fallback #bocorMapHistoryWrapper,
+  .map-fullscreen-fallback #guestBocorMapHistoryWrapper {
+    display: inline-block !important;
+    position: relative !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+  }
 
-.map-fullscreen-fallback #bocorMapHistoryWrapper,
-.map-fullscreen-fallback #guestBocorMapHistoryWrapper {
-  display: inline-block !important;
-  position: relative !important;
-  width: auto !important;
-  height: auto !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-}
+  .map-fullscreen-fallback img {
+    max-height: 88dvh !important;
+    max-width: 94vw !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    display: block !important;
+  }
 
-.map-fullscreen-fallback img {
-  max-height: 88dvh !important;
-  max-width: 94vw !important;
-  width: auto !important;
-  height: auto !important;
-  object-fit: contain !important;
-  display: block !important;
-}
+  /* Fit denah awal saat bukan mode Full Screen */
+  #userMapFullscreenContainer:not(.map-fullscreen-fallback),
+  #guestMapFullscreenContainer:not(.map-fullscreen-fallback) {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px !important;
+  }
 
-.btn-fullscreen-map {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 20;
-  background-color: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(4px);
-  border: 1px solid #dee2e6;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-  font-size: 0.78rem;
-}
+  #userMapFullscreenContainer:not(.map-fullscreen-fallback) #bocorMapHistoryWrapper,
+  #guestMapFullscreenContainer:not(.map-fullscreen-fallback) #guestBocorMapHistoryWrapper {
+    display: inline-block !important;
+    position: relative !important;
+    max-width: 100% !important;
+    max-height: 420px !important;
+  }
 
-    /* Pin laporan existing pada form input Lapor Bocor */
-.existing-form-pin {
-  position: absolute;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background-color: rgba(220, 53, 69, 0.85);
-  color: #fff;
-  border: 2px solid #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  transform: translate(-50%, -50%) scale(var(--form-pin-scale, 1));
-  box-shadow: 0 2px 5px rgba(0,0,0,0.35);
-  z-index: 5;
-  cursor: pointer;
-}
+  #userMapFullscreenContainer:not(.map-fullscreen-fallback) img,
+  #guestMapFullscreenContainer:not(.map-fullscreen-fallback) img {
+    max-width: 100% !important;
+    max-height: 420px !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    display: block !important;
+  }
 
-.existing-form-pin.pin-resolved {
-  background-color: rgba(16, 185, 129, 0.85);
-}
+  /* Cegah transisi bentrok dengan Panzoom agar zoom pas ke kursor/jari & bebas glitch */
+  #bocorMapHistoryWrapper,
+  #guestBocorMapHistoryWrapper {
+    transition: none !important;
+    touch-action: none !important;
+    user-select: none !important;
+    -webkit-user-drag: none !important;
+  }
+
+  .btn-fullscreen-map {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 20;
+    background-color: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(4px);
+    border: 1px solid #dee2e6;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    font-size: 0.78rem;
+  }
+
+  /* Pin laporan existing pada form input Lapor Bocor */
+  .existing-form-pin {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: rgba(220, 53, 69, 0.85);
+    color: #fff;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    transform: translate(-50%, -50%) scale(var(--form-pin-scale, 1));
+    box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+    z-index: 5;
+    cursor: pointer;
+  }
+
+  .existing-form-pin.pin-resolved {
+    background-color: rgba(16, 185, 129, 0.85);
+  }
+
   /* =======================================================
      1. STYLING PIN & TOOLTIP POPUP (TETAP NEMPEL PAS ZOOM)
      ======================================================= */
@@ -147,22 +183,22 @@
     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
   }
 
-    /* Styling Pin Kebocoran RESOLVED (Warna Hijau) */
-.bocor-pin.pin-resolved {
-  background-color: #10b981 !important;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.8) !important;
-  animation: pulse-pin-green 1.8s infinite !important;
-}
+  /* Styling Pin Kebocoran RESOLVED (Warna Hijau) */
+  .bocor-pin.pin-resolved {
+    background-color: #10b981 !important;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.8) !important;
+    animation: pulse-pin-green 1.8s infinite !important;
+  }
 
-.bocor-pin.pin-resolved:hover {
-  background-color: #059669 !important;
-}
+  .bocor-pin.pin-resolved:hover {
+    background-color: #059669 !important;
+  }
 
-@keyframes pulse-pin-green {
-  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
-  70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
+  @keyframes pulse-pin-green {
+    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  }
 
   /* Popup Tooltip Mengapung (Child Elemen dari Pin) */
   .pin-tooltip-card {

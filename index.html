@@ -22,6 +22,51 @@
 
   <style>
 
+    .map-fullscreen-box {
+  position: relative;
+}
+
+.map-fullscreen-active {
+  position: fixed !important;
+  inset: 12px !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: calc(100vw - 24px) !important;
+  max-height: calc(100dvh - 24px) !important;
+  background-color: #f8f9fa !important;
+  z-index: 1050 !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  border-radius: 16px !important;
+  overflow: auto !important;
+}
+
+.map-fullscreen-active #bocorMapHistoryWrapper,
+.map-fullscreen-active #guestBocorMapHistoryWrapper {
+  display: inline-block !important;
+  position: relative !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+.map-fullscreen-active img {
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: calc(100dvh - 80px) !important;
+  object-fit: contain !important;
+}
+
+.btn-fullscreen-map {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 20;
+  background-color: rgba(255, 255, 255, 0.92);
+  border: 1px solid #dee2e6;
+  font-size: 0.78rem;
+}
+
     /* Pin laporan existing pada form input Lapor Bocor */
 .existing-form-pin {
   position: absolute;
@@ -3832,6 +3877,20 @@ document.addEventListener("DOMContentLoaded", () => {
     bocorMapImgEl.addEventListener("load", renderExistingPinsOnBocorForm);
   }
 });
+
+  function toggleMapFullscreen(frameId, btnEl) {
+  const frame = document.getElementById(frameId);
+  if (!frame) return;
+
+  const isActive = frame.classList.toggle("map-fullscreen-active");
+  document.body.style.overflow = isActive ? "hidden" : "";
+
+  if (btnEl) {
+    btnEl.innerHTML = isActive
+      ? `<i class="bi bi-fullscreen-exit me-1"></i> Keluar`
+      : `<i class="bi bi-arrows-fullscreen me-1"></i> Full Screen`;
+  }
+}
   
 </script>
 

@@ -22,42 +22,6 @@
 
   <style>
 
-    .map-fullscreen-box {
-  position: relative;
-}
-
-.map-fullscreen-active {
-  position: fixed !important;
-  inset: 0 !important;
-  width: 100vw !important;
-  height: 100dvh !important;
-  max-height: 100dvh !important;
-  background-color: #f8f9fa !important;
-  z-index: 1040 !important;
-  margin: 0 !important;
-  padding: 12px !important;
-  border-radius: 0 !important;
-  overflow: hidden !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-.map-fullscreen-active img {
-  max-height: 88dvh !important;
-  max-width: 95vw !important;
-}
-
-.btn-fullscreen-map {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  z-index: 20;
-  background-color: rgba(255, 255, 255, 0.92);
-  border: 1px solid #dee2e6;
-  font-size: 0.78rem;
-}
-
     /* Pin laporan existing pada form input Lapor Bocor */
 .existing-form-pin {
   position: absolute;
@@ -676,15 +640,7 @@
   </div>
 </div>
 
-      <div id="guestMapFrame" class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm map-fullscreen-box" style="min-height: 300px;">
-        <button type="button" class="btn btn-sm btn-light btn-fullscreen-map" onclick="toggleMapFullscreen('guestMapFrame', this)">
-          <i class="bi bi-arrows-fullscreen me-1"></i> Full Screen
-        </button>
-        <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
-          <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
-          <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
-        </div>
-      </div>
+      <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
         <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
           <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
           <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
@@ -1091,15 +1047,7 @@
       </select>
     </div>
 
-    <div id="userMapFrame" class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm map-fullscreen-box" style="min-height: 300px;">
-      <button type="button" class="btn btn-sm btn-light btn-fullscreen-map" onclick="toggleMapFullscreen('userMapFrame', this)">
-        <i class="bi bi-arrows-fullscreen me-1"></i> Full Screen
-      </button>
-      <div id="bocorMapHistoryWrapper" class="d-inline-block position-relative">
-        <img id="bocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
-        <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
-      </div>
-    </div>
+    <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
       <div id="bocorMapHistoryWrapper" class="d-inline-block position-relative">
         <img id="bocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
         <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
@@ -3882,32 +3830,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (bocorMapImgEl) {
     bocorMapImgEl.addEventListener("load", renderExistingPinsOnBocorForm);
-  }
-});
-
-  function toggleMapFullscreen(frameId, btnEl) {
-  const frame = document.getElementById(frameId);
-  if (!frame) return;
-
-  const isActive = frame.classList.toggle("map-fullscreen-active");
-  document.body.style.overflow = isActive ? "hidden" : "";
-
-  if (btnEl) {
-    btnEl.innerHTML = isActive
-      ? `<i class="bi bi-fullscreen-exit me-1"></i> Keluar`
-      : `<i class="bi bi-arrows-fullscreen me-1"></i> Full Screen`;
-  }
-}
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    document.querySelectorAll(".map-fullscreen-active").forEach(el => {
-      el.classList.remove("map-fullscreen-active");
-    });
-    document.body.style.overflow = "";
-    document.querySelectorAll(".btn-fullscreen-map").forEach(btn => {
-      btn.innerHTML = `<i class="bi bi-arrows-fullscreen me-1"></i> Full Screen`;
-    });
   }
 });
   

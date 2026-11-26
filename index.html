@@ -21,129 +21,29 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
   <style>
-  /* Mode Full Screen untuk Denah User & Tamu */
-  .map-fullscreen-box:fullscreen {
-    width: 100vw !important;
-    height: 100vh !important;
-    background-color: #f8f9fa !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    border-radius: 0 !important;
-    z-index: 9999 !important;
-  }
 
-  .map-fullscreen-box:fullscreen img {
-    max-height: 92vh !important;
-    max-width: 96vw !important;
-  }
+    /* Pin laporan existing pada form input Lapor Bocor */
+.existing-form-pin {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: rgba(220, 53, 69, 0.85);
+  color: #fff;
+  border: 2px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  transform: translate(-50%, -50%) scale(var(--form-pin-scale, 1));
+  box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+  z-index: 5;
+  cursor: pointer;
+}
 
-  .map-fullscreen-fallback {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100vw !important;
-    height: 100dvh !important;
-    background-color: #f8f9fa !important;
-    border-radius: 0 !important;
-    z-index: 1040 !important;
-    margin: 0 !important;
-    padding: 12px !important;
-    overflow: hidden !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-  }
-
-  .map-fullscreen-fallback #bocorMapHistoryWrapper,
-  .map-fullscreen-fallback #guestBocorMapHistoryWrapper {
-    display: inline-block !important;
-    position: relative !important;
-    width: auto !important;
-    height: auto !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
-  }
-
-  .map-fullscreen-fallback img {
-    max-height: 88dvh !important;
-    max-width: 94vw !important;
-    width: auto !important;
-    height: auto !important;
-    object-fit: contain !important;
-    display: block !important;
-  }
-
-  /* Fit denah awal saat bukan mode Full Screen */
-  #userMapFullscreenContainer:not(.map-fullscreen-fallback),
-  #guestMapFullscreenContainer:not(.map-fullscreen-fallback) {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 8px !important;
-  }
-
-  #userMapFullscreenContainer:not(.map-fullscreen-fallback) #bocorMapHistoryWrapper,
-  #guestMapFullscreenContainer:not(.map-fullscreen-fallback) #guestBocorMapHistoryWrapper {
-    display: inline-block !important;
-    position: relative !important;
-    max-width: 100% !important;
-    max-height: 420px !important;
-  }
-
-  #userMapFullscreenContainer:not(.map-fullscreen-fallback) img,
-  #guestMapFullscreenContainer:not(.map-fullscreen-fallback) img {
-    max-width: 100% !important;
-    max-height: 420px !important;
-    width: auto !important;
-    height: auto !important;
-    object-fit: contain !important;
-    display: block !important;
-  }
-
-  /* Cegah transisi bentrok dengan Panzoom agar zoom pas ke kursor/jari & bebas glitch */
-  #bocorMapHistoryWrapper,
-  #guestBocorMapHistoryWrapper {
-    transition: none !important;
-    touch-action: none !important;
-    user-select: none !important;
-    -webkit-user-drag: none !important;
-  }
-
-  .btn-fullscreen-map {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 20;
-    background-color: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(4px);
-    border: 1px solid #dee2e6;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    font-size: 0.78rem;
-  }
-
-  /* Pin laporan existing pada form input Lapor Bocor */
-  .existing-form-pin {
-    position: absolute;
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background-color: rgba(220, 53, 69, 0.85);
-    color: #fff;
-    border: 2px solid #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    transform: translate(-50%, -50%) scale(var(--form-pin-scale, 1));
-    box-shadow: 0 2px 5px rgba(0,0,0,0.35);
-    z-index: 5;
-    cursor: pointer;
-  }
-
-  .existing-form-pin.pin-resolved {
-    background-color: rgba(16, 185, 129, 0.85);
-  }
-
+.existing-form-pin.pin-resolved {
+  background-color: rgba(16, 185, 129, 0.85);
+}
   /* =======================================================
      1. STYLING PIN & TOOLTIP POPUP (TETAP NEMPEL PAS ZOOM)
      ======================================================= */
@@ -183,22 +83,22 @@
     100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
   }
 
-  /* Styling Pin Kebocoran RESOLVED (Warna Hijau) */
-  .bocor-pin.pin-resolved {
-    background-color: #10b981 !important;
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.8) !important;
-    animation: pulse-pin-green 1.8s infinite !important;
-  }
+    /* Styling Pin Kebocoran RESOLVED (Warna Hijau) */
+.bocor-pin.pin-resolved {
+  background-color: #10b981 !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.8) !important;
+  animation: pulse-pin-green 1.8s infinite !important;
+}
 
-  .bocor-pin.pin-resolved:hover {
-    background-color: #059669 !important;
-  }
+.bocor-pin.pin-resolved:hover {
+  background-color: #059669 !important;
+}
 
-  @keyframes pulse-pin-green {
-    0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
-    70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-  }
+@keyframes pulse-pin-green {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.8); }
+  70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
 
   /* Popup Tooltip Mengapung (Child Elemen dari Pin) */
   .pin-tooltip-card {
@@ -740,19 +640,13 @@
   </div>
 </div>
 
-<!-- BAGIAN 2B: DENAH TAMU + FULL SCREEN -->
-<div id="guestMapFullscreenContainer" class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm map-fullscreen-box" style="min-height: 300px;">
-  <button type="button" onclick="toggleMapFullscreen('guestMapFullscreenContainer', this)" class="btn btn-sm btn-light fw-semibold rounded-pill px-2 py-1 btn-fullscreen-map">
-    <i class="bi bi-arrows-fullscreen me-1"></i> Full Screen
-  </button>
-
-  <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
-    <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
-    <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
-  </div>
-</div>
-
-<small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
+      <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
+        <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
+          <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
+          <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
+        </div>
+      </div>
+      <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
     </div>
   </div>
 
@@ -1153,18 +1047,12 @@
       </select>
     </div>
 
-    <!-- BAGIAN 2A: TAMBAHKAN ID, CLASS, DAN TOMBOL FULL SCREEN DI SINI -->
-    <div id="userMapFullscreenContainer" class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm map-fullscreen-box" style="min-height: 300px;">
-      <button type="button" onclick="toggleMapFullscreen('userMapFullscreenContainer', this)" class="btn btn-sm btn-light fw-semibold rounded-pill px-2 py-1 btn-fullscreen-map">
-        <i class="bi bi-arrows-fullscreen me-1"></i> Full Screen
-      </button>
-
+    <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
       <div id="bocorMapHistoryWrapper" class="d-inline-block position-relative">
         <img id="bocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
         <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
       </div>
     </div>
-
     <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
   </div>
 </div>
@@ -1603,25 +1491,35 @@
     const role = String(user?.role || "user").trim().toLowerCase();
     const isKontraktor = role === "kontraktor";
 
-    // 1. Sembunyikan tombol Hamburger Menu (Sidebar) di header atas
-    const hamburgerBtn = document.querySelector('button[data-bs-target="#sidebarMenu"]');
+    // 1. Sembunyikan tombol Hamburger Menu (Sidebar)
+    const hamburgerBtn = document.querySelector('[data-bs-toggle="offcanvas"], .navbar-toggler, button[onclick*="sidebar"]');
     if (hamburgerBtn) hamburgerBtn.classList.toggle("d-none", isKontraktor);
 
     // 2. Sembunyikan Kartu "Lapor Direct" & lebarkan kartu "Lapor Bocor" jadi full width
-    const directCard = document.querySelector('[onclick*="openDirectHistoryTab"]')?.closest(".col-6, .col-12");
-    const bocorCard = document.querySelector('[onclick*="openBocorHistoryTab"]')?.closest(".col-6, .col-12");
+    const statDirectEl = document.getElementById("statDirectReported");
+    const statDirectCardCol = statDirectEl ? statDirectEl.closest(".col-6, .col-md-6, .col") : null;
+    const statBocorEl = document.getElementById("statBocorReport");
+    const statBocorCardCol = statBocorEl ? statBocorEl.closest(".col-6, .col-md-6, .col") : null;
 
-    if (directCard) directCard.classList.toggle("d-none", isKontraktor);
-    if (bocorCard) {
-      bocorCard.classList.toggle("col-12", isKontraktor);
-      bocorCard.classList.toggle("col-6", !isKontraktor);
+    if (statDirectCardCol) statDirectCardCol.classList.toggle("d-none", isKontraktor);
+    if (statBocorCardCol) {
+      statBocorCardCol.classList.toggle("col-12", isKontraktor);
+      statBocorCardCol.classList.toggle("col-6", !isKontraktor);
     }
 
-    // 3. Sembunyikan tombol Floating Kuning Lapor Bocor Cepat di pojok kanan bawah
-    const fabBocorBtn = document.querySelector('button[onclick*="openQuickBocorForm"]');
+    // 3. Sembunyikan tombol Floating Lapor Bocor Baru (ikon tetesan air kuning kanan bawah)
+    const fabBocorBtn = document.querySelector('button[onclick*="laporBocorTab"], .fab-bocor, #btnFloatingLaporBocor');
     if (fabBocorBtn) fabBocorBtn.classList.toggle("d-none", isKontraktor);
 
-    // 4. Buka otomatis tab Riwayat Laporan Kebocoran Air jika akun Kontraktor
+    // 4. Sembunyikan menu sidebar lain selain Riwayat Laporan Kebocoran Air
+    document.querySelectorAll('.offcanvas a, .offcanvas button.nav-link, .sidebar a').forEach(el => {
+      const onClickAttr = el.getAttribute("onclick") || "";
+      if (!onClickAttr.includes("bocorHistoryTab") && !onClickAttr.includes("openBocorHistoryTab") && !onClickAttr.includes("logout")) {
+        el.classList.toggle("d-none", isKontraktor);
+      }
+    });
+
+    // 5. Otomatis buka tab Riwayat Laporan Kebocoran Air jika akun Kontraktor
     if (isKontraktor && typeof openBocorHistoryTab === "function") {
       openBocorHistoryTab();
     }
@@ -2868,25 +2766,23 @@ function renderBocorReportsList() {
     if (typeof Panzoom !== 'undefined' && panzoomElem) {
       if (!pzBocorHistory) {
         pzBocorHistory = Panzoom(panzoomElem, {
-  maxScale: 5,
-  minScale: 1,
-  contain: false,
-  panOnlyWhenZoomed: true,
-  animate: false,
-  cursor: 'grab'
-});
+          maxScale: 4,
+          minScale: 1,
+          contain: 'outside',
+          cursor: 'grab'
+        });
 
         panzoomElem.addEventListener('panzoomchange', (e) => {
-          const currentScale = (e.detail && e.detail.scale) ? e.detail.scale : (pzBocorHistory.getScale() || 1);
+          const currentScale = e.detail.scale || 1;
           const pinScale = 1 / currentScale;
-          document.querySelectorAll('#bocorPinsLayer .bocor-pin').forEach(pin => {
+          document.querySelectorAll('.bocor-pin').forEach(pin => {
             pin.style.setProperty('--pin-scale', pinScale);
           });
         });
 
         panzoomElem.parentElement.addEventListener('wheel', pzBocorHistory.zoomWithWheel);
       } else {
-        pzBocorHistory.reset({ animate: false });
+        pzBocorHistory.reset();
       }
     }
 
@@ -2939,7 +2835,7 @@ function renderBocorReportsList() {
     drawUserPinsAndZoom();
   }
 }
-  
+
 // Helper function untuk mengubah URL Google Drive ke Link Gambar Direct/Thumbnail
 function getGoogleDriveDirectLink(url) {
   if (!url) return '';
@@ -3702,17 +3598,15 @@ function renderGuestBocorMapPins() {
   const drawPinsAndZoom = () => {
     if (typeof Panzoom !== 'undefined' && panzoomElem) {
       if (!guestPzBocorHistory) {
-        guestpzBocorHistory = Panzoom(panzoomElem, {
-  maxScale: 5,
-  minScale: 1,
-  contain: false,
-  panOnlyWhenZoomed: true,
-  animate: false,
-  cursor: 'grab'
-});
+        guestPzBocorHistory = Panzoom(panzoomElem, {
+          maxScale: 4,
+          minScale: 1,
+          contain: 'outside',
+          cursor: 'grab'
+        });
 
         panzoomElem.addEventListener('panzoomchange', (e) => {
-          const currentScale = (e.detail && e.detail.scale) ? e.detail.scale : (guestPzBocorHistory.getScale() || 1);
+          const currentScale = e.detail.scale || 1;
           const pinScale = 1 / currentScale;
           document.querySelectorAll('#guestBocorPinsLayer .bocor-pin').forEach(pin => {
             pin.style.setProperty('--pin-scale', pinScale);
@@ -3721,7 +3615,7 @@ function renderGuestBocorMapPins() {
 
         panzoomElem.parentElement.addEventListener('wheel', guestPzBocorHistory.zoomWithWheel);
       } else {
-        guestPzBocorHistory.reset({ animate: false });
+        guestPzBocorHistory.reset();
       }
     }
 
@@ -3936,57 +3830,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (bocorMapImgEl) {
     bocorMapImgEl.addEventListener("load", renderExistingPinsOnBocorForm);
-  }
-});
-
-function resetMapPanCenter(pzInstance) {
-  if (!pzInstance || typeof pzInstance.reset !== "function") return;
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      pzInstance.reset({ animate: false });
-      const currentScale = pzInstance.getScale() || 1;
-      document.querySelectorAll(".bocor-pin").forEach((pin) => {
-        pin.style.setProperty("--pin-scale", 1 / currentScale);
-      });
-    });
-  });
-}
-
-function toggleMapFullscreen(containerId, btnEl) {
-  const container = document.getElementById(containerId);
-  if (!container) return;
-
-  const isFullscreen = container.classList.contains("map-fullscreen-fallback");
-
-  if (!isFullscreen) {
-    container.classList.add("map-fullscreen-fallback");
-    document.body.style.overflow = "hidden";
-    if (btnEl) btnEl.innerHTML = `<i class="bi bi-fullscreen-exit me-1"></i> Keluar`;
-  } else {
-    container.classList.remove("map-fullscreen-fallback");
-    document.body.style.overflow = "";
-    if (btnEl) btnEl.innerHTML = `<i class="bi bi-arrows-fullscreen me-1"></i> Full Screen`;
-  }
-
-  if (containerId === "userMapFullscreenContainer" && typeof pzBocorHistory !== "undefined" && pzBocorHistory) {
-    resetMapPanCenter(pzBocorHistory);
-  }
-  if (containerId === "guestMapFullscreenContainer" && typeof guestPzBocorHistory !== "undefined" && guestPzBocorHistory) {
-    resetMapPanCenter(guestPzBocorHistory);
-  }
-}
-
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    document.querySelectorAll(".map-fullscreen-fallback").forEach((el) => {
-      el.classList.remove("map-fullscreen-fallback");
-    });
-    document.body.style.overflow = "";
-    document.querySelectorAll(".btn-fullscreen-map").forEach((btn) => {
-      btn.innerHTML = `<i class="bi bi-arrows-fullscreen me-1"></i> Full Screen`;
-    });
-    if (typeof pzBocorHistory !== "undefined" && pzBocorHistory) resetMapPanCenter(pzBocorHistory);
-    if (typeof guestPzBocorHistory !== "undefined" && guestPzBocorHistory) resetMapPanCenter(guestPzBocorHistory);
   }
 });
   

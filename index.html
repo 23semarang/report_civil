@@ -2871,6 +2871,7 @@ function renderBocorReportsList() {
   maxScale: 5,
   minScale: 1,
   contain: false,
+  panOnlyWhenZoomed: true,
   animate: false,
   cursor: 'grab'
 });
@@ -3701,13 +3702,14 @@ function renderGuestBocorMapPins() {
   const drawPinsAndZoom = () => {
     if (typeof Panzoom !== 'undefined' && panzoomElem) {
       if (!guestPzBocorHistory) {
-        guestPzBocorHistory = Panzoom(panzoomElem, {
-          maxScale: 5,
-          minScale: 1,
-          contain: false,
-          animate: false,
-          cursor: 'grab'
-        });
+        guestpzBocorHistory = Panzoom(panzoomElem, {
+  maxScale: 5,
+  minScale: 1,
+  contain: false,
+  panOnlyWhenZoomed: true,
+  animate: false,
+  cursor: 'grab'
+});
 
         panzoomElem.addEventListener('panzoomchange', (e) => {
           const currentScale = (e.detail && e.detail.scale) ? e.detail.scale : (guestPzBocorHistory.getScale() || 1);

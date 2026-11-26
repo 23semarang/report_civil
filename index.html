@@ -22,6 +22,56 @@
 
   <style>
 
+    /* Mode Full Screen untuk Denah User & Tamu */
+.map-fullscreen-box:fullscreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: #f8f9fa !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 0 !important;
+  z-index: 9999 !important;
+}
+
+.map-fullscreen-box:fullscreen img {
+  max-height: 92vh !important;
+  max-width: 96vw !important;
+}
+
+/* Fallback Fullscreen (khusus iOS Safari) */
+.map-fullscreen-fallback {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background-color: #f8f9fa !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 0 !important;
+  z-index: 9999 !important;
+  margin: 0 !important;
+}
+
+.map-fullscreen-fallback img {
+  max-height: 92vh !important;
+  max-width: 96vw !important;
+}
+
+.btn-fullscreen-map {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 20;
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(4px);
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  font-size: 0.78rem;
+}
+
     /* Pin laporan existing pada form input Lapor Bocor */
 .existing-form-pin {
   position: absolute;
@@ -640,15 +690,19 @@
   </div>
 </div>
 
-      <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
-        <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
-          <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
-          <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
-        </div>
-      </div>
-      <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
-    </div>
+<!-- BAGIAN 2B: DENAH TAMU + FULL SCREEN -->
+<div id="guestMapFullscreenContainer" class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm map-fullscreen-box" style="min-height: 300px;">
+  <button type="button" onclick="toggleMapFullscreen('guestMapFullscreenContainer', this)" class="btn btn-sm btn-light fw-semibold rounded-pill px-2 py-1 btn-fullscreen-map">
+    <i class="bi bi-arrows-fullscreen me-1"></i> Full Screen
+  </button>
+
+  <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
+    <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
+    <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
   </div>
+</div>
+
+<small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
 
   <!-- MAIN APP SECTION -->
   <div id="appSection" class="d-none">
@@ -1047,12 +1101,18 @@
       </select>
     </div>
 
-    <div class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm" style="min-height: 300px;">
+    <!-- BAGIAN 2A: TAMBAHKAN ID, CLASS, DAN TOMBOL FULL SCREEN DI SINI -->
+    <div id="userMapFullscreenContainer" class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm map-fullscreen-box" style="min-height: 300px;">
+      <button type="button" onclick="toggleMapFullscreen('userMapFullscreenContainer', this)" class="btn btn-sm btn-light fw-semibold rounded-pill px-2 py-1 btn-fullscreen-map">
+        <i class="bi bi-arrows-fullscreen me-1"></i> Full Screen
+      </button>
+
       <div id="bocorMapHistoryWrapper" class="d-inline-block position-relative">
         <img id="bocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
         <div id="bocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
       </div>
     </div>
+
     <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
   </div>
 </div>
@@ -3830,6 +3890,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (bocorMapImgEl) {
     bocorMapImgEl.addEventListener("load", renderExistingPinsOnBocorForm);
+  }
+});
+
+  // =======================================================
+// TOGGLE FULL SCREEN DENAH (USER & TAMU)
+// =======================================================
+function toggleMapFullscreen(containerId, btnEl) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  const isFallbackActive = container.classList.contains("map-fullscreen-fallback");
+  const isNativeFullscreen = document.fullscreenElement === container || document.webkitFullscreenElement === container;
+
+  if (!isNativeFullscreen && !isFallbackActive) {
+    if (container.requestFullscreen) {
+      container.requestFullscreen().catch(() => {
+        container.classList.add("map-fullscreen-fallback");
+      });
+    } else if (container.webkitRequestFullscreen) {
+      container.webkitRequestFullscreen();
+    } else {
+      container.classList.add("map-fullscreen-fallback");
+    }
+    if (btnEl) btnEl.innerHTML = `<i class="bi bi-fullscreen-exit me-1"></i> Keluar`;
+  } else {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else if (document.webkitFullscreenElement) {
+      document.webkitExitFullscreen();
+    }
+    container.classList.remove("map-fullscreen-fallback");
+    if (btnEl) btnEl.innerHTML = `<i class="bi bi-arrows-fullscreen me-1"></i> Full Screen`;
+  }
+}
+
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement) {
+    document.querySelectorAll(".btn-fullscreen-map").forEach(btn => {
+      btn.innerHTML = `<i class="bi bi-arrows-fullscreen me-1"></i> Full Screen`;
+    });
   }
 });
   

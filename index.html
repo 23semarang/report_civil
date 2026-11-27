@@ -22,6 +22,51 @@
 
   <style>
 
+    /* Seragamkan ukuran kartu popup di semua mode & tingkat zoom */
+  .pin-tooltip-card {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 225px !important;
+    min-width: 225px !important;
+    max-width: 225px !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    border: 1px solid #e2e8f0;
+    z-index: 100;
+    pointer-events: auto;
+    cursor: default;
+  }
+
+  /* Samakan area wadah foto di semua kartu */
+  .tooltip-photos-wrapper {
+    display: flex !important;
+    gap: 6px;
+    width: 100% !important;
+    height: 105px !important;
+    overflow-x: auto;
+    overflow-y: hidden !important;
+    padding-bottom: 4px;
+  }
+
+  /* Samakan ukuran foto & cegah stretch */
+  .tooltip-img-item,
+  .pin-tooltip-card img {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: 105px !important;
+    max-height: 105px !important;
+    object-fit: cover !important;
+    border-radius: 8px;
+    flex-shrink: 0;
+    cursor: pointer;
+    border: 1px solid #e2e8f0;
+  }
+
     .map-fullscreen-box {
   position: relative;
 }

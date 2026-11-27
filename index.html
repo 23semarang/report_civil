@@ -176,15 +176,19 @@
   100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
 }
 
-  /* Popup Tooltip Mengapung (Child Elemen dari Pin) */
+  /* Seragamkan ukuran kartu popup di semua mode &amp; tingkat zoom */
   .pin-tooltip-card {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    width: 220px;
+    width: 230px !important;
+    min-width: 230px !important;
+    max-width: 230px !important;
+    max-height: 300px !important;
+    overflow-y: auto !important;
     background: #ffffff;
     border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
     border: 1px solid #e2e8f0;
     z-index: 100;
     pointer-events: auto;
@@ -238,9 +242,10 @@
     border-radius: 4px;
   }
   .tooltip-img-item {
-    width: 100px;
-    height: 85px;
-    object-fit: cover;
+    width: 100% !important;
+    max-width: 195px !important;
+    height: 110px !important;
+    object-fit: cover !important;
     border-radius: 8px;
     flex-shrink: 0;
     cursor: pointer;

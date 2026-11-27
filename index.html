@@ -33,7 +33,7 @@
   background-color: #f8f9fa !important;
   z-index: 1050 !important;
   margin: 0 !important;
-  padding: 12px !important;
+  padding: 0 !important;
   border-radius: 0 !important;
   overflow: auto !important;
   display: flex !important;
@@ -41,27 +41,41 @@
   justify-content: center !important;
 }
 
+.map-fullscreen-active small {
+  display: none !important;
+}
+
 .map-fullscreen-active #bocorMapHistoryWrapper,
 .map-fullscreen-active #guestBocorMapHistoryWrapper {
   display: inline-block !important;
   position: relative !important;
+  width: fit-content !important;
+  height: fit-content !important;
   line-height: 0 !important;
-}
-
-.map-fullscreen-active #bocorFloorMapImage,
-.map-fullscreen-active #guestBocorFloorMapImage {
-  max-height: none !important;
-  object-fit: contain !important;
+  margin: auto !important;
 }
 
 /* Layar Landscape: batas kanan-kiri sesuai lebar layar, tanpa stretch */
 @media (orientation: landscape) {
   .map-fullscreen-active #bocorFloorMapImage,
   .map-fullscreen-active #guestBocorFloorMapImage {
-    width: calc(100vw - 24px) !important;
-    max-width: calc(100vw - 24px) !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
     height: auto !important;
-    max-height: calc(100dvh - 24px) !important;
+    max-height: 100dvh !important;
+    object-fit: contain !important;
+  }
+}
+
+/* Layar Portrait: batas atas-bawah sesuai tinggi layar, tanpa stretch */
+@media (orientation: portrait) {
+  .map-fullscreen-active #bocorFloorMapImage,
+  .map-fullscreen-active #guestBocorFloorMapImage {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    width: auto !important;
+    max-width: 100vw !important;
+    object-fit: contain !important;
   }
 }
 
@@ -715,15 +729,15 @@
 </div>
 
       <div id="guestMapFrame" class="border rounded-4 overflow-hidden bg-light text-center position-relative shadow-sm map-fullscreen-box" style="min-height: 300px;">
-        <button type="button" class="btn btn-sm btn-light btn-fullscreen-map" onclick="toggleMapFullscreen('guestMapFrame', this)">
-          <i class="bi bi-arrows-fullscreen me-1"></i> Full Screen
-        </button>
-        <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
-          <img id="guestBocorFloorMapImage" src="" class="img-fluid d-block" style="max-height: 450px; width: auto; object-fit: contain;">
-          <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
-        </div>
-        <small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
-      </div>
+  <button type="button" class="btn btn-sm btn-light btn-fullscreen-map" onclick="toggleMapFullscreen('guestMapFrame', this)">
+    <i class="bi bi-arrows-fullscreen me-1"></i> Full Screen
+  </button>
+  <div id="guestBocorMapHistoryWrapper" class="d-inline-block position-relative">
+    <img id="guestBocorFloorMapImage" src="" class="d-block" style="max-height: 450px; width: auto; object-fit: contain;">
+    <div id="guestBocorPinsLayer" class="position-absolute top-0 start-0 w-100 h-100"></div>
+  </div>
+</div>
+<small class="text-muted d-block mt-2 text-center small">* Pinch/scroll untuk zoom & pan. Klik ikon pin untuk detail laporan.</small>
     </div>
   </div>
 
@@ -3927,6 +3941,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   requestAnimationFrame(() => {
+    const wrappers = frame.querySelectorAll("#bocorMapHistoryWrapper, #guestBocorMapHistoryWrapper");
+    wrappers.forEach((w) => {
+      w.style.transform = "";
+    });
     if (window.bocorHistoryPanzoom && typeof window.bocorHistoryPanzoom.reset === "function") {
       window.bocorHistoryPanzoom.reset({ animate: false });
     }
